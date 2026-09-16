@@ -3,210 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>David Mendoza | Portfolio</title>
-    <link rel="stylesheet" href="style.css">
+    <title>David Mendoza | Computer Engineering Portfolio</title>
+    
+    <!-- SEO & Metadata -->
+    <meta name="description" content="Portfolio of David Mendoza - Computer Engineering student specializing in embedded systems, FPGA, robotics, and software development.">
+    <meta name="author" content="David Mendoza">
+    <meta name="theme-color" content="#0a0f1d">
+    
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="David Mendoza | Portfolio">
+    <meta property="og:description" content="Computer Engineering student specializing in embedded systems, FPGA, robotics, and software development.">
+    <meta property="og:image" content="WebsiteImages/Profile/ProfileMain.webp">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="David Mendoza | Portfolio">
+    <meta name="twitter:description" content="Computer Engineering student specializing in embedded systems, FPGA, robotics, and software development.">
+    <meta name="twitter:image" content="WebsiteImages/Profile/ProfileMain.webp">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <!-- Google Fonts: Plus Jakarta Sans (body) & Outfit (headings) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Zero-flicker Theme Initializer (prevents FOUC) -->
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark') {
+                    document.documentElement.classList.remove('light-mode');
+                } else {
+                    document.documentElement.classList.add('light-mode');
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body>
 
+    <!-- Floating Glassmorphic Navbar -->
     <nav id="navbar">
         <div class="nav-container">
-            <a href="#" class="logo">DAVID MENDOZA</a>
+            <a href="#" class="logo">
+                <span class="logo-accent">DM</span> DAVID MENDOZA
+            </a>
             
-            <div class="hamburger">
+            <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-navigation">
                 <span class="bar"></span>
                 <span class="bar"></span>
                 <span class="bar"></span>
-            </div>
+            </button>
 
-            <ul class="nav-links">
+            <ul class="nav-links" id="primary-navigation">
+                <li><a href="#about">About</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="WebsiteImages/Profile/DM_Res.pdf" target="_blank" rel="noopener noreferrer" class="nav-resume-btn">Resume <i class="fas fa-arrow-up-right-from-square"></i></a></li>
                 <li class="toggle-container">
                     <label class="theme-switch" for="checkbox" aria-label="Toggle Dark and Light Mode">
                         <input type="checkbox" id="checkbox" />
                         <div class="slider round"></div>
-                  </label>
+                    </label>
                 </li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="WebsiteImages/Profile/DM_Res.pdf" target="_blank">Resume</a></li>
-                <li><a href="#contact">Contact</a></li>
             </ul>
         </div>
     </nav>
 
+    <!-- Modern Hero Section -->
     <header id="hero">
         <div class="hero-overlay"></div>
+        <div class="hero-mesh"></div>
         <div class="hero-content">
-            <div class="hero-avatar-container">
-                <img src="WebsiteImages/Profile/ProfileMain.JPG" alt="David Mendoza" class="hero-avatar">
+            
+            <div class="hero-avatar-wrapper">
+                <div class="hero-avatar-glow"></div>
+                <img src="WebsiteImages/Profile/ProfileMain.webp" alt="David Mendoza portrait" class="hero-avatar" width="190" height="190" fetchpriority="high">
             </div>
-            <h1>DAVID MENDOZA</h1>
-            <p class="subtitle">Computer Engineering Student & Technology Enthusiast</p>
-            <div class="social-links">
-                <a href="https://www.linkedin.com/in/davidmendo/" target="_blank">LinkedIn</a>
-                <a href="https://github.com/DAVIDMend0" target="_blank">GitHub</a>
-                <a href="mailto:9davemend@gmail.com">Email</a>
+
+            <h1 class="hero-title">
+                <span class="hero-name">DAVID MENDOZA</span>
+            </h1>
+            
+            <p class="hero-subtitle">
+                Computer Engineering Student <span class="divider-dot">&bull;</span> Embedded Systems <span class="divider-dot">&bull;</span> Hardware &amp; Software
+            </p>
+
+            <div class="hero-cta-group">
+                <a href="#projects" class="btn btn-primary">Explore Projects <i class="fas fa-arrow-down"></i></a>
+                <a href="#contact" class="btn btn-secondary">Get In Touch <i class="fas fa-envelope"></i></a>
             </div>
-            <a href="#projects" class="scroll-down-btn">View My Work ↓</a>
+
+            <div class="social-pills">
+                <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" class="social-pill" aria-label="LinkedIn profile">
+                    <i class="fab fa-linkedin" aria-hidden="true"></i> LinkedIn
+                </a>
+                <a href="https://github.com/DAVIDMend0" target="_blank" rel="noopener noreferrer" class="social-pill" aria-label="GitHub profile">
+                    <i class="fab fa-github" aria-hidden="true"></i> GitHub
+                </a>
+            </div>
         </div>
     </header>
 
     <main>
+        <!-- About Section -->
         <section id="about" class="content-section">
             <div class="container">
-                <h2 class="section-title">About Me</h2>
-                <div class="about-wrapper">
-                    <div class="about-image-col">
-                        <img src="WebsiteImages/Profile/ProfileMain.JPG" alt="David Mendoza" class="about-avatar">
-                        <div class="about-socials">
-                            <a href="https://www.linkedin.com/in/davidmendo/"><i class="fab fa-linkedin"></i></a>
-                            <a href="https://github.com/DAVIDMend0"><i class="fab fa-github"></i></a>
+                <div class="section-header">
+                    <span class="section-kicker">Background</span>
+                    <h2 class="section-title">About Me</h2>
+                </div>
+
+                <div class="about-card">
+                    <div class="about-wrapper">
+                        <div class="about-image-col">
+                            <div class="about-avatar-container">
+                                <img src="WebsiteImages/Profile/ProfileMain.webp" alt="David Mendoza portrait" class="about-avatar" width="240" height="240" loading="lazy" decoding="async">
+                            </div>
+                            <div class="about-socials">
+                                <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" class="about-social-icon" aria-label="LinkedIn profile">
+                                    <i class="fab fa-linkedin" aria-hidden="true"></i>
+                                </a>
+                                <a href="https://github.com/DAVIDMend0" target="_blank" rel="noopener noreferrer" class="about-social-icon" aria-label="GitHub profile">
+                                    <i class="fab fa-github" aria-hidden="true"></i>
+                                </a>
+                                <a href="mailto:9davemend@gmail.com" class="about-social-icon" aria-label="Send email">
+                                    <i class="fas fa-envelope" aria-hidden="true"></i>
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="about-text-col">
-                        <h3>David Mendoza</h3>
-                        <p class="role-title">Computer Engineering Student</p>
-                        <p class="lead-text">
-                            I am a Computer Engineering student with a passion for embedded systems and software development. 
-                            Currently looking for internship opportunities to apply my skills in real-world scenarios.
-                        </p>
-                        <p>
-                            My background includes working with hardware sensors, C++, Python, and sustainable technology research. 
-                            I enjoy bridging the gap between hardware and software to create efficient solutions.
-                        </p>
-                        <a href="#contact" class="btn-link">Contact Me &rarr;</a>
+
+                        <div class="about-text-col">
+                            <div class="about-badge">University of Houston</div>
+                            <h3>David Mendoza</h3>
+                            <p class="role-title">Computer Engineering Student</p>
+                            
+                            <p class="lead-text">
+                                I am a Computer Engineering student driven by a passion for embedded systems, digital logic, and low-level software development. 
+                                I am actively seeking internship and cooperative opportunities to apply my skills to real-world engineering challenges.
+                            </p>
+                            
+                            <p>
+                                My experience spans hands-on hardware sensor integration, microcontroller firmware in Embedded C/C++, digital system modeling in Verilog HDL, and sustainable engineering research. I excel at bridging physical hardware and responsive software to construct reliable, high-performance systems.
+                            </p>
+
+                            <div class="about-highlights">
+                                <div class="highlight-item">
+                                    <i class="fas fa-microchip"></i>
+                                    <div>
+                                        <strong>Hardware &amp; Firmware</strong>
+                                        <span>FPGA, ARM Cortex-M4, Sensors</span>
+                                    </div>
+                                </div>
+                                <div class="highlight-item">
+                                    <i class="fas fa-code"></i>
+                                    <div>
+                                        <strong>Software Systems</strong>
+                                        <span>C/C++, Python, Digital Logic</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="about-actions">
+                                <a href="#contact" class="btn btn-primary">Contact Me &rarr;</a>
+                                <a href="WebsiteImages/Profile/DM_Res.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">View Resume &nearr;</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- Technical Skills Section -->
         <section id="skills" class="content-section alt-bg">
             <div class="container">
-                <h2 class="section-title">Technical Skills</h2>
+                <div class="section-header">
+                    <span class="section-kicker">Capabilities</span>
+                    <h2 class="section-title">Technical Skills</h2>
+                </div>
+
                 <div class="skills-grid">
                     
-                    <div class="skill-category">
-                        <h3><i class="fas fa-code"></i> Programming</h3>
-                        <ul class="skill-list">
-                            <li>C / C++</li>
-                            <li>Python (PyTorch, OpenCV)</li>
-                            <li>Verilog (HDL)</li>
-                            <li>MATLAB</li>
-                            <li>HTML / CSS / JavaScript</li>
-                        </ul>
+                    <!-- Programming -->
+                    <div class="skill-category-card">
+                        <div class="category-header">
+                            <div class="category-icon-box">
+                                <i class="fas fa-code" aria-hidden="true"></i>
+                            </div>
+                            <h3>Programming</h3>
+                        </div>
+                        <div class="skill-chips">
+                            <span class="skill-chip">C / C++</span>
+                            <span class="skill-chip">Python</span>
+                            <span class="skill-chip">PyTorch</span>
+                            <span class="skill-chip">OpenCV</span>
+                            <span class="skill-chip">Verilog HDL</span>
+                            <span class="skill-chip">MATLAB</span>
+                            <span class="skill-chip">HTML / CSS / JS</span>
+                        </div>
                     </div>
 
-                    <div class="skill-category">
-                        <h3><i class="fas fa-microchip"></i> Hardware</h3>
-                        <ul class="skill-list">
-                            <li>Arduino & Microcontrollers</li>
-                            <li>FPGA (Intel/Altera)</li>
-                            <li>TIVA C Series (ARM Cortex-M4)</li>
-                            <li>Circuit Design & Soldering</li>
-                            <li>Sensors (IR, LDR, Ultrasonic)</li>
-                        </ul>
+                    <!-- Hardware -->
+                    <div class="skill-category-card">
+                        <div class="category-header">
+                            <div class="category-icon-box">
+                                <i class="fas fa-microchip" aria-hidden="true"></i>
+                            </div>
+                            <h3>Hardware &amp; Embedded</h3>
+                        </div>
+                        <div class="skill-chips">
+                            <span class="skill-chip">TI TIVA C Series (ARM Cortex-M4)</span>
+                            <span class="skill-chip">Intel / Altera FPGA</span>
+                            <span class="skill-chip">Arduino &amp; Microcontrollers</span>
+                            <span class="skill-chip">Circuit Design &amp; Soldering</span>
+                            <span class="skill-chip">Sensors (IR, LDR, Ultrasonic)</span>
+                            <span class="skill-chip">Digital Logic Design</span>
+                        </div>
                     </div>
 
-                    <div class="skill-category">
-                        <h3><i class="fas fa-tools"></i> Tools</h3>
-                        <ul class="skill-list">
-                            <li>Git & GitHub</li>
-                            <li>LabVIEW</li>
-                            <li>Multisim</li>
-                            <li>Keil</li>
-                            <li>Oscilloscopes & Logic Analyzers</li>
-                        </ul>
+                    <!-- Tools -->
+                    <div class="skill-category-card">
+                        <div class="category-header">
+                            <div class="category-icon-box">
+                                <i class="fas fa-toolbox" aria-hidden="true"></i>
+                            </div>
+                            <h3>Tools &amp; Instrumentation</h3>
+                        </div>
+                        <div class="skill-chips">
+                            <span class="skill-chip">Git &amp; GitHub</span>
+                            <span class="skill-chip">Oscilloscopes &amp; Logic Analyzers</span>
+                            <span class="skill-chip">NI LabVIEW</span>
+                            <span class="skill-chip">NI Multisim</span>
+                            <span class="skill-chip">Keil uVision</span>
+                            <span class="skill-chip">Quartus Prime</span>
+                        </div>
                     </div>
 
                 </div>
             </div>
         </section>
 
-        <section id="projects" class="content-section alt-bg">
+        <!-- Projects Section -->
+        <section id="projects" class="content-section">
             <div class="container">
-                <h2 class="section-title">Projects</h2>
+                <div class="section-header">
+                    <span class="section-kicker">Portfolio</span>
+                    <h2 class="section-title">Featured Projects</h2>
+                </div>
+
                 <div class="project-grid">
                     
+                    <!-- 1. Aircraft Tracker -->
                     <div class="project-card">
-                        <img src="WebsiteImages/AircraftTracker/AT_WorldFR.png" alt="Aircraft Tracker" class="project-img">
+                        <div class="card-media-wrap">
+                            <img src="WebsiteImages/AircraftTracker/AT_WorldFR.webp" alt="Aircraft Tracker map preview" class="project-img" width="400" height="220" loading="lazy" decoding="async">
+                            <span class="card-badge">Communications</span>
+                        </div>
                         <div class="card-content">
                             <h3>Aircraft Tracker</h3>
-                            <p>Radio signal interception system detecting aircraft type and callsigns using USB/Antenna hardware.</p>
-                            <div class="tags"><span>RF Signals</span><span>Hardware</span></div>
-                            <button class="btn-link open-modal-btn" data-modal-target="#modal-aircraft">Learn More &rarr;</button>
+                            <p>Radio signal interception system detecting live aircraft type and callsigns using USB RTL-SDR hardware.</p>
+                            <div class="tags">
+                                <span>RF Signals</span>
+                                <span>ADS-B</span>
+                                <span>Signal Processing</span>
+                            </div>
+                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-aircraft">
+                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
+                    <!-- 2. Self Balancing Robot -->
                     <div class="project-card">
-                        <img src="WebsiteImages/SelfBalancingRobot/SBR_V1.JPG" alt="Self Balancing Robot" class="project-img">
+                        <div class="card-media-wrap">
+                            <img src="WebsiteImages/SelfBalancingRobot/SBR_V1.webp" alt="Self Balancing Robot chassis" class="project-img" width="400" height="220" loading="lazy" decoding="async">
+                            <span class="card-badge">Robotics</span>
+                        </div>
                         <div class="card-content">
                             <h3>Self Balancing Robot</h3>
-                            <p>Embedded system project using a TIVA board to balance a 2-wheel chassis via sensor feedback.</p>
-                            <div class="tags"><span>Embedded C</span><span>TIVA Board</span><span>Robotics</span></div>
-                            <button class="btn-link open-modal-btn" data-modal-target="#modal-balance">Learn More &rarr;</button>
+                            <p>Inverted-pendulum autonomous vehicle utilizing a TI TIVA LaunchPad and PID control loop for stability.</p>
+                            <div class="tags">
+                                <span>Embedded C</span>
+                                <span>PID Control</span>
+                                <span>ARM Cortex-M4</span>
+                            </div>
+                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-balance">
+                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
+                    <!-- 3. Water Monitoring -->
                     <div class="project-card">
-                        <img src="WebsiteImages/WaterMonitoring/WM_LVF.png" alt="Water Monitoring" class="project-img">
+                        <div class="card-media-wrap">
+                            <img src="WebsiteImages/WaterMonitoring/WM_LVF.webp" alt="Water Monitoring system interface" class="project-img" width="400" height="220" loading="lazy" decoding="async">
+                            <span class="card-badge">IoT</span>
+                        </div>
                         <div class="card-content">
                             <h3>Water Monitoring System</h3>
-                            <p>IoT solution gathering sensor data via Arduino, processing in LabVIEW, and displaying on the web.</p>
-                            <div class="tags"><span>IoT</span><span>LabVIEW</span><span>Arduino</span></div>
-                            <button class="btn-link open-modal-btn" data-modal-target="#modal-water">Learn More &rarr;</button>
+                            <p>IoT turbidity and temperature telemetry solution pairing Arduino ADC processing with LabVIEW and cloud sync.</p>
+                            <div class="tags">
+                                <span>IoT</span>
+                                <span>LabVIEW</span>
+                                <span>Sensors</span>
+                            </div>
+                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-water">
+                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="project-card">
-                        <img src="WebsiteImages/ReactionTimer/RT_BFront.JPEG" alt="Reaction Timer" class="project-img">
+                    <!-- 4. FPGA Reaction Timer -->
+                    <div class="project-card featured-project">
+                        <div class="card-media-wrap">
+                            <img src="WebsiteImages/ReactionTimer/RT_BFront.webp" alt="FPGA Reaction Timer board" class="project-img" width="400" height="220" loading="lazy" decoding="async">
+                            <span class="card-badge highlight-badge">Interactive Demo</span>
+                        </div>
                         <div class="card-content">
                             <h3>FPGA Reaction Timer</h3>
-                            <p>Verilog-based digital timer on Intel FPGA simulating race start lights with millisecond precision.</p>
-                            <div class="tags"><span>Verilog</span><span>FPGA</span><span>Digital Logic</span></div>
-                            <button class="btn-link open-modal-btn" data-modal-target="#modal-timer">Learn More &rarr;</button>
+                            <p>Digital timing circuit designed in Verilog HDL for an Intel FPGA with millisecond 7-segment display logic.</p>
+                            <div class="tags">
+                                <span>Verilog HDL</span>
+                                <span>Intel FPGA</span>
+                                <span>Digital Logic</span>
+                            </div>
+                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-timer">
+                                <span>Play Simulation &amp; Details</span> <i class="fas fa-gamepad"></i>
+                            </button>
                         </div>
                     </div>
 
+                    <!-- 5. Smart Parking -->
                     <div class="project-card">
-                        <img src="WebsiteImages/SmartParking/SP_Top.jpg" alt="Smart Parking" class="project-img">
+                        <div class="card-media-wrap">
+                            <img src="WebsiteImages/SmartParking/SP_Top.webp" alt="Smart Parking system top view" class="project-img" width="400" height="220" loading="lazy" decoding="async">
+                            <span class="card-badge">Automation</span>
+                        </div>
                         <div class="card-content">
                             <h3>Smart Parking System</h3>
-                            <p>Automated parking management system using infrared sensors to track occupancy and guide drivers.</p>
-                            <div class="tags"><span>Arduino</span><span>Sensors</span><span>Digital Systems</span></div>
-                            <button class="btn-link open-modal-btn" data-modal-target="#modal-parking">Learn More &rarr;</button>
+                            <p>Automated facility occupancy tracker featuring IR obstruction sensors and real-time I2C LCD driver feedback.</p>
+                            <div class="tags">
+                                <span>Arduino</span>
+                                <span>IR Sensors</span>
+                                <span>I2C Display</span>
+                            </div>
+                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-parking">
+                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
+                    <!-- 6. Line Following Robot -->
                     <div class="project-card">
-                        <img src="WebsiteImages/LineRobot/LF_CompleteA.JPEG" alt="Line Following Robot" class="project-img">
+                        <div class="card-media-wrap">
+                            <img src="WebsiteImages/LineRobot/LF_CompleteA.webp" alt="Line Following Robot complete build" class="project-img" width="400" height="220" loading="lazy" decoding="async">
+                            <span class="card-badge">Robotics</span>
+                        </div>
                         <div class="card-content">
                             <h3>Line Following Robot</h3>
-                            <p>Autonomous vehicle using Arduino and IR sensors to track and follow a path.</p>
-                            <div class="tags"><span>Arduino</span><span>Sensors</span><span>Control</span></div>
-                            <button class="btn-link open-modal-btn" data-modal-target="#modal-line">Learn More &rarr;</button>
+                            <p>Autonomous mobile platform implementing differential steering with IR reflectance comparators and an L298N driver.</p>
+                            <div class="tags">
+                                <span>Embedded C</span>
+                                <span>Motor Control</span>
+                                <span>Optoelectronics</span>
+                            </div>
+                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-line">
+                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
+                    <!-- 7. Laser Security -->
                     <div class="project-card">
-                        <img src="WebsiteImages/LaserSecurity/SL_House.PNG" alt="Laser Security" class="project-img">
+                        <div class="card-media-wrap">
+                            <img src="WebsiteImages/LaserSecurity/SL_House.webp" alt="Laser Security system enclosure" class="project-img" width="400" height="220" loading="lazy" decoding="async">
+                            <span class="card-badge">Analog</span>
+                        </div>
                         <div class="card-content">
                             <h3>Laser Security System</h3>
-                            <p>Analog security alarm triggered by beam interruption, built using LDRs and lasers.</p>
-                            <div class="tags"><span>LDR</span><span>Circuits</span><span>Analog</span></div>
-                            <button class="btn-link open-modal-btn" data-modal-target="#modal-laser">Learn More &rarr;</button>
+                            <p>Discrete analog tripwire system built using LDR voltage dividers, BJT switching stages, and acoustic alarm transducers.</p>
+                            <div class="tags">
+                                <span>Discrete Circuits</span>
+                                <span>BJT Transistors</span>
+                                <span>LDR Sensors</span>
+                            </div>
+                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-laser">
+                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
+                    <!-- 8. Tiny-VGG Classifier -->
                     <div class="project-card">
-                        <img src="WebsiteImages/SmallVGG/TVGG_Results.png" alt="Tiny-VGG Results" class="project-img">
+                        <div class="card-media-wrap">
+                            <img src="WebsiteImages/SmallVGG/TVGG_Results.webp" alt="Tiny-VGG Classifier performance results" class="project-img" width="400" height="220" loading="lazy" decoding="async">
+                            <span class="card-badge">Machine Learning</span>
+                        </div>
                         <div class="card-content">
                             <h3>Tiny-VGG Classifier</h3>
-                            <p>A lightweight Computer Vision model implementation using PyTorch to classify images with high accuracy.</p>
-                            <div class="tags"><span>Python</span><span>PyTorch</span><span>Computer Vision</span></div>
-                            <button class="btn-link open-modal-btn" data-modal-target="#modal-vgg">Learn More &rarr;</button>
+                            <p>PyTorch deep learning implementation scaling down the VGG architecture for accelerated computer vision training.</p>
+                            <div class="tags">
+                                <span>Python</span>
+                                <span>PyTorch</span>
+                                <span>Computer Vision</span>
+                            </div>
+                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-vgg">
+                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -214,63 +424,87 @@
             </div>
         </section>
 
-        <section id="contact" class="content-section">
+        <!-- Contact Section -->
+        <section id="contact" class="content-section alt-bg">
             <div class="container narrow">
-                <h2 class="section-title">Contact Me</h2>
-                <div class="contact-info-block">
-                    <p class="contact-details">
-                        <strong>Email:</strong> 
-                        <a href="mailto:dfmendo2@CougarNet.UH.EDU">dfmendo2@CougarNet.UH.EDU</a> 
-                        <span class="separator">||</span> 
-                        <a href="mailto:9davemend@gmail.com">9davemend@gmail.com</a>
-                    </p>
-                    <!--
-                    <p class="form-instruction">...or use the following form</p>
-                    -->
+                <div class="section-header">
+                    <span class="section-kicker">Get In Touch</span>
+                    <h2 class="section-title">Contact Me</h2>
+                    <p class="section-subtitle">Interested in collaborating or discussing engineering opportunities? Feel free to reach out directly.</p>
                 </div>
-                <!--
-                <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="contact-form">
-                    <div class="form-row">
-                        <div class="input-col">
-                            <input type="text" name="name" placeholder="Your Name *" required>
-                            <input type="email" name="email" placeholder="Your Email *" required>
-                            <input type="tel" name="phone" placeholder="Your Phone (Optional)">
+
+                <div class="contact-cards-grid">
+                    
+                    <a href="mailto:9davemend@gmail.com" class="contact-card">
+                        <div class="contact-card-icon">
+                            <i class="fas fa-envelope"></i>
                         </div>
-                        <div class="msg-col">
-                            <textarea name="message" placeholder="Your Message *" required></textarea>
+                        <div class="contact-card-text">
+                            <strong>Personal Email</strong>
+                            <span>9davemend@gmail.com</span>
                         </div>
-                    </div>
-                    <button type="submit" class="btn-submit">Send Message</button>
-                </form>
-                -->
+                        <i class="fas fa-arrow-right contact-card-arrow"></i>
+                    </a>
+
+                    <a href="mailto:dfmendo2@CougarNet.UH.EDU" class="contact-card">
+                        <div class="contact-card-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="contact-card-text">
+                            <strong>University Email</strong>
+                            <span>dfmendo2@CougarNet.UH.EDU</span>
+                        </div>
+                        <i class="fas fa-arrow-right contact-card-arrow"></i>
+                    </a>
+
+                    <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" class="contact-card">
+                        <div class="contact-card-icon">
+                            <i class="fab fa-linkedin"></i>
+                        </div>
+                        <div class="contact-card-text">
+                            <strong>LinkedIn Network</strong>
+                            <span>linkedin.com/in/davidmendo</span>
+                        </div>
+                        <i class="fas fa-arrow-up-right-from-square contact-card-arrow"></i>
+                    </a>
+
+                </div>
             </div>
         </section>
     </main>
 
+    <!-- Footer -->
     <footer>
-        <p>&copy; 2026 David Mendoza</p>
+        <div class="container footer-content">
+            <div class="footer-center">
+                <strong>DAVID MENDOZA</strong> &bull; Computer Engineering Portfolio
+            </div>
+        </div>
     </footer>
 
     <div class="modal-overlay" id="modal-overlay"></div>
 
-    <div class="modal" id="modal-aircraft">
-        <button class="modal-close-btn">&times;</button>
-        <div class="modal-header"><h3>Aircraft Tracker</h3></div>
+    <!-- MODALS -->
+
+    <!-- MODAL: Aircraft Tracker -->
+    <div class="modal" id="modal-aircraft" role="dialog" aria-modal="true" aria-labelledby="modal-title-aircraft" tabindex="-1">
+        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-header"><h3 id="modal-title-aircraft">Aircraft Tracker</h3></div>
         <div class="modal-body">
             <div class="carousel">
                 <div class="carousel-track-container">
                     <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/AircraftTracker/AT_WorldFR.png" alt="Flight Map"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/AircraftTracker/AT_IniSetUp.JPG" alt="Setup"></li>
+                        <li class="carousel-slide current-slide"><img src="WebsiteImages/AircraftTracker/AT_WorldFR.webp" alt="Flight Map" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/AircraftTracker/AT_IniSetUp.webp" alt="Setup" loading="lazy" decoding="async"></li>
                     </ul>
                 </div>
-                <button class="carousel-button carousel-button--left">&lt;</button>
-                <button class="carousel-button carousel-button--right">&gt;</button>
+                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
             </div>
 
             <p><strong>Overview:</strong> Developed for the Circuit Communications class, this project utilizes a USB RTL-SDR dongle connected to an antenna to capture live radio frequency signals from nearby aircraft.</p>
             <p><strong>Technical Description:</strong> The system intercepts Automatic Dependent Surveillance–Broadcast (ADS-B) signals at 1090 MHz. By processing these raw IQ signals, the system extracts critical data frames containing the aircraft's ICAO address, callsign, altitude, and velocity. This project focused purely on hardware configuration and signal processing theory.</p>
-            <p><em>Note: World Map image courtesy of <a href="https://www.flightradar24.com/blog/inside-flightradar24/pull-down-menu/" target="_blank" style="color:var(--accent-color);">FlightRadar24</a>.</em></p>
+            <p><em>Note: World Map image courtesy of <a href="https://www.flightradar24.com/blog/inside-flightradar24/pull-down-menu/" target="_blank" rel="noopener noreferrer" style="color:var(--accent-color);">FlightRadar24</a>.</em></p>
 
             <div class="modal-media-section">
                 <h4>Project Demos</h4>
@@ -278,7 +512,7 @@
                     <div class="carousel-track-container">
                         <ul class="carousel-track">
                             <li class="carousel-slide current-slide">
-                                <video controls><source src="WebsiteImages/AircraftTracker/AT_Vid.mp4" type="video/mp4"></video>
+                                <video controls preload="none"><source src="WebsiteImages/AircraftTracker/AT_Vid.mp4" type="video/mp4"></video>
                             </li>
                         </ul>
                     </div>
@@ -287,22 +521,23 @@
         </div>
     </div>
 
-    <div class="modal" id="modal-balance">
-        <button class="modal-close-btn">&times;</button>
-        <div class="modal-header"><h3>Self Balancing Robot</h3></div>
+    <!-- MODAL: Self Balancing Robot -->
+    <div class="modal" id="modal-balance" role="dialog" aria-modal="true" aria-labelledby="modal-title-balance" tabindex="-1">
+        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-header"><h3 id="modal-title-balance">Self Balancing Robot</h3></div>
         <div class="modal-body">
             <div class="carousel">
                 <div class="carousel-track-container">
                     <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V1.JPG" alt="V1"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V2.JPG" alt="V2"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V3.JPG" alt="V3"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V4.JPG" alt="V4"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V4Neck.JPG" alt="V4 Neck"></li>
+                        <li class="carousel-slide current-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V1.webp" alt="V1" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V2.webp" alt="V2" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V3.webp" alt="V3" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V4.webp" alt="V4" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V4Neck.webp" alt="V4 Neck" loading="lazy" decoding="async"></li>
                     </ul>
                 </div>
-                <button class="carousel-button carousel-button--left">&lt;</button>
-                <button class="carousel-button carousel-button--right">&gt;</button>
+                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
             </div>
 
             <p><strong>Overview:</strong> Created for the Embedded Systems class, this robot repurposes a 3-wheel chassis into a 2-wheel self-balancing vehicle.</p>
@@ -313,35 +548,36 @@
                 <div class="carousel">
                     <div class="carousel-track-container">
                         <ul class="carousel-track">
-                            <li class="carousel-slide current-slide"><video controls><source src="WebsiteImages/SelfBalancingRobot/SBR_Vid1.MP4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls><source src="WebsiteImages/SelfBalancingRobot/SBR_Vid2.MP4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls><source src="WebsiteImages/SelfBalancingRobot/SBR_Vid3.MP4" type="video/mp4"></video></li>
+                            <li class="carousel-slide current-slide"><video controls preload="none"><source src="WebsiteImages/SelfBalancingRobot/SBR_Vid1.MP4" type="video/mp4"></video></li>
+                            <li class="carousel-slide"><video controls preload="none"><source src="WebsiteImages/SelfBalancingRobot/SBR_Vid2.MP4" type="video/mp4"></video></li>
+                            <li class="carousel-slide"><video controls preload="none"><source src="WebsiteImages/SelfBalancingRobot/SBR_Vid3.MP4" type="video/mp4"></video></li>
                         </ul>
                     </div>
-                    <button class="carousel-button carousel-button--left">&lt;</button>
-                    <button class="carousel-button carousel-button--right">&gt;</button>
+                    <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                    <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="modal-water">
-        <button class="modal-close-btn">&times;</button>
-        <div class="modal-header"><h3>Water Monitoring System</h3></div>
+    <!-- MODAL: Water Monitoring -->
+    <div class="modal" id="modal-water" role="dialog" aria-modal="true" aria-labelledby="modal-title-water" tabindex="-1">
+        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-header"><h3 id="modal-title-water">Water Monitoring System</h3></div>
         <div class="modal-body">
             <div class="carousel">
                 <div class="carousel-track-container">
                     <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/WaterMonitoring/WM_LVF.png" alt="LabView"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_Circ.png" alt="Circuit"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_Disp.JPG" alt="Display"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_DispV2.png" alt="Display V2"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_LVnA.jpg" alt="Block Diagram"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_WebDisp.png" alt="Web"></li>
+                        <li class="carousel-slide current-slide"><img src="WebsiteImages/WaterMonitoring/WM_LVF.webp" alt="LabView" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_Circ.webp" alt="Circuit" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_Disp.webp" alt="Display" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_DispV2.webp" alt="Display V2" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_LVnA.webp" alt="Block Diagram" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_WebDisp.webp" alt="Web" loading="lazy" decoding="async"></li>
                     </ul>
                 </div>
-                <button class="carousel-button carousel-button--left">&lt;</button>
-                <button class="carousel-button carousel-button--right">&gt;</button>
+                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
             </div>
 
             <p><strong>Overview:</strong> A Sensor Applications class project designed to read and visualize water quality data remotely.</p>
@@ -349,31 +585,33 @@
         </div>
     </div>
 
-    <div class="modal" id="modal-timer">
-        <button class="modal-close-btn">&times;</button>
-        <div class="modal-header"><h3>FPGA Reaction Timer</h3></div>
+    <!-- MODAL: Reaction Timer -->
+    <div class="modal" id="modal-timer" role="dialog" aria-modal="true" aria-labelledby="modal-title-timer" tabindex="-1">
+        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-header"><h3 id="modal-title-timer">FPGA Reaction Timer</h3></div>
         <div class="modal-body">
             <div class="carousel">
                 <div class="carousel-track-container">
                     <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/ReactionTimer/RT_BFront.JPEG" alt="Board"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/ReactionTimer/RT_Assignments.png" alt="Pins"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/ReactionTimer/RT_ExampleF1.jpg" alt="F1"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/ReactionTimer/RT_NetV.png" alt="Netlist"></li>
+                        <li class="carousel-slide current-slide"><img src="WebsiteImages/ReactionTimer/RT_BFront.webp" alt="Board" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/ReactionTimer/RT_Assignments.webp" alt="Pins" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/ReactionTimer/RT_ExampleF1.jpg" alt="F1" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/ReactionTimer/RT_NetV.webp" alt="Netlist" loading="lazy" decoding="async"></li>
                     </ul>
                 </div>
-                <button class="carousel-button carousel-button--left">&lt;</button>
-                <button class="carousel-button carousel-button--right">&gt;</button>
+                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
             </div>
 
             <p><strong>Overview:</strong> A Microprocessor Architecture project built on an Intel FPGA using Verilog, simulating the "start lights" found in racing.</p>
             <p><strong>Technical Description:</strong> Implemented using Verilog HDL. The logic includes a Linear Feedback Shift Register (LFSR) for random wait times, a millisecond counter driven by the board's 50MHz clock, and a Binary-to-BCD converter to drive the 7-segment displays. State machines manage the IDLE, COUNTDOWN, and TIMING states.</p>
-            <p><em>Note: Starting Light reference image from <a href="https://pixelcom.io/motorsport/circuits/starting-lights" target="_blank" style="color:var(--accent-color);">PixelCom</a>.</em></p>
+            <p><em>Note: Starting Light reference image from <a href="https://pixelcom.io/motorsport/circuits/starting-lights" target="_blank" rel="noopener noreferrer" style="color:var(--accent-color);">PixelCom</a>.</em></p>
 
             <div class="modal-media-section">
-                <h4>Interactive Simulation</h4>
-                <p>The following is an interactive simulation of how the project worked on the FPGA board!</p>
-                <p>Press "Start Sequence" to let the countdown begin. Once all four red lights turn to green, press "Stop!" to get your reaction time in milliseconds!</p>
+                <h4>Interactive Hardware Simulation</h4>
+                <p>Experience how the race start-light logic executed on the physical FPGA:</p>
+                <p>Press <strong>"Start Sequence"</strong>. Watch the 4 lights illuminate. As soon as they flash GREEN, hit <strong>"STOP!"</strong> as fast as you can to measure your reaction time!</p>
+                
                 <div class="reaction-game-container">
                     <div class="game-lights-row">
                         <div class="react-light" id="light-1"></div>
@@ -394,20 +632,21 @@
         </div>
     </div>
 
-    <div class="modal" id="modal-parking">
-        <button class="modal-close-btn">&times;</button>
-        <div class="modal-header"><h3>Smart Parking System</h3></div>
+    <!-- MODAL: Smart Parking -->
+    <div class="modal" id="modal-parking" role="dialog" aria-modal="true" aria-labelledby="modal-title-parking" tabindex="-1">
+        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-header"><h3 id="modal-title-parking">Smart Parking System</h3></div>
         <div class="modal-body">
             <div class="carousel">
                 <div class="carousel-track-container">
                     <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/SmartParking/SP_Top.jpg" alt="Top"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SmartParking/SP_BottomV1.jpg" alt="Bottom"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SmartParking/SP_Circ.png" alt="Circuit"></li>
+                        <li class="carousel-slide current-slide"><img src="WebsiteImages/SmartParking/SP_Top.webp" alt="Top" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/SmartParking/SP_BottomV1.webp" alt="Bottom" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/SmartParking/SP_Circ.webp" alt="Circuit" loading="lazy" decoding="async"></li>
                     </ul>
                 </div>
-                <button class="carousel-button carousel-button--left">&lt;</button>
-                <button class="carousel-button carousel-button--right">&gt;</button>
+                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
             </div>
 
             <p><strong>Overview:</strong> Developed for the Digital Systems class, this system automates the tracking of parking availability using an Arduino and infrared sensors.</p>
@@ -418,7 +657,7 @@
                 <div class="carousel">
                     <div class="carousel-track-container">
                         <ul class="carousel-track">
-                            <li class="carousel-slide current-slide"><video controls><source src="WebsiteImages/SmartParking/SP_Vid.MP4" type="video/mp4"></video></li>
+                            <li class="carousel-slide current-slide"><video controls preload="none"><source src="WebsiteImages/SmartParking/SP_Vid.MP4" type="video/mp4"></video></li>
                         </ul>
                     </div>
                 </div>
@@ -426,21 +665,22 @@
         </div>
     </div>
 
-    <div class="modal" id="modal-line">
-        <button class="modal-close-btn">&times;</button>
-        <div class="modal-header"><h3>Line Following Robot</h3></div>
+    <!-- MODAL: Line Following Robot -->
+    <div class="modal" id="modal-line" role="dialog" aria-modal="true" aria-labelledby="modal-title-line" tabindex="-1">
+        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-header"><h3 id="modal-title-line">Line Following Robot</h3></div>
         <div class="modal-body">
             <div class="carousel">
                 <div class="carousel-track-container">
                     <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/LineRobot/LF_CompleteA.JPEG" alt="Top"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/LineRobot/LF_CompleteAF.JPEG" alt="Front"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/LineRobot/LF_PV1.JPEG" alt="P1"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/LineRobot/LF_PV2.JPEG" alt="P2"></li>
+                        <li class="carousel-slide current-slide"><img src="WebsiteImages/LineRobot/LF_CompleteA.webp" alt="Top" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/LineRobot/LF_CompleteAF.webp" alt="Front" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/LineRobot/LF_PV1.webp" alt="P1" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/LineRobot/LF_PV2.webp" alt="P2" loading="lazy" decoding="async"></li>
                     </ul>
                 </div>
-                <button class="carousel-button carousel-button--left">&lt;</button>
-                <button class="carousel-button carousel-button--right">&gt;</button>
+                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
             </div>
 
             <p><strong>Overview:</strong> Developed for Circuits 2, this autonomous robot navigates a track by detecting contrast between the floor and a line.</p>
@@ -451,28 +691,29 @@
                 <div class="carousel">
                     <div class="carousel-track-container">
                         <ul class="carousel-track">
-                            <li class="carousel-slide current-slide"><video controls><source src="WebsiteImages/LineRobot/LF_Vid.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls><source src="WebsiteImages/LineRobot/LF_Func.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls><source src="WebsiteImages/LineRobot/LF_FuncDS.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls><source src="WebsiteImages/LineRobot/LF_HeightLim.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls><source src="WebsiteImages/LineRobot/LF_SensorFunc.mp4" type="video/mp4"></video></li>
+                            <li class="carousel-slide current-slide"><video controls preload="none"><source src="WebsiteImages/LineRobot/LF_Vid.mp4" type="video/mp4"></video></li>
+                            <li class="carousel-slide"><video controls preload="none"><source src="WebsiteImages/LineRobot/LF_Func.mp4" type="video/mp4"></video></li>
+                            <li class="carousel-slide"><video controls preload="none"><source src="WebsiteImages/LineRobot/LF_FuncDS.mp4" type="video/mp4"></video></li>
+                            <li class="carousel-slide"><video controls preload="none"><source src="WebsiteImages/LineRobot/LF_HeightLim.mp4" type="video/mp4"></video></li>
+                            <li class="carousel-slide"><video controls preload="none"><source src="WebsiteImages/LineRobot/LF_SensorFunc.mp4" type="video/mp4"></video></li>
                         </ul>
                     </div>
-                    <button class="carousel-button carousel-button--left">&lt;</button>
-                    <button class="carousel-button carousel-button--right">&gt;</button>
+                    <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                    <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="modal-laser">
-        <button class="modal-close-btn">&times;</button>
-        <div class="modal-header"><h3>Laser Security System</h3></div>
+    <!-- MODAL: Laser Security -->
+    <div class="modal" id="modal-laser" role="dialog" aria-modal="true" aria-labelledby="modal-title-laser" tabindex="-1">
+        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-header"><h3 id="modal-title-laser">Laser Security System</h3></div>
         <div class="modal-body">
             <div class="carousel">
                 <div class="carousel-track-container">
                     <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/LaserSecurity/SL_House.PNG" alt="House"></li>
+                        <li class="carousel-slide current-slide"><img src="WebsiteImages/LaserSecurity/SL_House.webp" alt="House" loading="lazy" decoding="async"></li>
                     </ul>
                 </div>
             </div>
@@ -485,32 +726,33 @@
                 <div class="carousel">
                     <div class="carousel-track-container">
                         <ul class="carousel-track">
-                            <li class="carousel-slide current-slide"><video controls><source src="WebsiteImages/LaserSecurity/SL_Assembly.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls><source src="WebsiteImages/LaserSecurity/SL_FA.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls><source src="WebsiteImages/LaserSecurity/SL_Inside.mp4" type="video/mp4"></video></li>
+                            <li class="carousel-slide current-slide"><video controls preload="none"><source src="WebsiteImages/LaserSecurity/SL_Assembly.mp4" type="video/mp4"></video></li>
+                            <li class="carousel-slide"><video controls preload="none"><source src="WebsiteImages/LaserSecurity/SL_FA.mp4" type="video/mp4"></video></li>
+                            <li class="carousel-slide"><video controls preload="none"><source src="WebsiteImages/LaserSecurity/SL_Inside.mp4" type="video/mp4"></video></li>
                         </ul>
                     </div>
-                    <button class="carousel-button carousel-button--left">&lt;</button>
-                    <button class="carousel-button carousel-button--right">&gt;</button>
+                    <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                    <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="modal-vgg">
-        <button class="modal-close-btn">&times;</button>
-        <div class="modal-header"><h3>Tiny-VGG Classifier</h3></div>
+    <!-- MODAL: Tiny-VGG Classifier -->
+    <div class="modal" id="modal-vgg" role="dialog" aria-modal="true" aria-labelledby="modal-title-vgg" tabindex="-1">
+        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-header"><h3 id="modal-title-vgg">Tiny-VGG Classifier</h3></div>
         <div class="modal-body">
             <div class="carousel">
                 <div class="carousel-track-container">
                     <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/SmallVGG/TVGG_Results.png" alt="Results"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SmallVGG/TVGG_Chart.png" alt="Training Chart"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SmallVGG/VGG_Arch.png" alt="Architecture"></li>
+                        <li class="carousel-slide current-slide"><img src="WebsiteImages/SmallVGG/TVGG_Results.webp" alt="Results" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/SmallVGG/TVGG_Chart.webp" alt="Training Chart" loading="lazy" decoding="async"></li>
+                        <li class="carousel-slide"><img src="WebsiteImages/SmallVGG/VGG_Arch.webp" alt="Architecture" loading="lazy" decoding="async"></li>
                     </ul>
                 </div>
-                <button class="carousel-button carousel-button--left">&lt;</button>
-                <button class="carousel-button carousel-button--right">&gt;</button>
+                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
+                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
             </div>
 
             <p><strong>Overview:</strong> A lightweight Computer Vision model implementation using PyTorch to classify images with high accuracy.</p>

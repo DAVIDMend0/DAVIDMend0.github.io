@@ -1,124 +1,136 @@
 document.addEventListener("DOMContentLoaded", function() {
     
-    // --- 1. Navbar & Hamburger Logic ---
+    // --- 1. Navbar, Hamburger & Scrollspy Logic ---
     const navbar = document.getElementById("navbar");
     const hamburger = document.querySelector(".hamburger");
     const navMenu = document.querySelector(".nav-links");
+    const sections = document.querySelectorAll("header[id], section[id]");
+    const navLinks = document.querySelectorAll(".nav-links a[href^='#']");
 
-    window.onscroll = function() {
-        if (window.scrollY > 20) {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    function updateActiveNav() {
+        let currentId = "";
+        const scrollPosition = window.scrollY + 120;
+
+        sections.forEach(section => {
+            const top = section.offsetTop;
+            const height = section.offsetHeight;
+            if (scrollPosition >= top && scrollPosition < top + height) {
+                currentId = section.getAttribute("id");
+            }
+        });
+
+        navLinks.forEach(link => {
+            const href = link.getAttribute("href");
+            if (href === `#${currentId}`) {
+                link.classList.add("active");
+            } else {
+                link.classList.remove("active");
+            }
+        });
+    }
+
+    function handleScroll() {
+        if (lastScrollY > 20) {
             navbar.classList.add("scrolled");
         } else {
             navbar.classList.remove("scrolled");
         }
-    };
+        updateActiveNav();
+        ticking = false;
+    }
 
-    hamburger.addEventListener("click", () => {
-        hamburger.classList.toggle("active");
-        navMenu.classList.toggle("active");
-    });
+    window.addEventListener("scroll", function() {
+        lastScrollY = window.scrollY;
+        if (!ticking) {
+            window.requestAnimationFrame(handleScroll);
+            ticking = true;
+        }
+    }, { passive: true });
+    handleScroll(); // Initial check
 
-    // Close menu when clicking a link
-    document.querySelectorAll(".nav-links a").forEach(n => n.addEventListener("click", () => {
-        hamburger.classList.remove("active");
-        navMenu.classList.remove("active");
-    }));
+    if (hamburger && navMenu) {
+        function toggleHamburger(open) {
+            const isActive = open !== undefined ? open : !hamburger.classList.contains("active");
+            hamburger.classList.toggle("active", isActive);
+            navMenu.classList.toggle("active", isActive);
+            hamburger.setAttribute("aria-expanded", String(isActive));
+        }
+
+        hamburger.addEventListener("click", () => toggleHamburger());
+
+        // Close menu when clicking any nav link
+        document.querySelectorAll(".nav-links a").forEach(link => {
+            link.addEventListener("click", () => toggleHamburger(false));
+        });
+
+        // Close menu on click outside
+        document.addEventListener("click", (e) => {
+            if (navMenu.classList.contains("active") && !navbar.contains(e.target)) {
+                toggleHamburger(false);
+            }
+        });
+    }
 
     // --- 2. Theme Toggle ---
     const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-    const body = document.body;
-    const currentTheme = localStorage.getItem('theme');
-    if (currentTheme) {
-        if (currentTheme === 'light') {
-            body.classList.add('light-mode');
-            toggleSwitch.checked = false; 
-        } else {
-            body.classList.remove('light-mode');
-            toggleSwitch.checked = true;
-        }
+    const rootEl = document.documentElement;
+    const bodyEl = document.body;
+
+    const isCurrentlyLight = rootEl.classList.contains("light-mode");
+    if (isCurrentlyLight) {
+        bodyEl.classList.add("light-mode");
     } else {
-        // Default to Light Mode
-        body.classList.add('light-mode');
-        toggleSwitch.checked = false;
-    }
-    toggleSwitch.addEventListener('change', function(e) {
-        if (e.target.checked) {
-            body.classList.remove('light-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            body.classList.add('light-mode');
-            localStorage.setItem('theme', 'light');
-        }
-    });
-
-    // --- 3. MODAL LOGIC ---
-    const openModalButtons = document.querySelectorAll('.open-modal-btn');
-    const closeModalButtons = document.querySelectorAll('.modal-close-btn');
-    const overlay = document.getElementById('modal-overlay');
-
-    function openModal(modal) {
-        if (modal == null) return;
-        modal.classList.add('active');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden'; 
+        bodyEl.classList.remove("light-mode");
     }
 
-    function closeModal(modal) {
-        if (modal == null) return;
-        modal.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-        const videos = modal.querySelectorAll('video');
-        videos.forEach(v => v.pause());
+    if (toggleSwitch) {
+        toggleSwitch.checked = !isCurrentlyLight;
+
+        toggleSwitch.addEventListener("change", function(e) {
+            if (e.target.checked) {
+                rootEl.classList.remove("light-mode");
+                bodyEl.classList.remove("light-mode");
+                localStorage.setItem("theme", "dark");
+            } else {
+                rootEl.classList.add("light-mode");
+                bodyEl.classList.add("light-mode");
+                localStorage.setItem("theme", "light");
+            }
+        });
     }
 
-    openModalButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const modalId = button.getAttribute('data-modal-target');
-            const modal = document.querySelector(modalId);
-            openModal(modal);
-        });
-    });
+    // --- 3. Carousel Controllers Registry ---
+    const carouselControllers = new Map();
 
-    closeModalButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const modal = button.closest('.modal');
-            closeModal(modal);
-        });
-    });
-
-    overlay.addEventListener('click', () => {
-        const modals = document.querySelectorAll('.modal.active');
-        modals.forEach(modal => {
-            closeModal(modal);
-        });
-    });
-
-    // --- 4. CAROUSEL LOGIC (Auto-play + Swipe) ---
     const carousels = document.querySelectorAll('.carousel');
-
     carousels.forEach(carousel => {
         const track = carousel.querySelector('.carousel-track');
+        if (!track) return;
+
         const slides = Array.from(track.children);
         const nextButton = carousel.querySelector('.carousel-button--right');
         const prevButton = carousel.querySelector('.carousel-button--left');
         let currentIndex = 0;
-        let autoPlayInterval;
+        let autoPlayInterval = null;
 
-        // Create Dots
+        // Create Navigation Dots
         const nav = document.createElement('div');
         nav.classList.add('carousel-nav');
         carousel.appendChild(nav);
 
         if (slides.length <= 1) {
-            if(nextButton) nextButton.style.display = 'none';
-            if(prevButton) prevButton.style.display = 'none';
+            if (nextButton) nextButton.style.display = 'none';
+            if (prevButton) prevButton.style.display = 'none';
             nav.style.display = 'none';
         }
 
         slides.forEach((_, index) => {
             const indicator = document.createElement('button');
             indicator.classList.add('carousel-indicator');
+            indicator.setAttribute('aria-label', `Go to slide ${index + 1}`);
             if (index === 0) indicator.classList.add('current-slide');
             nav.appendChild(indicator);
             indicator.addEventListener('click', () => {
@@ -140,18 +152,17 @@ document.addEventListener("DOMContentLoaded", function() {
                     slide.style.display = 'none';
                     slide.style.opacity = '0';
                     const video = slide.querySelector('video');
-                    if(video) video.pause();
+                    if (video) video.pause();
                 }
             });
             dots.forEach((dot, idx) => {
-                if (idx === targetIndex) dot.classList.add('current-slide');
-                else dot.classList.remove('current-slide');
+                dot.classList.toggle('current-slide', idx === targetIndex);
             });
             currentIndex = targetIndex;
         };
 
-        // --- Auto Play (30s) ---
         const startTimer = () => {
+            clearInterval(autoPlayInterval);
             if (slides.length > 1) {
                 autoPlayInterval = setInterval(() => {
                     const newIndex = (currentIndex + 1) % slides.length;
@@ -160,17 +171,19 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         };
 
-        const resetTimer = () => {
+        const stopTimer = () => {
             clearInterval(autoPlayInterval);
+            autoPlayInterval = null;
+        };
+
+        const resetTimer = () => {
+            stopTimer();
             startTimer();
         };
 
-        // Initialize
         moveToSlide(0);
-        startTimer();
 
-        // Button Listeners
-        if(nextButton) {
+        if (nextButton) {
             nextButton.addEventListener('click', () => {
                 const newIndex = (currentIndex + 1) % slides.length;
                 moveToSlide(newIndex);
@@ -178,7 +191,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        if(prevButton) {
+        if (prevButton) {
             prevButton.addEventListener('click', () => {
                 const newIndex = (currentIndex - 1 + slides.length) % slides.length;
                 moveToSlide(newIndex);
@@ -186,41 +199,150 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        // --- Touch / Swipe Logic ---
+        // Touch / Swipe Logic
         let touchStartX = 0;
         let touchEndX = 0;
 
         track.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
+        }, { passive: true });
 
         track.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
             handleSwipe();
-        }, {passive: true});
+        }, { passive: true });
 
         function handleSwipe() {
             if (slides.length <= 1) return;
-            // Threshold for swipe (50px)
             if (touchStartX - touchEndX > 50) {
-                // Swipe Left (Next)
-                const newIndex = (currentIndex + 1) % slides.length;
-                moveToSlide(newIndex);
+                moveToSlide((currentIndex + 1) % slides.length);
+                resetTimer();
+            } else if (touchEndX - touchStartX > 50) {
+                moveToSlide((currentIndex - 1 + slides.length) % slides.length);
                 resetTimer();
             }
-            if (touchEndX - touchStartX > 50) {
-                // Swipe Right (Prev)
-                const newIndex = (currentIndex - 1 + slides.length) % slides.length;
-                moveToSlide(newIndex);
-                resetTimer();
+        }
+
+        carouselControllers.set(carousel, {
+            start: startTimer,
+            stop: stopTimer,
+            reset: () => moveToSlide(0)
+        });
+    });
+
+    // --- 4. Modal Logic (with Keyboard Accessibility & Focus Trap) ---
+    const openModalButtons = document.querySelectorAll('.open-modal-btn');
+    const closeModalButtons = document.querySelectorAll('.modal-close-btn');
+    const overlay = document.getElementById('modal-overlay');
+    let lastFocusedElement = null;
+
+    function getFocusableElements(container) {
+        return container.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+    }
+
+    function openModal(modal) {
+        if (!modal) return;
+        lastFocusedElement = document.activeElement;
+
+        modal.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        const modalCarousels = modal.querySelectorAll('.carousel');
+        modalCarousels.forEach(c => {
+            const controller = carouselControllers.get(c);
+            if (controller) {
+                controller.reset();
+                controller.start();
+            }
+        });
+
+        const closeBtn = modal.querySelector('.modal-close-btn');
+        if (closeBtn) {
+            closeBtn.focus();
+        } else {
+            modal.focus();
+        }
+    }
+
+    function closeModal(modal) {
+        if (!modal) return;
+        modal.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+
+        const videos = modal.querySelectorAll('video');
+        videos.forEach(v => v.pause());
+
+        const modalCarousels = modal.querySelectorAll('.carousel');
+        modalCarousels.forEach(c => {
+            const controller = carouselControllers.get(c);
+            if (controller) controller.stop();
+        });
+
+        if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+            lastFocusedElement.focus();
+        }
+    }
+
+    openModalButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const modalId = button.getAttribute('data-modal-target');
+            const modal = document.querySelector(modalId);
+            openModal(modal);
+        });
+    });
+
+    closeModalButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const modal = button.closest('.modal');
+            closeModal(modal);
+        });
+    });
+
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            const activeModals = document.querySelectorAll('.modal.active');
+            activeModals.forEach(m => closeModal(m));
+        });
+    }
+
+    // Keyboard support: Close on Escape key & Focus Trap
+    document.addEventListener('keydown', function(e) {
+        const activeModal = document.querySelector('.modal.active');
+        if (!activeModal) return;
+
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            closeModal(activeModal);
+            return;
+        }
+
+        if (e.key === 'Tab') {
+            const focusables = Array.from(getFocusableElements(activeModal));
+            if (focusables.length === 0) return;
+
+            const firstElement = focusables[0];
+            const lastElement = focusables[focusables.length - 1];
+
+            if (e.shiftKey) {
+                if (document.activeElement === firstElement) {
+                    lastElement.focus();
+                    e.preventDefault();
+                }
+            } else {
+                if (document.activeElement === lastElement) {
+                    firstElement.focus();
+                    e.preventDefault();
+                }
             }
         }
     });
 
-    // --- 5. REACTION TIMER GAME ---
+    // --- 5. Reaction Timer Game ---
     const gameStartBtn = document.getElementById('game-start-btn');
-    if(gameStartBtn) { 
-        // ... (Keep existing game logic from previous step exactly as is) ...
+    if (gameStartBtn) {
         const gameStopBtn = document.getElementById('game-stop-btn');
         const gameLights = document.querySelectorAll('.react-light');
         const displayContainer = document.querySelector('.seven-segment-display');
@@ -237,9 +359,9 @@ document.addEventListener("DOMContentLoaded", function() {
         function updateDisplay(ms) {
             let clampedMs = Math.min(ms, 999);
             let formatted = clampedMs.toString().padStart(3, '0');
-            seg1.textContent = formatted[0];
-            seg2.textContent = formatted[1];
-            seg3.textContent = formatted[2];
+            if (seg1) seg1.textContent = formatted[0];
+            if (seg2) seg2.textContent = formatted[1];
+            if (seg3) seg3.textContent = formatted[2];
             return clampedMs;
         }
 
@@ -254,36 +376,59 @@ document.addEventListener("DOMContentLoaded", function() {
                 light.classList.remove('red', 'green', 'blinking');
             });
             updateDisplay(0);
-            displayContainer.classList.remove('dimmed');
+            if (displayContainer) displayContainer.classList.remove('dimmed');
             gameStartBtn.textContent = "Start Sequence";
             gameStartBtn.disabled = false;
-            gameStopBtn.disabled = true;
-            gameMessage.textContent = "";
-            gameMessage.style.color = "";
+            if (gameStopBtn) gameStopBtn.disabled = true;
+            if (gameMessage) {
+                gameMessage.textContent = "";
+                gameMessage.style.color = "";
+            }
             gameState = 'idle';
         }
 
         function triggerTimeout() {
             clearInterval(timerInterval);
             gameState = 'finished';
-            gameMessage.textContent = "Too Slow! Try Again?";
-            gameMessage.style.color = "#e74c3c";
-            displayContainer.classList.add('dimmed');
+            if (gameMessage) {
+                gameMessage.textContent = "Too Slow! Try Again?";
+                gameMessage.style.color = "#ef4444";
+            }
+            if (displayContainer) displayContainer.classList.add('dimmed');
             gameLights.forEach(light => {
                 light.classList.remove('green');
                 light.classList.add('red', 'blinking');
             });
             gameStartBtn.textContent = "Try Again";
             gameStartBtn.disabled = false;
-            gameStopBtn.disabled = true;
+            if (gameStopBtn) gameStopBtn.disabled = true;
+        }
+
+        function goGreen() {
+            gameState = 'waiting';
+            if (gameMessage) gameMessage.textContent = "GO!";
+            gameLights.forEach(light => {
+                light.classList.remove('red');
+                light.classList.add('green');
+            });
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                if (elapsed >= 999) {
+                    updateDisplay(999);
+                    triggerTimeout();
+                } else {
+                    updateDisplay(elapsed);
+                }
+            }, 10);
         }
 
         gameStartBtn.addEventListener('click', () => {
             if (gameState !== 'idle') { resetGameUI(); }
             gameState = 'sequence';
-            gameMessage.textContent = "Watch the lights...";
+            if (gameMessage) gameMessage.textContent = "Watch the lights...";
             gameStartBtn.disabled = true;
-            gameStopBtn.disabled = false; 
+            if (gameStopBtn) gameStopBtn.disabled = false; 
             clearSequence();
 
             let delay = 1000; 
@@ -302,46 +447,35 @@ document.addEventListener("DOMContentLoaded", function() {
             sequenceTimeouts.push(finalT);
         });
 
-        function goGreen() {
-            gameState = 'waiting';
-            gameMessage.textContent = "GO!";
-            gameLights.forEach(light => {
-                light.classList.remove('red');
-                light.classList.add('green');
-            });
-            startTime = Date.now();
-            timerInterval = setInterval(() => {
-                const elapsed = Date.now() - startTime;
-                if (elapsed >= 999) {
-                    updateDisplay(999);
-                    triggerTimeout();
-                } else {
-                    updateDisplay(elapsed);
+        if (gameStopBtn) {
+            gameStopBtn.addEventListener('click', () => {
+                if (gameState === 'sequence') {
+                    gameState = 'falseStart';
+                    clearSequence();
+                    if (gameMessage) {
+                        gameMessage.textContent = "FALSE START!";
+                        gameMessage.style.color = "#ef4444";
+                    }
+                    if (seg1) seg1.textContent = "F";
+                    if (seg2) seg2.textContent = "A";
+                    if (seg3) seg3.textContent = "L";
+                    gameStartBtn.textContent = "Try Again";
+                    gameStartBtn.disabled = false;
+                    gameStopBtn.disabled = true;
+                } else if (gameState === 'waiting') {
+                    clearInterval(timerInterval);
+                    gameState = 'finished';
+                    const finalTime = Date.now() - startTime;
+                    updateDisplay(finalTime);
+                    if (gameMessage) {
+                        gameMessage.textContent = `Reaction Time: ${finalTime}ms`;
+                        gameMessage.style.color = "#10b981";
+                    }
+                    gameStartBtn.textContent = "Play Again";
+                    gameStartBtn.disabled = false;
+                    gameStopBtn.disabled = true;
                 }
-            }, 10);
+            });
         }
-
-        gameStopBtn.addEventListener('click', () => {
-            if (gameState === 'sequence') {
-                gameState = 'falseStart';
-                clearSequence();
-                gameMessage.textContent = "FALSE START!";
-                gameMessage.style.color = "#e74c3c";
-                seg1.textContent = "F"; seg2.textContent = "A"; seg3.textContent = "L";
-                gameStartBtn.textContent = "Try Again";
-                gameStartBtn.disabled = false;
-                gameStopBtn.disabled = true;
-            } else if (gameState === 'waiting') {
-                clearInterval(timerInterval);
-                gameState = 'finished';
-                const finalTime = Date.now() - startTime;
-                updateDisplay(finalTime);
-                gameMessage.textContent = `Reaction Time: ${finalTime}ms`;
-                gameMessage.style.color = "#2ecc71";
-                gameStartBtn.textContent = "Play Again";
-                gameStartBtn.disabled = false;
-                gameStopBtn.disabled = true;
-            }
-        });
     }
 });
