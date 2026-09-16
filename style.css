@@ -1289,6 +1289,124 @@ html.light-mode .hero-name {
     transform: translateX(6px);
 }
 
+/* --- 9b. COMING SOON PLACEHOLDER CARD --- */
+.project-card-placeholder {
+    border: 2px dashed rgba(56, 189, 248, 0.35);
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.04) 0%, rgba(15, 23, 42, 0.4) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 35px 24px;
+    min-height: 420px;
+    position: relative;
+    overflow: hidden;
+}
+
+.project-card-placeholder:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-6px);
+    box-shadow: 0 15px 35px var(--accent-glow);
+}
+
+.card-placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.placeholder-icon-ring {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+    color: var(--accent-color);
+    font-size: 1.75rem;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease;
+}
+
+.project-card-placeholder:hover .placeholder-icon-ring {
+    transform: scale(1.12) rotate(8deg);
+    background: rgba(56, 189, 248, 0.2);
+    border-color: var(--accent-color);
+}
+
+.project-card-placeholder h3 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 12px;
+}
+
+.project-card-placeholder p {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--text-color);
+    max-width: 290px;
+    margin-bottom: 24px;
+}
+
+.placeholder-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--accent-color);
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    padding: 6px 16px;
+    border-radius: var(--border-radius-full);
+}
+
+.placeholder-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    box-shadow: 0 0 10px var(--accent-color);
+    animation: pulseBeacon 2s infinite ease-in-out;
+}
+
+/* Light mode overrides for placeholder card */
+body.light-mode .project-card-placeholder {
+    border-color: rgba(37, 99, 235, 0.35);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, #ffffff 100%);
+}
+
+body.light-mode .project-card-placeholder:hover {
+    border-color: #2563eb;
+    box-shadow: 0 15px 35px rgba(37, 99, 235, 0.15);
+}
+
+body.light-mode .placeholder-icon-ring {
+    background: rgba(37, 99, 235, 0.08);
+    border-color: rgba(37, 99, 235, 0.25);
+    color: #2563eb;
+}
+
+body.light-mode .placeholder-badge {
+    background: rgba(37, 99, 235, 0.08);
+    border-color: rgba(37, 99, 235, 0.25);
+    color: #2563eb;
+}
+
+body.light-mode .placeholder-dot {
+    background-color: #2563eb;
+    box-shadow: 0 0 8px #2563eb;
+}
+
 /* --- 10. CONTACT SECTION --- */
 .contact-cards-grid {
     display: flex;
