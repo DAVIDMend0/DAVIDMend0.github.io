@@ -356,12 +356,14 @@ input:checked + .slider:before {
     color: #fff;
     padding: 130px 20px 80px 20px;
     background: #070b14 url('WebsiteImages/Profile/hero-bg.jpg') no-repeat center center/cover;
-    background-image: image-set(
-        url('WebsiteImages/Profile/hero-bg.webp') type('image/webp'),
-        url('WebsiteImages/Profile/hero-bg.jpg') type('image/jpeg')
-    );
     background-attachment: fixed;
     overflow: hidden;
+}
+
+@media (max-width: 1024px), (hover: none) {
+    #hero {
+        background-attachment: scroll;
+    }
 }
 
 .hero-overlay {
