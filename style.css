@@ -355,7 +355,7 @@ input:checked + .slider:before {
     text-align: center;
     color: #fff;
     padding: 130px 20px 80px 20px;
-    background: #070b14 url('WebsiteImages/Profile/hero-bg.jpg') no-repeat center center/cover;
+    background: #070b14 url('WebsiteImages/Profile/hero-bg.webp') no-repeat center center/cover;
     background-attachment: fixed;
     overflow: hidden;
 }
