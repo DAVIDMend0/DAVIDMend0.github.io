@@ -99,6 +99,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 bodyEl.classList.add("light-mode");
                 localStorage.setItem("theme", "light");
             }
+            if (typeof updateDopplerSim === 'function') {
+                updateDopplerSim();
+            }
         });
     }
 
@@ -265,6 +268,10 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             modal.focus();
         }
+
+        if (modal.id === 'modal-meteor' && typeof updateDopplerSim === 'function') {
+            requestAnimationFrame(() => updateDopplerSim());
+        }
     }
 
     function closeModal(modal) {
@@ -275,6 +282,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const videos = modal.querySelectorAll('video');
         videos.forEach(v => v.pause());
+
+        const iframes = modal.querySelectorAll('iframe');
+        iframes.forEach(iframe => {
+            const currentSrc = iframe.src;
+            iframe.src = currentSrc;
+        });
 
         const modalCarousels = modal.querySelectorAll('.carousel');
         modalCarousels.forEach(c => {
@@ -477,5 +490,231 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             });
         }
+    }
+
+    // --- 6. METEOR-M2 DOPPLER SHIFT SIMULATION ---
+    const dopplerSimCanvas = document.getElementById('dopplerSimCanvas');
+    const dopplerGraphCanvas = document.getElementById('dopplerGraphCanvas');
+    const dopplerSlider = document.getElementById('dopplerSatSlider');
+    const dopplerFreqOutput = document.getElementById('dopplerFreqOutput');
+
+    if (dopplerSimCanvas && dopplerGraphCanvas && dopplerSlider && dopplerFreqOutput) {
+        const ctxSim = dopplerSimCanvas.getContext('2d');
+        const ctxGraph = dopplerGraphCanvas.getContext('2d');
+
+        // Physics Constants matching Meteor-M2 LEO Pass
+        const BASE_FREQ = 137.900; // MHz nominal carrier
+        const MAX_SHIFT = 0.0035;  // MHz (+/- 3.5 kHz maximum Doppler shift)
+        const ALTITUDE = 3;        // Relative orbital scale
+
+        const simW = dopplerSimCanvas.width;
+        const simH = dopplerSimCanvas.height;
+        const graphW = dopplerGraphCanvas.width;
+        const graphH = dopplerGraphCanvas.height;
+
+        function calculateFrequency(x) {
+            const distance = Math.sqrt(x * x + ALTITUDE * ALTITUDE);
+            const radialVelocityFactor = -x / distance; // Positive approaching, negative receding
+            return BASE_FREQ + (MAX_SHIFT * radialVelocityFactor);
+        }
+
+        function drawSimulation(xPos, isLight) {
+            ctxSim.clearRect(0, 0, simW, simH);
+
+            // Palette
+            const skyBg = isLight ? '#f1f5f9' : '#060b19';
+            const groundColor = isLight ? '#86efac' : '#064e3b';
+            const stationColor = isLight ? '#1e293b' : '#38bdf8';
+            const orbitColor = isLight ? '#94a3b8' : '#334155';
+            const satBodyColor = '#f97316';
+            const solarColor = isLight ? '#0284c7' : '#38bdf8';
+            const waveColor = isLight ? 'rgba(37, 99, 235, 0.55)' : 'rgba(56, 189, 248, 0.65)';
+
+            // Background
+            ctxSim.fillStyle = skyBg;
+            ctxSim.fillRect(0, 0, simW, simH);
+
+            // Ground
+            ctxSim.fillStyle = groundColor;
+            ctxSim.fillRect(0, simH - 35, simW, 35);
+
+            // Ground Station Base & Mast
+            const stationX = simW / 2;
+            const stationY = simH - 35;
+            ctxSim.fillStyle = stationColor;
+            ctxSim.beginPath();
+            ctxSim.moveTo(stationX - 12, stationY);
+            ctxSim.lineTo(stationX + 12, stationY);
+            ctxSim.lineTo(stationX, stationY - 26);
+            ctxSim.fill();
+
+            // Antenna Dish / Reflector
+            ctxSim.beginPath();
+            ctxSim.arc(stationX, stationY - 26, 14, Math.PI, 2 * Math.PI);
+            ctxSim.strokeStyle = stationColor;
+            ctxSim.lineWidth = 3;
+            ctxSim.stroke();
+
+            // Ground station label
+            ctxSim.fillStyle = isLight ? '#475569' : '#94a3b8';
+            ctxSim.font = '600 11px Plus Jakarta Sans, sans-serif';
+            ctxSim.textAlign = 'center';
+            ctxSim.fillText('RTL-SDR Ground Station', stationX, simH - 12);
+
+            // Calculate Satellite Position
+            const satScreenX = stationX + (xPos * (simW / 22));
+            const orbitH = 165;
+            const satScreenY = (simH - 35) - Math.sqrt(Math.max(0, 1 - Math.pow(xPos / 12, 2))) * orbitH;
+
+            // Draw Orbit Path (Dotted Arc)
+            ctxSim.beginPath();
+            ctxSim.setLineDash([5, 5]);
+            for (let i = -11; i <= 11; i += 0.2) {
+                let px = stationX + (i * (simW / 22));
+                let py = (simH - 35) - Math.sqrt(Math.max(0, 1 - Math.pow(i / 12, 2))) * orbitH;
+                if (i === -11) ctxSim.moveTo(px, py);
+                else ctxSim.lineTo(px, py);
+            }
+            ctxSim.strokeStyle = orbitColor;
+            ctxSim.lineWidth = 1.5;
+            ctxSim.stroke();
+            ctxSim.setLineDash([]);
+
+            // Calculate Frequency and Shift for Wave Compression
+            const currentFreq = calculateFrequency(xPos);
+            const shiftRatio = (currentFreq - BASE_FREQ) / MAX_SHIFT; // 1 (approaching) to -1 (receding)
+
+            // Draw RF Waves radiating towards ground station
+            const dx = stationX - satScreenX;
+            const dy = stationY - satScreenY;
+            const distToStation = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+
+            ctxSim.save();
+            ctxSim.translate(satScreenX, satScreenY);
+            ctxSim.rotate(angle);
+
+            // Wave spacing adjusts: compressed when approaching, expanded when receding
+            const baseWavelength = 28;
+            const wavelength = Math.max(12, baseWavelength - (shiftRatio * 13));
+
+            ctxSim.strokeStyle = waveColor;
+            ctxSim.lineWidth = 2.5;
+            for (let r = wavelength; r < distToStation; r += wavelength) {
+                ctxSim.beginPath();
+                ctxSim.arc(0, 0, r, -0.35, 0.35);
+                ctxSim.stroke();
+            }
+            ctxSim.restore();
+
+            // Draw Satellite Body & Solar Arrays
+            ctxSim.fillStyle = satBodyColor;
+            ctxSim.fillRect(satScreenX - 14, satScreenY - 9, 28, 18);
+            ctxSim.strokeStyle = '#ffffff';
+            ctxSim.lineWidth = 1.5;
+            ctxSim.strokeRect(satScreenX - 14, satScreenY - 9, 28, 18);
+
+            // Left Solar Panel
+            ctxSim.fillStyle = solarColor;
+            ctxSim.fillRect(satScreenX - 25, satScreenY - 5, 9, 10);
+            // Right Solar Panel
+            ctxSim.fillRect(satScreenX + 16, satScreenY - 5, 9, 10);
+
+            // Satellite label
+            ctxSim.fillStyle = isLight ? '#1e293b' : '#f8fafc';
+            ctxSim.font = '700 11px Plus Jakarta Sans, sans-serif';
+            ctxSim.textAlign = 'center';
+            ctxSim.fillText('Meteor-M2 (LEO)', satScreenX, satScreenY - 14);
+        }
+
+        function drawGraph(currentX, isLight) {
+            ctxGraph.clearRect(0, 0, graphW, graphH);
+
+            const graphBg = isLight ? '#f1f5f9' : '#060b19';
+            const gridColor = isLight ? '#cbd5e1' : '#1e293b';
+            const textColor = isLight ? '#475569' : '#94a3b8';
+            const curveColor = isLight ? '#2563eb' : '#38bdf8';
+            const pointColor = '#f97316';
+
+            // Background
+            ctxGraph.fillStyle = graphBg;
+            ctxGraph.fillRect(0, 0, graphW, graphH);
+
+            // Center Reference Grid Line (Nominal 137.900 MHz)
+            ctxGraph.strokeStyle = gridColor;
+            ctxGraph.lineWidth = 1;
+            ctxGraph.beginPath();
+            ctxGraph.moveTo(0, graphH / 2);
+            ctxGraph.lineTo(graphW, graphH / 2);
+            ctxGraph.stroke();
+
+            // Boundary Grid Lines
+            ctxGraph.setLineDash([3, 3]);
+            ctxGraph.beginPath();
+            ctxGraph.moveTo(0, 20);
+            ctxGraph.lineTo(graphW, 20);
+            ctxGraph.moveTo(0, graphH - 20);
+            ctxGraph.lineTo(graphW, graphH - 20);
+            ctxGraph.stroke();
+            ctxGraph.setLineDash([]);
+
+            // Frequency Axis Labels
+            ctxGraph.fillStyle = textColor;
+            ctxGraph.font = '600 11px Courier New, monospace';
+            ctxGraph.textAlign = 'left';
+            ctxGraph.fillText('+3.5 kHz (137.9035 MHz)', 12, 16);
+            ctxGraph.fillText('Nominal 137.9000 MHz (Zenith)', 12, graphH / 2 - 6);
+            ctxGraph.fillText('-3.5 kHz (137.8965 MHz)', 12, graphH - 8);
+
+            // S-Curve (Doppler Frequency Response)
+            ctxGraph.beginPath();
+            ctxGraph.strokeStyle = curveColor;
+            ctxGraph.lineWidth = 3;
+
+            for (let screenX = 0; screenX <= graphW; screenX++) {
+                let logicX = (screenX / graphW) * 20 - 10;
+                let freq = calculateFrequency(logicX);
+                let yNorm = (freq - (BASE_FREQ - MAX_SHIFT)) / (2 * MAX_SHIFT);
+                let screenY = graphH - (yNorm * (graphH - 40) + 20);
+
+                if (screenX === 0) ctxGraph.moveTo(screenX, screenY);
+                else ctxGraph.lineTo(screenX, screenY);
+            }
+            ctxGraph.stroke();
+
+            // Current Operating Point Marker
+            const currentFreq = calculateFrequency(currentX);
+            const pX = ((currentX + 10) / 20) * graphW;
+            const yNorm = (currentFreq - (BASE_FREQ - MAX_SHIFT)) / (2 * MAX_SHIFT);
+            const pY = graphH - (yNorm * (graphH - 40) + 20);
+
+            ctxGraph.beginPath();
+            ctxGraph.arc(pX, pY, 7, 0, Math.PI * 2);
+            ctxGraph.fillStyle = pointColor;
+            ctxGraph.fill();
+            ctxGraph.strokeStyle = '#ffffff';
+            ctxGraph.lineWidth = 2.5;
+            ctxGraph.stroke();
+
+            // Point readout overlay
+            ctxGraph.fillStyle = isLight ? '#0f172a' : '#ffffff';
+            ctxGraph.font = '700 11px Courier New, monospace';
+            ctxGraph.textAlign = pX > graphW - 100 ? 'right' : 'left';
+            const offset = pX > graphW - 100 ? -12 : 12;
+            ctxGraph.fillText(`${currentFreq.toFixed(5)} MHz`, pX + offset, pY - 8);
+        }
+
+        updateDopplerSim = function() {
+            const isLight = document.documentElement.classList.contains('light-mode') || document.body.classList.contains('light-mode');
+            const xVal = parseFloat(dopplerSlider.value);
+            const freq = calculateFrequency(xVal);
+
+            dopplerFreqOutput.textContent = freq.toFixed(5);
+            drawSimulation(xVal, isLight);
+            drawGraph(xVal, isLight);
+        };
+
+        dopplerSlider.addEventListener('input', updateDopplerSim);
+        updateDopplerSim();
     }
 });
