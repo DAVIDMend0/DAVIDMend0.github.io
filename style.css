@@ -1407,6 +1407,49 @@ body.light-mode .placeholder-dot {
     box-shadow: 0 0 8px #2563eb;
 }
 
+/* --- 9c. PROJECT PLACEHOLDER MEDIA --- */
+.project-placeholder-media {
+    width: 100%;
+    height: 220px;
+    background: radial-gradient(circle at center, rgba(30, 41, 59, 0.7) 0%, rgba(10, 15, 29, 0.95) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-color);
+    transition: transform var(--transition-speed) ease;
+}
+
+.project-card:hover .project-placeholder-media {
+    transform: scale(1.02);
+}
+
+.project-placeholder-media i {
+    font-size: 2.2rem;
+    color: var(--accent-color);
+    filter: drop-shadow(0 0 10px var(--accent-glow));
+}
+
+.project-placeholder-media span {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    font-weight: 500;
+    line-height: 1.4;
+    max-width: 250px;
+}
+
+body.light-mode .project-placeholder-media {
+    background: radial-gradient(circle at center, #f1f5f9 0%, #e2e8f0 100%);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .project-placeholder-media span {
+    color: #475569;
+}
+
 /* --- 10. CONTACT SECTION --- */
 .contact-cards-grid {
     display: flex;
@@ -2058,6 +2101,227 @@ body.light-mode .readout-unit {
     }
 }
 
+/* --- 14c. MOBILENETV2 DMS INTERACTIVE TESTER SIMULATION --- */
+.modal-sim-wide {
+    max-width: 1120px;
+    width: 95%;
+}
+
+.modal-placeholder-box {
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 16px 20px;
+    margin-bottom: 22px;
+    color: var(--text-color);
+    font-size: 0.92rem;
+}
+
+.simulation-embed-container {
+    position: relative;
+    width: 100%;
+    height: 740px;
+    min-height: 580px;
+    max-height: 82vh;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background: #07090e;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    margin: 18px 0 14px 0;
+}
+
+.simulation-embed-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+.sim-toolbar-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.sim-toolbar-info {
+    flex: 1;
+    min-width: 240px;
+}
+
+.sim-toolbar-info h4 {
+    margin-bottom: 4px;
+}
+
+.sim-toolbar-info p {
+    margin-bottom: 0;
+}
+
+.sim-fullscreen-action {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.sim-external-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    color: var(--text-lead);
+    font-size: 0.84rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.22s ease;
+}
+
+.sim-external-btn:hover {
+    background: var(--accent-color);
+    color: #fff !important;
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+.sim-footer-note {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.82rem;
+    margin-top: 10px;
+    font-style: italic;
+    letter-spacing: 0.02em;
+}
+
+body.light-mode .sim-footer-note {
+    color: #64748b;
+}
+
+body.light-mode .modal-placeholder-box {
+    background: rgba(241, 245, 249, 0.8);
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #475569;
+}
+
+body.light-mode .sim-external-btn {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+body.light-mode .sim-external-btn:hover {
+    background: var(--accent-color);
+    color: #fff !important;
+    border-color: var(--accent-color);
+}
+
+/* Mobile Advisory Overlay for Embedded Simulation */
+.sim-mobile-advisory-overlay {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .simulation-embed-container {
+        height: 560px;
+        position: relative;
+    }
+
+    .simulation-embed-container.mobile-warning-active iframe {
+        filter: blur(8px);
+        pointer-events: none;
+        transition: filter 0.35s ease;
+    }
+
+    .simulation-embed-container.mobile-warning-active .sim-mobile-advisory-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(10, 15, 29, 0.84);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 10;
+        padding: 20px;
+        animation: fadeInAdvisory 0.25s ease-out;
+    }
+}
+
+.sim-mobile-advisory-card {
+    background: rgba(17, 24, 39, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    max-width: 320px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+.sim-advisory-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: var(--accent-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 14px;
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+}
+
+.sim-advisory-text {
+    color: var(--text-lead);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 18px;
+    font-weight: 500;
+}
+
+.sim-advisory-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #38bdf8, #2563eb);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--border-radius-full);
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+}
+
+.sim-advisory-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
+}
+
+body.light-mode .sim-mobile-advisory-card {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(0, 0, 0, 0.12);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode .sim-advisory-text {
+    color: #1e293b;
+}
+
+@keyframes fadeInAdvisory {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+
 /* ==========================================================================
    15. COMPREHENSIVE MOBILE RESPONSIVENESS
    ========================================================================== */
@@ -2216,6 +2480,16 @@ body.light-mode .readout-unit {
     .card-media-wrap {
         height: 190px;
     }
+    .project-placeholder-media {
+        height: 190px;
+        padding: 16px;
+    }
+    .project-placeholder-media i {
+        font-size: 1.8rem;
+    }
+    .project-placeholder-media span {
+        font-size: 0.78rem;
+    }
 
     /* Modal adjustments on Mobile */
     .modal {
@@ -2223,6 +2497,26 @@ body.light-mode .readout-unit {
         width: 94%;
         max-height: 90vh;
         border-radius: var(--border-radius-md);
+    }
+    .modal-sim-wide {
+        width: 96%;
+        padding: 20px 10px;
+        max-height: 93vh;
+    }
+    .modal-placeholder-box {
+        padding: 12px 14px;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+    }
+    .simulation-embed-container {
+        height: 600px;
+        min-height: 480px;
+        max-height: 76vh;
+        margin: 12px 0 10px 0;
+        border-radius: var(--border-radius-sm);
+    }
+    .sim-fullscreen-action {
+        justify-content: center;
     }
     .modal-header h3 {
         font-size: 1.45rem;
@@ -2287,5 +2581,21 @@ body.light-mode .readout-unit {
     }
     .about-card {
         padding: 20px 14px;
+    }
+    .modal-sim-wide {
+        width: 98%;
+        padding: 16px 8px;
+        max-height: 96vh;
+    }
+    .simulation-embed-container {
+        height: 540px;
+        min-height: 440px;
+        max-height: 78vh;
+    }
+    .sim-external-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 9px 16px;
+        font-size: 0.82rem;
     }
 }

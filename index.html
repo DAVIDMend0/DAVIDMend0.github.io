@@ -472,7 +472,31 @@
                         </div>
                     </div>
 
-                    <!-- 9. Coming Soon Placeholder -->
+                    <!-- 9. MobileNetV2 DMS Tester -->
+                    <div class="project-card featured-project">
+                        <div class="card-media-wrap">
+                            <div class="project-placeholder-media">
+                                <i class="fas fa-microchip"></i>
+                                <span>Project in development. Image, desciprtion, or video coming soon</span>
+                            </div>
+                            <span class="card-badge highlight-badge">Interactive Simulation</span>
+                        </div>
+                        <div class="card-content">
+                            <h3>MobileNetV2 DMS Tester</h3>
+                            <p>Project in development. Image, desciprtion, or video coming soon</p>
+                            <div class="tags">
+                                <span>MobileNetV2</span>
+                                <span>Edge AI</span>
+                                <span>Tencent NCNN</span>
+                                <span>Computer Vision</span>
+                            </div>
+                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-dms">
+                                <span>Play Simulation &amp; Details</span> <i class="fas fa-gamepad"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 10. Coming Soon Placeholder -->
                     <div class="project-card project-card-placeholder">
                         <div class="card-placeholder-content">
                             <div class="placeholder-icon-ring">
@@ -1028,6 +1052,46 @@
                         <i class="fab fa-youtube"></i> Watch on YouTube <i class="fas fa-arrow-up-right-from-square"></i>
                     </a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: MobileNetV2 DMS Tester -->
+    <div class="modal modal-sim-wide" id="modal-dms" role="dialog" aria-modal="true" aria-labelledby="modal-title-dms" tabindex="-1">
+        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        <div class="modal-header"><h3 id="modal-title-dms">MobileNetV2 DMS Tester</h3></div>
+        <div class="modal-body">
+            <div class="modal-placeholder-box">
+                <p>Project in development. Image, desciprtion, or video coming soon</p>
+            </div>
+
+            <div class="modal-media-section">
+                <div class="sim-toolbar-top">
+                    <div class="sim-toolbar-info">
+                        <h4>Interactive Hardware Simulation</h4>
+                        <p>Experience the interactive Driver Monitoring System (DMS) &amp; MobileNetV2 telemetry simulation directly below:</p>
+                    </div>
+                    <div class="sim-fullscreen-action">
+                        <a href="nvm_Tester.html" target="_blank" rel="noopener noreferrer" class="sim-external-btn">
+                            <i class="fas fa-arrow-up-right-from-square"></i> Open in New Tab
+                        </a>
+                    </div>
+                </div>
+                <div class="simulation-embed-container mobile-warning-active" id="dmsSimEmbedContainer">
+                    <iframe id="dms-simulation-iframe" src="nvm_Tester.html" title="MobileNetV2 DMS Interactive Simulation" allow="camera; microphone" loading="lazy"></iframe>
+                    <div class="sim-mobile-advisory-overlay" id="simMobileAdvisory">
+                        <div class="sim-mobile-advisory-card">
+                            <div class="sim-advisory-icon">
+                                <i class="fas fa-desktop"></i>
+                            </div>
+                            <p class="sim-advisory-text">This simulation is better experienced on a computer. Do you wish to continue?</p>
+                            <button type="button" class="sim-advisory-btn" id="simAdvisoryBtn">
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="sim-footer-note">Simulation made with Google Gemini</p>
             </div>
         </div>
     </div>

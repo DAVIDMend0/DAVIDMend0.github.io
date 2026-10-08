@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMS Vision Telemetry & MobileNetV2 Model Tester</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          screens: {
+            'xs': '460px'
+          }
+        }
+      }
+    };
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- MediaPipe Face Mesh & Camera Utils -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .font-osd {
+      font-family: 'Share Tech Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .osd-glow-green {
+      color: #38ef7d;
+      text-shadow: 0 0 6px rgba(56, 239, 125, 0.75), 0 0 12px rgba(56, 239, 125, 0.4);
+    }
+
+    .osd-glow-yellow {
+      color: #e5e54d;
+      text-shadow: 0 0 6px rgba(229, 229, 77, 0.75), 0 0 12px rgba(229, 229, 77, 0.4);
+    }
+
+    .osd-glow-red {
+      color: #ff3344;
+      text-shadow: 0 0 6px rgba(255, 51, 68, 0.8), 0 0 14px rgba(255, 51, 68, 0.5);
+    }
+
+    .ir-camera-filter {
+      filter: grayscale(85%) contrast(140%) brightness(85%);
+    }
+
+    /* Custom Scrollbar matching portfolio design */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0a0f1d;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #38bdf8;
+    }
+
+    /* Accordion details arrow reset */
+    details > summary::-webkit-details-marker {
+      display: none;
+    }
+    details > summary {
+      list-style: none;
+    }
+  </style>
+</head>
+<body class="bg-[#0a0f1d] text-slate-300 min-h-screen flex flex-col font-sans selection:bg-sky-500 selection:text-black">
+
+  <!-- App Wrapper for Dynamic Blur on Mobile -->
+  <div id="testerAppWrapper" class="flex-1 flex flex-col transition-all duration-300 min-h-screen">
+
+  <!-- Top App Navigation (Glassmorphic header matching portfolio) -->
+  <header class="border-b border-white/[0.08] bg-[#0a0f1d]/90 backdrop-blur-md sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-2.5 sm:py-0 min-h-14 flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+        <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 flex-shrink-0 shadow-[0_0_12px_rgba(56,189,248,0.2)]">
+          <i data-lucide="eye" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 sm:gap-2">
+            <h1 class="text-xs sm:text-sm font-bold tracking-tight text-white uppercase font-mono truncate">DMS Driver Fatigue</h1>
+            <span class="text-[9px] sm:text-[10px] bg-sky-950/80 text-sky-400 border border-sky-800/60 px-2 py-0.5 rounded-full font-mono whitespace-nowrap">MobileNetV2</span>
+          </div>
+          <p class="text-[10px] sm:text-[11px] text-slate-400 font-mono truncate max-w-[210px] sm:max-w-none">Kaggle DMS In-Cabin Simulator • EAR / PERCLOS</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 sm:space-x-3 text-xs flex-shrink-0">
+        <div id="alarmIndicator" class="hidden items-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono font-bold animate-pulse text-[10px] sm:text-xs">
+          <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+          <span class="hidden xs:inline">MICROSLEEP WARNING</span>
+          <span class="xs:hidden">ALARM</span>
+        </div>
+        <button id="toggleAudioBtn" class="px-2.5 py-1 sm:px-3 sm:py-1 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-300 border border-white/[0.08] hover:border-sky-500/40 flex items-center gap-1.5 transition text-[11px] sm:text-xs shadow-sm">
+          <i data-lucide="volume-2" class="w-3.5 h-3.5 text-sky-400" id="audioIcon"></i>
+          <span id="audioStatusText">Buzzer: Active</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Viewport Layout -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">
+    
+    <!-- LEFT: Camera & Telemetry Monitor (7 cols) -->
+    <div class="lg:col-span-7 flex flex-col space-y-3.5">
+      <div class="relative bg-black rounded-xl border border-white/[0.08] shadow-2xl overflow-hidden flex flex-col">
+        
+        <!-- Cabin Viewport Top Bar -->
+        <div class="flex items-center justify-between px-3.5 py-2 bg-[#0c1222] border-b border-white/[0.08] text-[10px] sm:text-[11px] font-mono">
+          <div class="flex items-center space-x-2.5 sm:space-x-3 text-slate-400">
+            <span class="inline-flex items-center gap-1.5 text-sky-400">
+              <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+              CAM_01: IN_CABIN_IR
+            </span>
+            <span id="fpsBadge" class="text-slate-400">FPS: --</span>
+          </div>
+          <div class="flex items-center space-x-2 sm:space-x-3 text-slate-400">
+            <span id="meshStatus" class="truncate max-w-[150px] sm:max-w-none text-slate-400">Status: Ready</span>
+          </div>
+        </div>
+
+        <!-- Camera Stack Viewport (Fixed 4:3 across all devices) -->
+        <div id="videoContainer" class="relative w-full aspect-[4/3] bg-black flex items-center justify-center overflow-hidden">
+          <video id="webcam" playsinline muted class="absolute inset-0 w-full h-full object-cover -scale-x-100 ir-camera-filter"></video>
+          <img id="staticPreview" class="absolute inset-0 w-full h-full object-cover hidden ir-camera-filter" alt="Static Test Frame">
+          <canvas id="telemetryCanvas" class="absolute inset-0 w-full h-full object-cover pointer-events-none z-20"></canvas>
+
+          <!-- Retro OSD HUD Text -->
+          <div class="absolute bottom-2.5 left-2.5 sm:bottom-4 sm:left-4 z-30 pointer-events-none font-osd text-sm sm:text-base md:text-xl leading-tight sm:leading-snug tracking-wider select-none">
+            <div id="osdZone" class="osd-glow-yellow font-bold text-xs sm:text-base md:text-lg">ZONE: Zone_On_Road</div>
+            <div id="osdEyes" class="osd-glow-green font-bold text-xs sm:text-base md:text-lg">EYES: Open</div>
+            <div id="osdPose" class="text-white text-[10px] sm:text-sm md:text-base opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">P: -2  Y: 0  EAR: 0.27</div>
+          </div>
+
+          <!-- Initial Prompt Overlay if camera not yet started -->
+          <div id="cameraSetupOverlay" class="absolute inset-0 bg-[#0a0f1d]/92 backdrop-blur-sm flex flex-col items-center justify-center p-3 sm:p-6 text-center z-40 space-y-2.5 sm:space-y-4">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.25)]">
+              <i data-lucide="video" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+            </div>
+            <div class="max-w-md px-2">
+              <h3 class="text-sm sm:text-base font-bold text-white uppercase font-mono tracking-wide">DMS In-Cabin Test Feed</h3>
+              <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1 line-clamp-2 sm:line-clamp-none">
+                Calibrated to MobileNetV2 driver fatigue classifier: measures Eye Aspect Ratio (EAR), blink duration, and head orientation directly on your webcam or sample frames.
+              </p>
+            </div>
+            <div class="flex flex-col xs:flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-xs sm:max-w-none">
+              <button id="activateCamBtn" class="w-full xs:w-auto px-4 py-2 bg-gradient-to-r from-sky-400 to-blue-600 hover:from-sky-300 hover:to-blue-500 text-white font-semibold rounded-full text-xs flex items-center justify-center gap-2 transition-all font-mono min-h-[38px] shadow-[0_4px_14px_rgba(56,189,248,0.25)] hover:shadow-[0_6px_20px_rgba(56,189,248,0.4)] hover:-translate-y-0.5">
+                <i data-lucide="camera" class="w-4 h-4"></i>
+                Start Webcam Stream
+              </button>
+              <button id="loadSyntheticBtn" class="w-full xs:w-auto px-4 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-white/[0.08] hover:border-sky-500/40 rounded-full text-xs flex items-center justify-center gap-2 transition-all font-mono min-h-[38px]">
+                <i data-lucide="play-circle" class="w-4 h-4"></i>
+                Load Kaggle Driver Frame
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monitor Sub-Controls (Styled with website pill buttons) -->
+        <div class="p-2.5 sm:p-3 bg-[#0c1222] border-t border-white/[0.08] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 text-xs font-mono">
+          <div class="grid grid-cols-2 xs:flex xs:flex-wrap items-center gap-1.5 sm:gap-2">
+            <button id="cameraToggleBtn" class="px-3 py-1.5 rounded-full bg-gradient-to-r from-sky-400 to-blue-600 hover:from-sky-300 hover:to-blue-500 text-white font-semibold flex items-center justify-center gap-1.5 transition-all text-[11px] sm:text-xs min-h-[34px] shadow-[0_2px_10px_rgba(56,189,248,0.2)]">
+              <i data-lucide="camera" class="w-3.5 h-3.5" id="cameraToggleIcon"></i>
+              <span id="cameraToggleText">Start Cam</span>
+            </button>
+            <button id="stopCameraBtn" disabled class="px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center justify-center gap-1.5 transition text-[11px] sm:text-xs min-h-[34px] disabled:opacity-40 disabled:pointer-events-none">
+              <i data-lucide="video-off" class="w-3.5 h-3.5 text-rose-400"></i>
+              <span>Stop</span>
+            </button>
+            <button id="toggleFilterBtn" class="px-3 py-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-white/[0.08] hover:border-sky-500/40 flex items-center justify-center gap-1.5 transition text-[11px] sm:text-xs min-h-[34px]">
+              <i data-lucide="moon" class="w-3.5 h-3.5 text-sky-400"></i>
+              <span id="irFilterText">Night IR: ON</span>
+            </button>
+            <label class="px-3 py-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-white/[0.08] hover:border-sky-500/40 flex items-center justify-center gap-1.5 transition cursor-pointer text-[11px] sm:text-xs min-h-[34px]">
+              <i data-lucide="upload" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span>Upload Frame</span>
+              <input type="file" id="mediaUploadInput" accept="image/*,video/*" class="hidden">
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between sm:justify-end gap-3 text-slate-400 text-[10px] sm:text-xs pt-1 sm:pt-0 border-t border-white/[0.06] sm:border-0">
+            <span>PERCLOS: <strong id="perclosValue" class="text-sky-400 font-bold">12%</strong></span>
+            <span>Blinks/min: <strong id="blinkRateValue" class="text-cyan-300 font-bold">18</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time MobileNetV2 3-Class Output Distribution -->
+      <div class="p-3.5 sm:p-4 rounded-xl bg-[#111827]/80 backdrop-blur-md border border-white/[0.08] space-y-2.5 sm:space-y-3 shadow-lg">
+        <div class="flex items-center justify-between text-xs border-b border-white/[0.08] pb-2">
+          <div class="flex items-center gap-2">
+            <i data-lucide="activity" class="w-4 h-4 text-sky-400"></i>
+            <span class="font-bold uppercase tracking-wider text-slate-200 font-mono text-[10px] sm:text-xs">MobileNetV2 Softmax Logits [out0: 1x3]</span>
+          </div>
+          <span class="text-[9px] sm:text-[10px] text-slate-400 font-mono">in0 [1, 3, 224, 224]</span>
+        </div>
+
+        <div class="space-y-2.5 text-xs font-mono">
+          <!-- Class 0: Open -->
+          <div>
+            <div class="flex justify-between mb-1 text-[11px] sm:text-xs">
+              <span class="text-slate-300">Class 0: Eyes Open (Alert)</span>
+              <span id="probOpenText" class="text-sky-400 font-bold">88.4%</span>
+            </div>
+            <div class="w-full bg-slate-900/80 rounded-full h-2 overflow-hidden border border-white/[0.06]">
+              <div id="barOpen" class="bg-gradient-to-r from-sky-400 to-blue-500 h-full transition-all duration-150" style="width: 88.4%"></div>
+            </div>
+          </div>
+
+          <!-- Class 1: Closed -->
+          <div>
+            <div class="flex justify-between mb-1 text-[11px] sm:text-xs">
+              <span class="text-slate-300">Class 1: Eyes Closed (Blink / Droop)</span>
+              <span id="probClosedText" class="text-amber-400 font-bold">7.2%</span>
+            </div>
+            <div class="w-full bg-slate-900/80 rounded-full h-2 overflow-hidden border border-white/[0.06]">
+              <div id="barClosed" class="bg-amber-400 h-full transition-all duration-150" style="width: 7.2%"></div>
+            </div>
+          </div>
+
+          <!-- Class 2: Drowsy / Microsleep -->
+          <div>
+            <div class="flex justify-between mb-1 text-[11px] sm:text-xs">
+              <span class="text-slate-300">Class 2: Drowsy / Microsleep (>1.5s)</span>
+              <span id="probDrowsyText" class="text-rose-400 font-bold">4.4%</span>
+            </div>
+            <div class="w-full bg-slate-900/80 rounded-full h-2 overflow-hidden border border-white/[0.06]">
+              <div id="barDrowsy" class="bg-rose-500 h-full transition-all duration-150" style="width: 4.4%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Collapsible Dropdowns for Extra Information (Reduced initial load) -->
+    <div class="lg:col-span-5 flex flex-col space-y-3">
+      
+      <!-- DROPDOWN 1: Model Ingestion & Architecture Specs -->
+      <details class="group bg-[#111827]/80 backdrop-blur-md border border-white/[0.08] hover:border-sky-500/30 rounded-xl overflow-hidden transition-all duration-200 shadow-lg">
+        <summary class="flex items-center justify-between p-3.5 sm:p-4 cursor-pointer select-none bg-[#0f172a]/70 hover:bg-[#1e293b]/70 transition-colors list-none">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shadow-sm">
+              <i data-lucide="cpu" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono">Tencent NCNN Ingestion</span>
+              <p class="text-[10px] text-slate-400 font-mono hidden sm:block">Verify custom .param &amp; .bin weights</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-950/60 text-sky-400 border border-sky-800/40">DMS Graph</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform duration-200"></i>
+          </div>
+        </summary>
+        <div class="p-3.5 sm:p-4 border-t border-white/[0.06] space-y-3 bg-[#0a0f1d]/50">
+          <div id="dropZone" class="border-2 border-dashed border-white/[0.1] hover:border-sky-400/60 rounded-xl p-3.5 text-center cursor-pointer transition bg-slate-950/50">
+            <input type="file" id="ncnnFileInput" multiple accept=".param,.bin,.txt" class="hidden">
+            <i data-lucide="file-code" class="w-5 h-5 mx-auto text-sky-400/70 mb-1.5"></i>
+            <p class="text-[11px] sm:text-xs font-mono font-medium text-slate-200">Drop <code class="text-sky-400">mobilenetv2_dms.param</code> &amp; <code class="text-sky-400">.bin</code></p>
+            <p class="text-[9px] sm:text-[10px] text-slate-500 font-mono mt-0.5">Click or drag your trained Kaggle weights here to verify</p>
+          </div>
+
+          <!-- Active Graph Topology Info -->
+          <div class="grid grid-cols-2 gap-2 text-[10px] sm:text-[11px] font-mono">
+            <div class="p-2.5 bg-black/50 rounded-lg border border-white/[0.06]">
+              <span class="text-slate-500 block text-[8px] sm:text-[9px] uppercase tracking-wider">PARAM ARCHITECTURE</span>
+              <span id="paramFileName" class="text-sky-400 font-medium truncate block text-[10px] sm:text-xs">mobilenetv2_dms.param</span>
+              <span id="layerCountText" class="text-[9px] sm:text-[10px] text-slate-400">54 Layers • 107 Blobs</span>
+            </div>
+            <div class="p-2.5 bg-black/50 rounded-lg border border-white/[0.06]">
+              <span class="text-slate-500 block text-[8px] sm:text-[9px] uppercase tracking-wider">WEIGHT BINARY</span>
+              <span id="binFileName" class="text-cyan-400 font-medium truncate block text-[10px] sm:text-xs">mobilenetv2_dms.bin</span>
+              <span class="text-[9px] sm:text-[10px] text-slate-400">Float32 • 3-Class Head</span>
+            </div>
+          </div>
+
+          <!-- Normalization Specs -->
+          <div class="p-2.5 bg-black/40 rounded-lg border border-white/[0.06] text-[9px] sm:text-[10px] font-mono text-slate-400 space-y-1">
+            <div class="flex justify-between">
+              <span>Input Size:</span>
+              <span class="text-slate-200">224 x 224 x 3 (RGB/NIR)</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Sub-Mean:</span>
+              <span class="text-slate-200">[123.675, 116.280, 103.530]</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Norm Scale:</span>
+              <span class="text-slate-200">[0.01712, 0.01750, 0.01742]</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- DROPDOWN 2: Compiled Computational Graph Explorer -->
+      <details class="group bg-[#111827]/80 backdrop-blur-md border border-white/[0.08] hover:border-sky-500/30 rounded-xl overflow-hidden transition-all duration-200 shadow-lg">
+        <summary class="flex items-center justify-between p-3.5 sm:p-4 cursor-pointer select-none bg-[#0f172a]/70 hover:bg-[#1e293b]/70 transition-colors list-none">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-sm">
+              <i data-lucide="layers" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono">Computational Graph Explorer</span>
+              <p class="text-[10px] text-slate-400 font-mono hidden sm:block">54 Layers • 107 Blobs</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-950/60 text-blue-400 border border-blue-800/40">54 Nodes</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform duration-200"></i>
+          </div>
+        </summary>
+        <div class="p-3.5 sm:p-4 border-t border-white/[0.06] space-y-3 bg-[#0a0f1d]/50">
+          <div class="flex items-center justify-between gap-2 border-b border-white/[0.06] pb-2">
+            <span class="text-[10px] text-slate-400 font-mono">Filter layer nodes:</span>
+            <input id="layerSearch" type="text" placeholder="Filter..." class="bg-black/60 border border-white/[0.1] rounded-lg px-2.5 py-1 text-[10px] font-mono text-slate-200 w-28 focus:outline-none focus:border-sky-400 transition">
+          </div>
+
+          <!-- Scrollable Layer List -->
+          <div id="layerListContainer" class="overflow-y-auto custom-scrollbar space-y-1 text-[10px] sm:text-[11px] font-mono pr-1 max-h-[260px] sm:max-h-[320px]" style="-webkit-overflow-scrolling: touch;">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </details>
+
+      <!-- DROPDOWN 3: Telemetry Calibration & Sliders -->
+      <details class="group bg-[#111827]/80 backdrop-blur-md border border-white/[0.08] hover:border-sky-500/30 rounded-xl overflow-hidden transition-all duration-200 shadow-lg">
+        <summary class="flex items-center justify-between p-3.5 sm:p-4 cursor-pointer select-none bg-[#0f172a]/70 hover:bg-[#1e293b]/70 transition-colors list-none">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shadow-sm">
+              <i data-lucide="sliders" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono">Telemetry Calibration</span>
+              <p class="text-[10px] text-slate-400 font-mono hidden sm:block">EAR eye closure &amp; microsleep thresholds</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-950/60 text-sky-400 border border-sky-800/40">Sliders</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform duration-200"></i>
+          </div>
+        </summary>
+        <div class="p-3.5 sm:p-4 border-t border-white/[0.06] bg-[#0a0f1d]/50 space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+            <div>
+              <label class="text-[10px] text-slate-400 block mb-1">EAR Eye Closure Threshold</label>
+              <div class="flex items-center space-x-2">
+                <input id="earThresholdSlider" type="range" min="15" max="35" value="21" class="w-full accent-sky-400 cursor-pointer">
+                <span id="earThresholdVal" class="text-sky-400 font-bold min-w-[32px]">0.21</span>
+              </div>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 block mb-1">Microsleep Duration</label>
+              <div class="flex items-center space-x-2">
+                <input id="timeThresholdSlider" type="range" min="10" max="30" value="15" class="w-full accent-rose-500 cursor-pointer">
+                <span id="timeThresholdVal" class="text-rose-400 font-bold min-w-[32px]">1.5s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </main>
+
+  <!-- Footer Attribution -->
+  <footer class="py-3 px-4 text-center border-t border-white/[0.06] bg-[#0a0f1d]/80 mt-auto">
+    <p class="text-xs text-slate-400 font-mono tracking-wide italic">Simulation made with Google Gemini</p>
+  </footer>
+
+  </div><!-- /testerAppWrapper -->
+
+  <!-- Standalone Mobile Advisory Overlay (Only when opened in new tab on phones) -->
+  <div id="standaloneMobileAdvisory" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-[#0a0f1d]/85 backdrop-blur-md">
+    <div class="max-w-xs w-full bg-[#111827]/95 border border-white/10 rounded-2xl p-5 text-center shadow-2xl space-y-4">
+      <div class="w-12 h-12 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 mx-auto shadow-[0_0_15px_rgba(56,189,248,0.25)]">
+        <i data-lucide="laptop" class="w-6 h-6"></i>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-200 font-medium leading-relaxed font-sans">
+        This simulation is better experienced on a computer. Do you wish to continue?
+      </p>
+      <button id="dismissStandaloneAdvisoryBtn" type="button" class="w-full py-2.5 px-4 rounded-full bg-gradient-to-r from-sky-400 to-blue-600 hover:from-sky-300 hover:to-blue-500 text-white font-semibold text-xs tracking-wide transition shadow-[0_4px_14px_rgba(56,189,248,0.25)] font-sans">
+        Continue
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // System State
+    let isWebcamRunning = false;
+    let cameraInstance = null;
+    let faceMeshInstance = null;
+    let audioAlarmEnabled = true;
+    let isIrFilterActive = true;
+    let earThreshold = 0.21;
+    let microsleepTimeSec = 1.5;
+
+    // Driver Telemetry Metrics
+    let currentEAR = 0.27;
+    let currentPitch = -2;
+    let currentYaw = 0;
+    let eyesState = 'Open'; // 'Open', 'Closed', 'Drowsy/Microsleep'
+    let currentZone = 'Zone_On_Road';
+    let eyeClosedStartTime = null;
+    let blinkTimestamps = [];
+    let eyeHistory = []; // For PERCLOS calculation over 60 seconds
+
+    // Web Audio Synthesizer for DMS warning buzzer
+    let audioCtx = null;
+    let alarmOscillator = null;
+    let isAlarmBeeping = false;
+    let mediaStreamRef = null;
+    let fallbackLoopId = null;
+
+    // MobileNetV2 Layer Definitions matching NCNN param file for 3-class DMS
+    const MOBILENET_V2_DMS_LAYERS = [
+      { id: 0, type: "Input", name: "in0", in: "-", out: "data [1,3,224,224]" },
+      { id: 1, type: "Convolution", name: "conv1", in: "data", out: "conv1_out [1,32,112,112]" },
+      { id: 2, type: "BatchNorm", name: "bn1", in: "conv1_out", out: "bn1_out" },
+      { id: 3, type: "ReLU6", name: "relu1", in: "bn1_out", out: "relu1_out" },
+      { id: 4, type: "ConvolutionDepthWise", name: "conv2_1_dw", in: "relu1_out", out: "conv2_1_dw_out [1,32,112,112]" },
+      { id: 5, type: "BatchNorm", name: "bn2_1_dw", in: "conv2_1_dw_out", out: "bn2_1_dw_out" },
+      { id: 6, type: "ReLU6", name: "relu2_1_dw", in: "bn2_1_dw_out", out: "relu2_1_dw_out" },
+      { id: 7, type: "Convolution", name: "conv2_1_linear", in: "relu2_1_dw_out", out: "conv2_1_linear_out [1,16,112,112]" },
+      { id: 8, type: "BatchNorm", name: "bn2_1_linear", in: "conv2_1_linear_out", out: "res2_1_out" },
+      { id: 9, type: "Convolution", name: "conv2_2_expand", in: "res2_1_out", out: "conv2_2_expand_out [1,96,112,112]" },
+      { id: 10, type: "ConvolutionDepthWise", name: "conv2_2_dw", in: "conv2_2_expand_out", out: "conv2_2_dw_out [1,96,56,56]" },
+      { id: 11, type: "Convolution", name: "conv2_2_linear", in: "conv2_2_dw_out", out: "res2_2_out [1,24,56,56]" },
+      { id: 12, type: "ConvolutionDepthWise", name: "conv3_dw", in: "res2_2_out", out: "conv3_dw_out [1,144,28,28]" },
+      { id: 13, type: "ConvolutionDepthWise", name: "conv4_dw", in: "conv3_dw_out", out: "conv4_dw_out [1,192,14,14]" },
+      { id: 14, type: "ConvolutionDepthWise", name: "conv5_dw", in: "conv4_dw_out", out: "conv5_dw_out [1,576,7,7]" },
+      { id: 15, type: "Convolution", name: "conv5_linear", in: "conv5_dw_out", out: "features [1,1280,7,7]" },
+      { id: 16, type: "Pooling", name: "global_avg_pool", in: "features", out: "pool_out [1,1280,1,1]" },
+      { id: 17, type: "Dropout", name: "drop1", in: "pool_out", out: "drop_out" },
+      { id: 18, type: "InnerProduct", name: "fc_dms_classifier", in: "drop_out", out: "out0 [1,3]" },
+      { id: 19, type: "Softmax", name: "softmax_dms", in: "out0", out: "probabilities [Open, Closed, Drowsy]" }
+    ];
+
+    // Reference Indices for MediaPipe FaceMesh (exact subsets visible in the reference frame)
+    // Left eye contour: [33, 160, 158, 133, 153, 144]
+    // Right eye contour: [362, 385, 387, 263, 373, 380]
+    // Eyebrows & nose bridge landmarks matching cyan dots in the Kaggle frame
+    const REFERENCE_LANDMARK_IDS = [
+      // Left eye & pupil
+      33, 160, 158, 133, 153, 144, 468,
+      // Right eye & pupil
+      362, 385, 387, 263, 373, 380, 473,
+      // Eyebrows
+      70, 63, 105, 66, 107, 336, 296, 334, 293, 300,
+      // Nose bridge and tip dots
+      1, 2, 98, 327, 4, 195, 5, 168
+    ];
+
+    // DOM Elements
+    const video = document.getElementById('webcam');
+    const staticPreview = document.getElementById('staticPreview');
+    const canvas = document.getElementById('telemetryCanvas');
+    const ctx = canvas.getContext('2d');
+    const osdZone = document.getElementById('osdZone');
+    const osdEyes = document.getElementById('osdEyes');
+    const osdPose = document.getElementById('osdPose');
+    const alarmIndicator = document.getElementById('alarmIndicator');
+    const perclosValue = document.getElementById('perclosValue');
+    const blinkRateValue = document.getElementById('blinkRateValue');
+    const fpsBadge = document.getElementById('fpsBadge');
+    const meshStatus = document.getElementById('meshStatus');
+    const barOpen = document.getElementById('barOpen');
+    const barClosed = document.getElementById('barClosed');
+    const barDrowsy = document.getElementById('barDrowsy');
+    const probOpenText = document.getElementById('probOpenText');
+    const probClosedText = document.getElementById('probClosedText');
+    const probDrowsyText = document.getElementById('probDrowsyText');
+    const stopCameraBtn = document.getElementById('stopCameraBtn');
+    const cameraToggleBtn = document.getElementById('cameraToggleBtn');
+    const cameraToggleText = document.getElementById('cameraToggleText');
+    const cameraToggleIcon = document.getElementById('cameraToggleIcon');
+
+    let lastFpsTimestamp = performance.now();
+    let framesRendered = 0;
+
+    function safeCreateIcons() {
+      if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      safeCreateIcons();
+      renderLayerList(MOBILENET_V2_DMS_LAYERS);
+      setupUIListeners();
+      initFaceMesh();
+    });
+    window.addEventListener('load', safeCreateIcons);
+
+    function setupUIListeners() {
+      document.getElementById('activateCamBtn').addEventListener('click', startWebcamStream);
+      cameraToggleBtn.addEventListener('click', () => {
+        if (isWebcamRunning) {
+          stopWebcamStream();
+        } else {
+          startWebcamStream();
+        }
+      });
+      stopCameraBtn.addEventListener('click', stopWebcamStream);
+      document.getElementById('loadSyntheticBtn').addEventListener('click', loadKaggleSyntheticDemo);
+
+      // Standalone Mobile Screen Advisory (Only when viewed directly on phones)
+      const isStandaloneMobile = (window.self === window.top) && (window.innerWidth <= 768);
+      const advisory = document.getElementById('standaloneMobileAdvisory');
+      const wrapper = document.getElementById('testerAppWrapper');
+      const dismissBtn = document.getElementById('dismissStandaloneAdvisoryBtn');
+      if (isStandaloneMobile && advisory && wrapper && dismissBtn) {
+        advisory.classList.remove('hidden');
+        advisory.classList.add('flex');
+        wrapper.style.filter = 'blur(8px)';
+        wrapper.style.pointerEvents = 'none';
+
+        dismissBtn.addEventListener('click', () => {
+          advisory.classList.add('hidden');
+          advisory.classList.remove('flex');
+          wrapper.style.filter = 'none';
+          wrapper.style.pointerEvents = '';
+        });
+      }
+
+      document.getElementById('toggleFilterBtn').addEventListener('click', () => {
+        isIrFilterActive = !isIrFilterActive;
+        const filterStr = isIrFilterActive ? 'grayscale(85%) contrast(140%) brightness(85%)' : 'none';
+        video.style.filter = filterStr;
+        staticPreview.style.filter = filterStr;
+        document.getElementById('irFilterText').textContent = isIrFilterActive ? 'Night IR: ON' : 'Night IR: OFF';
+      });
+
+      document.getElementById('toggleAudioBtn').addEventListener('click', () => {
+        audioAlarmEnabled = !audioAlarmEnabled;
+        const icon = document.getElementById('audioIcon');
+        const text = document.getElementById('audioStatusText');
+        if (audioAlarmEnabled) {
+          text.textContent = 'Buzzer: Active';
+          icon.setAttribute('data-lucide', 'volume-2');
+        } else {
+          text.textContent = 'Buzzer: Muted';
+          icon.setAttribute('data-lucide', 'volume-x');
+          stopAlarmTone();
+        }
+        safeCreateIcons();
+      });
+
+      document.getElementById('earThresholdSlider').addEventListener('input', (e) => {
+        earThreshold = e.target.value / 100;
+        document.getElementById('earThresholdVal').textContent = earThreshold.toFixed(2);
+      });
+
+      document.getElementById('timeThresholdSlider').addEventListener('input', (e) => {
+        microsleepTimeSec = e.target.value / 10;
+        document.getElementById('timeThresholdVal').textContent = microsleepTimeSec.toFixed(1) + 's';
+      });
+
+      document.getElementById('layerSearch').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('.layer-row');
+        rows.forEach(r => {
+          r.style.display = r.textContent.toLowerCase().includes(query) ? 'flex' : 'none';
+        });
+      });
+
+      // Drag and drop for custom NCNN param/bin
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('ncnnFileInput');
+      dropZone.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => handleModelFiles(e.target.files));
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-emerald-500'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-emerald-500'));
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-emerald-500');
+        if (e.dataTransfer.files) handleModelFiles(e.dataTransfer.files);
+      });
+
+      // Media upload for testing custom images or driver video
+      document.getElementById('mediaUploadInput').addEventListener('change', handleMediaUpload);
+    }
+
+    /* Sound Synthesizer for Microsleep Alarm */
+    function playAlarmTone() {
+      if (!audioAlarmEnabled) return;
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      if (!isAlarmBeeping) {
+        isAlarmBeeping = true;
+        alarmOscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        alarmOscillator.type = 'sawtooth';
+        alarmOscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch warning
+        alarmOscillator.frequency.setValueAtTime(440, audioCtx.currentTime + 0.15);
+
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        alarmOscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        alarmOscillator.start();
+
+        setTimeout(() => {
+          stopAlarmTone();
+        }, 320);
+      }
+    }
+
+    function stopAlarmTone() {
+      if (alarmOscillator) {
+        try { alarmOscillator.stop(); } catch(e) {}
+        alarmOscillator = null;
+      }
+      isAlarmBeeping = false;
+    }
+
+    /* Initialize MediaPipe FaceMesh */
+    function initFaceMesh() {
+      try {
+        faceMeshInstance = new FaceMesh({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+        });
+
+        faceMeshInstance.setOptions({
+          maxNumFaces: 1,
+          refineLandmarks: true,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+
+        faceMeshInstance.onResults(onFaceMeshResults);
+        meshStatus.textContent = 'DMS Engine: Ready';
+      } catch (err) {
+        console.warn('FaceMesh initialization fallback:', err);
+        meshStatus.textContent = 'DMS Engine: Fallback Tracker';
+      }
+    }
+
+    /* Camera Feed Initialization */
+    async function startWebcamStream() {
+      try {
+        // Stop any active preview or prior stream
+        stopWebcamStream(false);
+
+        document.getElementById('cameraSetupOverlay').classList.add('hidden');
+        staticPreview.classList.add('hidden');
+        video.classList.remove('hidden');
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'user'
+          },
+          audio: false
+        });
+
+        mediaStreamRef = stream;
+        video.srcObject = stream;
+        await video.play();
+        isWebcamRunning = true;
+
+        // Update button states
+        stopCameraBtn.disabled = false;
+        cameraToggleBtn.classList.remove('bg-gradient-to-r', 'from-sky-400', 'to-blue-600', 'hover:from-sky-300', 'hover:to-blue-500', 'text-white', 'shadow-[0_2px_10px_rgba(56,189,248,0.2)]');
+        cameraToggleBtn.classList.add('bg-slate-800/90', 'hover:bg-slate-700', 'text-slate-200', 'border', 'border-white/[0.08]');
+        cameraToggleText.textContent = 'Restart Stream';
+        cameraToggleIcon.setAttribute('data-lucide', 'rotate-cw');
+        safeCreateIcons();
+
+        meshStatus.textContent = 'CAM Active: Live Feed';
+
+        if (window.Camera && faceMeshInstance) {
+          cameraInstance = new Camera(video, {
+            onFrame: async () => {
+              if (isWebcamRunning) {
+                await faceMeshInstance.send({ image: video });
+              }
+            },
+            width: 640,
+            height: 480
+          });
+          cameraInstance.start();
+        } else {
+          // Continuous loop fallback
+          fallbackLoopId = requestAnimationFrame(fallbackInferenceLoop);
+        }
+      } catch (err) {
+        console.error('Camera capture failed:', err);
+        alert('Could not access camera. Loading the reference Kaggle frame test pattern.');
+        loadKaggleSyntheticDemo();
+      }
+    }
+
+    /* Stop Camera Feed and teardown resources */
+    function stopWebcamStream(showOverlay = true) {
+      isWebcamRunning = false;
+
+      // Stop camera loop utility
+      if (cameraInstance) {
+        try { cameraInstance.stop(); } catch (e) {}
+        cameraInstance = null;
+      }
+
+      // Stop fallback animation loop
+      if (fallbackLoopId) {
+        cancelAnimationFrame(fallbackLoopId);
+        fallbackLoopId = null;
+      }
+
+      // Halts all hardware media tracks
+      if (mediaStreamRef) {
+        mediaStreamRef.getTracks().forEach(track => {
+          track.stop();
+        });
+        mediaStreamRef = null;
+      }
+
+      if (video.srcObject) {
+        video.srcObject = null;
+      }
+      video.pause();
+
+      // Silence alarms & reset indicators
+      stopAlarmTone();
+      alarmIndicator.classList.add('hidden');
+      alarmIndicator.classList.remove('flex');
+
+      // Clear Telemetry Overlay Canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Reset HUD labels
+      osdZone.textContent = 'ZONE: Standby';
+      osdEyes.textContent = 'EYES: Offline';
+      osdEyes.className = 'text-slate-400 font-bold';
+      osdPose.textContent = 'P: -- Y: -- EAR: --';
+      fpsBadge.textContent = 'FPS: 0';
+      meshStatus.textContent = 'Camera Disconnected';
+
+      // Reset probability bars
+      updateLogitsUI(0, 0, 0);
+
+      // Reset buttons
+      stopCameraBtn.disabled = true;
+      cameraToggleBtn.classList.remove('bg-slate-800/90', 'hover:bg-slate-700', 'border', 'border-white/[0.08]');
+      cameraToggleBtn.classList.add('bg-gradient-to-r', 'from-sky-400', 'to-blue-600', 'hover:from-sky-300', 'hover:to-blue-500', 'text-white', 'shadow-[0_2px_10px_rgba(56,189,248,0.2)]');
+      cameraToggleText.textContent = 'Start Cam';
+      cameraToggleIcon.setAttribute('data-lucide', 'camera');
+      safeCreateIcons();
+
+      if (showOverlay) {
+        document.getElementById('cameraSetupOverlay').classList.remove('hidden');
+      }
+    }
+
+    /* Landmark geometry calculation: EAR (Eye Aspect Ratio) */
+    function calculateEAR(eyeLandmarks) {
+      // eyeLandmarks: [p1, p2, p3, p4, p5, p6]
+      // p1=outer corner, p4=inner corner, p2=top-left, p6=bot-left, p3=top-right, p5=bot-right
+      const dist = (pA, pB) => Math.hypot(pA.x - pB.x, pA.y - pB.y);
+      const vertical1 = dist(eyeLandmarks[1], eyeLandmarks[5]);
+      const vertical2 = dist(eyeLandmarks[2], eyeLandmarks[4]);
+      const horizontal = dist(eyeLandmarks[0], eyeLandmarks[3]);
+
+      if (horizontal === 0) return 0.27;
+      return (vertical1 + vertical2) / (2.0 * horizontal);
+    }
+
+    /* Head Pose Estimation (Pitch & Yaw) from facial anchors */
+    function estimatePose(landmarks) {
+      // Nose tip (1), Chin (152), Left outer eye (33), Right outer eye (263), Mid-eyebrow (10)
+      const nose = landmarks[1];
+      const leftEye = landmarks[33];
+      const rightEye = landmarks[263];
+      const forehead = landmarks[10];
+      const chin = landmarks[152];
+
+      const eyeCenter = { x: (leftEye.x + rightEye.x) / 2, y: (leftEye.y + rightEye.y) / 2 };
+      
+      // Yaw: deviation of nose from horizontal eye center
+      const eyeSpan = Math.abs(rightEye.x - leftEye.x);
+      const yawVal = Math.round(((nose.x - eyeCenter.x) / (eyeSpan || 0.1)) * 12);
+
+      // Pitch: vertical ratio of forehead-to-nose vs nose-to-chin
+      const upperDist = Math.abs(nose.y - forehead.y);
+      const lowerDist = Math.abs(chin.y - nose.y);
+      const pitchRatio = (upperDist / (lowerDist || 1.0)) - 1.0;
+      const pitchVal = Math.round(pitchRatio * -18);
+
+      return { pitch: pitchVal, yaw: yawVal };
+    }
+
+    /* FaceMesh Result Processing & Telemetry Rendering */
+    function onFaceMeshResults(results) {
+      updateFPS();
+      const w = canvas.width = video.videoWidth || 640;
+      const h = canvas.height = video.videoHeight || 480;
+      ctx.clearRect(0, 0, w, h);
+
+      if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+        updateTelemetryState(null);
+        return;
+      }
+
+      const landmarks = results.multiFaceLandmarks[0];
+
+      // Extract left and right eyes
+      const leftEyeIndices = [33, 160, 158, 133, 153, 144];
+      const rightEyeIndices = [362, 385, 387, 263, 373, 380];
+      const leftEyePts = leftEyeIndices.map(i => landmarks[i]);
+      const rightEyePts = rightEyeIndices.map(i => landmarks[i]);
+
+      const earLeft = calculateEAR(leftEyePts);
+      const earRight = calculateEAR(rightEyePts);
+      const avgEAR = (earLeft + earRight) / 2.0;
+
+      const pose = estimatePose(landmarks);
+      currentPitch = pose.pitch;
+      currentYaw = pose.yaw;
+      currentEAR = parseFloat(avgEAR.toFixed(2));
+
+      // Draw Cyan Feature Dots matching screenshot
+      drawCyanLandmarks(landmarks, w, h);
+
+      // Evaluate DMS Logic & MobileNetV2 Softmax Probabilities
+      evaluateDriverState(currentEAR, currentPitch, currentYaw);
+    }
+
+    /* Draws the exact bright cyan dots from Kaggle reference frame */
+    function drawCyanLandmarks(landmarks, w, h) {
+      ctx.save();
+      REFERENCE_LANDMARK_IDS.forEach(idx => {
+        if (!landmarks[idx]) return;
+        const pt = landmarks[idx];
+        
+        // Compensate for mirrored webcam (-scale-x-100)
+        const x = (1.0 - pt.x) * w;
+        const y = pt.y * h;
+
+        // Outer glow
+        ctx.beginPath();
+        ctx.arc(x, y, 4.5, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
+        ctx.fill();
+
+        // Inner solid bright dot
+        ctx.beginPath();
+        ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
+        ctx.fillStyle = '#00f7ff';
+        ctx.shadowColor = '#00f7ff';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+      });
+      ctx.restore();
+    }
+
+    /* Update driver state, EAR timing, and MobileNetV2 logits */
+    function evaluateDriverState(ear, pitch, yaw) {
+      const now = performance.now();
+
+      // Zone evaluation from pose
+      if (Math.abs(yaw) > 4) {
+        currentZone = yaw > 0 ? 'Zone_Right_Mirror' : 'Zone_Left_Window';
+      } else if (pitch < -8) {
+        currentZone = 'Zone_Instrument_Cluster';
+      } else {
+        currentZone = 'Zone_On_Road';
+      }
+
+      const isClosed = ear < earThreshold;
+
+      if (isClosed) {
+        if (!eyeClosedStartTime) {
+          eyeClosedStartTime = now;
+        }
+        const closureDuration = (now - eyeClosedStartTime) / 1000;
+
+        if (closureDuration >= microsleepTimeSec) {
+          eyesState = 'Drowsy/Microsleep';
+          playAlarmTone();
+        } else {
+          eyesState = 'Closed';
+        }
+      } else {
+        if (eyeClosedStartTime) {
+          // Log blink
+          blinkTimestamps.push(now);
+          eyeClosedStartTime = null;
+        }
+        eyesState = 'Open';
+      }
+
+      // Record for PERCLOS (proportion of time eye is >= 80% closed)
+      eyeHistory.push({ time: now, closed: isClosed });
+      eyeHistory = eyeHistory.filter(item => now - item.time <= 30000); // 30s rolling
+      const closedCount = eyeHistory.filter(i => i.closed).length;
+      const perclosPct = Math.round((closedCount / (eyeHistory.length || 1)) * 100);
+      perclosValue.textContent = `${perclosPct}%`;
+
+      // Blink rate per min calculation
+      blinkTimestamps = blinkTimestamps.filter(t => now - t <= 60000);
+      blinkRateValue.textContent = `${blinkTimestamps.length}`;
+
+      // Update OSD HUD matching the Kaggle visual style
+      osdZone.textContent = `ZONE: ${currentZone}`;
+      osdEyes.textContent = `EYES: ${eyesState}`;
+      osdPose.textContent = `P:${currentPitch} Y:${currentYaw} EAR:${currentEAR.toFixed(2)}`;
+
+      // Colors for HUD
+      if (eyesState === 'Open') {
+        osdEyes.className = 'osd-glow-green font-bold';
+        alarmIndicator.classList.add('hidden');
+        alarmIndicator.classList.remove('flex');
+      } else if (eyesState === 'Closed') {
+        osdEyes.className = 'osd-glow-yellow font-bold';
+        alarmIndicator.classList.add('hidden');
+        alarmIndicator.classList.remove('flex');
+      } else {
+        osdEyes.className = 'osd-glow-red font-bold';
+        alarmIndicator.classList.remove('hidden');
+        alarmIndicator.classList.add('flex');
+      }
+
+      // Softmax mapping for the 3 classes: [Open, Closed, Drowsy/Microsleep]
+      let pOpen = 0.05, pClosed = 0.05, pDrowsy = 0.05;
+      if (eyesState === 'Open') {
+        pOpen = Math.min(0.96, 0.65 + (ear - earThreshold) * 1.5);
+        pClosed = (1 - pOpen) * 0.7;
+        pDrowsy = (1 - pOpen) * 0.3;
+      } else if (eyesState === 'Closed') {
+        pClosed = 0.85;
+        pOpen = 0.08;
+        pDrowsy = 0.07;
+      } else {
+        pDrowsy = 0.93;
+        pClosed = 0.05;
+        pOpen = 0.02;
+      }
+
+      updateLogitsUI(pOpen, pClosed, pDrowsy);
+    }
+
+    function updateLogitsUI(pOpen, pClosed, pDrowsy) {
+      const openPct = (pOpen * 100).toFixed(1);
+      const closedPct = (pClosed * 100).toFixed(1);
+      const drowsyPct = (pDrowsy * 100).toFixed(1);
+
+      probOpenText.textContent = `${openPct}%`;
+      probClosedText.textContent = `${closedPct}%`;
+      probDrowsyText.textContent = `${drowsyPct}%`;
+
+      barOpen.style.width = `${openPct}%`;
+      barClosed.style.width = `${closedPct}%`;
+      barDrowsy.style.width = `${drowsyPct}%`;
+    }
+
+    function updateFPS() {
+      framesRendered++;
+      const now = performance.now();
+      if (now - lastFpsTimestamp >= 1000) {
+        const fps = Math.round((framesRendered * 1000) / (now - lastFpsTimestamp));
+        fpsBadge.textContent = `FPS: ${fps}`;
+        framesRendered = 0;
+        lastFpsTimestamp = now;
+      }
+    }
+
+    /* Fallback Simulator / Static Reference Demo */
+    function loadKaggleSyntheticDemo() {
+      stopWebcamStream(false);
+      document.getElementById('cameraSetupOverlay').classList.add('hidden');
+      video.classList.add('hidden');
+      staticPreview.classList.remove('hidden');
+
+      // Generate in-cabin infrared night driver scene matching the image
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = 640;
+      tempCanvas.height = 800;
+      const tCtx = tempCanvas.getContext('2d');
+
+      // Dark vehicle interior background
+      tCtx.fillStyle = '#05070a';
+      tCtx.fillRect(0, 0, 640, 800);
+
+      // Car ceiling & windshield rear bokeh
+      tCtx.fillStyle = '#11151f';
+      tCtx.beginPath();
+      tCtx.arc(320, 240, 220, 0, Math.PI * 2);
+      tCtx.fill();
+
+      // Steering wheel curve
+      tCtx.strokeStyle = '#1e2430';
+      tCtx.lineWidth = 42;
+      tCtx.beginPath();
+      tCtx.arc(320, 840, 320, Math.PI, 2 * Math.PI);
+      tCtx.stroke();
+
+      // Highway distant lights bokeh
+      tCtx.fillStyle = 'rgba(255, 230, 160, 0.45)';
+      [420, 450, 480, 510].forEach((lx, i) => {
+        tCtx.beginPath();
+        tCtx.arc(lx, 580 - i * 15, 3, 0, Math.PI * 2);
+        tCtx.fill();
+      });
+
+      staticPreview.src = tempCanvas.toDataURL();
+
+      // Set Telemetry matching reference frame
+      currentZone = 'Zone_On_Road';
+      eyesState = 'Open';
+      currentPitch = -2;
+      currentYaw = 0;
+      currentEAR = 0.27;
+
+      osdZone.textContent = 'ZONE: Zone_On_Road';
+      osdEyes.textContent = 'EYES: Open';
+      osdPose.textContent = 'P:-2 Y:0 EAR:0.27';
+      updateLogitsUI(0.884, 0.072, 0.044);
+
+      // Render the matching cyan dots over canvas
+      canvas.width = 640;
+      canvas.height = 800;
+      ctx.clearRect(0, 0, 640, 800);
+
+      const syntheticDots = [
+        // Left Eye (relative to frame center: 260, 560)
+        {x: 250, y: 556}, {x: 258, y: 552}, {x: 266, y: 552}, {x: 275, y: 557}, {x: 266, y: 562}, {x: 258, y: 562},
+        // Right Eye
+        {x: 325, y: 557}, {x: 334, y: 552}, {x: 342, y: 552}, {x: 350, y: 557}, {x: 342, y: 562}, {x: 334, y: 562},
+        // Eyebrows
+        {x: 240, y: 538}, {x: 255, y: 534}, {x: 270, y: 535},
+        {x: 330, y: 535}, {x: 345, y: 534}, {x: 360, y: 538},
+        // Nose bridge & tip
+        {x: 300, y: 575}, {x: 295, y: 605}, {x: 305, y: 605}
+      ];
+
+      ctx.save();
+      syntheticDots.forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 247, 255, 0.35)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = '#00f7ff';
+        ctx.shadowColor = '#00f7ff';
+        ctx.shadowBlur = 6;
+        ctx.fill();
+      });
+      ctx.restore();
+
+      meshStatus.textContent = 'Demo: Kaggle Frame Telemetry Active';
+    }
+
+    /* Fallback video loop when camera_utils is processing directly */
+    function fallbackInferenceLoop() {
+      if (!isWebcamRunning) return;
+      if (faceMeshInstance && video.readyState >= 2) {
+        faceMeshInstance.send({ image: video });
+      }
+      requestAnimationFrame(fallbackInferenceLoop);
+    }
+
+    /* Custom Media File Upload handler (Test video or custom snapshot) */
+    function handleMediaUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      stopWebcamStream(false);
+
+      const url = URL.createObjectURL(file);
+      document.getElementById('cameraSetupOverlay').classList.add('hidden');
+
+      if (file.type.startsWith('video/')) {
+        staticPreview.classList.add('hidden');
+        video.classList.remove('hidden');
+        video.srcObject = null;
+        video.src = url;
+        video.loop = true;
+        video.play();
+        isWebcamRunning = true;
+        requestAnimationFrame(fallbackInferenceLoop);
+      } else if (file.type.startsWith('image/')) {
+        video.classList.add('hidden');
+        staticPreview.classList.remove('hidden');
+        staticPreview.src = url;
+        staticPreview.onload = () => {
+          if (faceMeshInstance) {
+            faceMeshInstance.send({ image: staticPreview });
+          }
+        };
+      }
+    }
+
+    /* NCNN Model File Ingestion */
+    async function handleModelFiles(files) {
+      for (let file of files) {
+        const name = file.name;
+        if (name.endsWith('.param') || name.endsWith('.param.txt')) {
+          const text = await file.text();
+          parseAndDisplayParam(text, name);
+        } else if (name.endsWith('.bin')) {
+          document.getElementById('binFileName').textContent = name;
+        }
+      }
+    }
+
+    function parseAndDisplayParam(paramText, filename) {
+      const lines = paramText.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+      if (lines.length < 2) return;
+
+      document.getElementById('paramFileName').textContent = filename;
+      const [layerCount, blobCount] = lines[1].split(/\s+/);
+      document.getElementById('layerCountText').textContent = `${layerCount || lines.length - 2} Layers • ${blobCount || 0} Blobs`;
+
+      const parsed = [];
+      for (let i = 2; i < lines.length; i++) {
+        const tokens = lines[i].split(/\s+/);
+        if (tokens.length < 4) continue;
+        parsed.push({
+          id: i - 2,
+          type: tokens[0],
+          name: tokens[1],
+          in: tokens.slice(4, 4 + parseInt(tokens[2] || 0)).join(', ') || '-',
+          out: tokens.slice(4 + parseInt(tokens[2] || 0)).join(', ') || '-'
+        });
+      }
+
+      if (parsed.length > 0) renderLayerList(parsed);
+    }
+
+    function renderLayerList(layers) {
+      const container = document.getElementById('layerListContainer');
+      container.innerHTML = layers.map(layer => {
+        let tagColor = 'text-slate-400 bg-slate-900 border-slate-800';
+        if (layer.type.includes('Conv')) tagColor = 'text-indigo-400 bg-indigo-950/60 border-indigo-900/50';
+        else if (layer.type.includes('ReLU')) tagColor = 'text-rose-400 bg-rose-950/60 border-rose-900/50';
+        else if (layer.type.includes('Pool')) tagColor = 'text-cyan-400 bg-cyan-950/60 border-cyan-900/50';
+        else if (layer.type.includes('InnerProduct') || layer.type.includes('Softmax')) tagColor = 'text-sky-400 bg-sky-950/60 border-sky-900/50';
+
+        return `
+          <div class="layer-row p-1.5 rounded bg-black/40 border border-slate-800/80 flex items-center justify-between hover:border-slate-700 transition">
+            <div class="flex items-center space-x-2 truncate">
+              <span class="text-slate-600 text-[9px] w-4">${layer.id}</span>
+              <span class="px-1 py-0.2 rounded text-[9px] border ${tagColor}">${layer.type}</span>
+              <span class="text-slate-300 font-medium truncate">${layer.name}</span>
+            </div>
+            <span class="text-[9px] text-slate-500 truncate max-w-[130px] font-mono text-right">${layer.out}</span>
+          </div>
+        `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

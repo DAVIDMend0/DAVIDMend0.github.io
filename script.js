@@ -295,9 +295,23 @@ document.addEventListener("DOMContentLoaded", function() {
             if (controller) controller.stop();
         });
 
+        if (modal.id === 'modal-dms') {
+            const dmsContainer = modal.querySelector('#dmsSimEmbedContainer');
+            if (dmsContainer) dmsContainer.classList.add('mobile-warning-active');
+        }
+
         if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
             lastFocusedElement.focus();
         }
+    }
+
+    // DMS Simulation Mobile Advisory Agreement
+    const simAdvisoryBtn = document.getElementById('simAdvisoryBtn');
+    const dmsSimEmbedContainer = document.getElementById('dmsSimEmbedContainer');
+    if (simAdvisoryBtn && dmsSimEmbedContainer) {
+        simAdvisoryBtn.addEventListener('click', function() {
+            dmsSimEmbedContainer.classList.remove('mobile-warning-active');
+        });
     }
 
     openModalButtons.forEach(button => {
