@@ -99,8 +99,14 @@
     body { padding: 0; align-items: stretch; }
     .device-frame { width: 100vw; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; }
     .dynamic-island, .side-btn, .home-indicator { display: none; }
-    .phone { border-radius: 0; }
-    .navbar { padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px)); }
+    .phone { border-radius: 0; padding-bottom: 110px; }
+    .navbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+    }
   }
 
   /* Header */
@@ -138,13 +144,6 @@
   }
   .pipeline-badge .dot {
     width: 7px; height: 7px; border-radius: 50%; background: #4ade80;
-  }
-  .header-route {
-    font-size: 12px;
-    color: #f0d7d7;
-    margin-top: 4px;
-    display: flex;
-    justify-content: space-between;
   }
 
   /* Screens */
@@ -425,6 +424,71 @@
   .status-pill.active { background: #7c2432; color: #fdf3f1; }
   .status-pill.standby { background: #f2e6e6; color: #a67b7e; }
 
+  .audio-controls {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f2e6e6;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .audio-ctrl-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 11px;
+    color: #8a5a5f;
+    font-weight: 600;
+  }
+  .audio-ctrl-row input[type="range"] {
+    flex: 1;
+    accent-color: #7c2432;
+    height: 4px;
+    cursor: pointer;
+  }
+  .tone-pills {
+    display: flex;
+    gap: 5px;
+  }
+  .tone-pill {
+    padding: 3px 8px;
+    border-radius: 8px;
+    border: 1px solid #e3c9cb;
+    background: #fdf7f5;
+    color: #8a5a5f;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .tone-pill.selected {
+    background: #7c2432;
+    color: #fff;
+    border-color: #7c2432;
+  }
+
+  .btn-arrived {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px;
+    border-radius: 15px;
+    border: 1.5px solid #3f8a5c;
+    background: rgba(63, 138, 92, 0.1);
+    color: #2e6b46;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+  .btn-arrived:active {
+    transform: scale(0.98);
+    background: rgba(63, 138, 92, 0.2);
+  }
+
   /* Rest Stop & Buttons */
   .rest-card { background: #ffffff; border-radius: 18px; padding: 14px; }
   .rest-info-row { display: flex; justify-content: space-between; align-items: flex-start; }
@@ -514,6 +578,10 @@
   .phone.dark-mode .rest-name, .phone.dark-mode .trip-route, .phone.dark-mode .device-name,
   .phone.dark-mode .setting-label, .phone.dark-mode .contact-name { color: #f1e4e2; }
   .phone.dark-mode .navbar { background: rgba(27,19,21,0.97); border-top-color: #3a2a2c; }
+  .phone.dark-mode .audio-controls { border-top-color: #3a2a2c; }
+  .phone.dark-mode .tone-pill { background: #211719; border-color: #4a363a; color: #d8b4b8; }
+  .phone.dark-mode .tone-pill.selected { background: #7c2432; color: #fff; }
+  .phone.dark-mode .btn-arrived { color: #6ee7b7; border-color: #3f8a5c; background: rgba(63, 138, 92, 0.16); }
 
   ::-webkit-scrollbar { display: none; }
 </style>
@@ -533,7 +601,7 @@
     <div class="header">
       <div class="statusbar">
         <span id="clock-text">9:41</span>
-        <span>DRIFTS FUSION</span>
+        <span>DRIFTS Prototype</span>
         <span id="gps-badge">GPS: READY</span>
       </div>
       <div class="header-title-row">
@@ -542,10 +610,6 @@
           <span class="dot" id="stage-dot"></span>
           <span id="stage-text">STAGE 1: SENSORS</span>
         </div>
-      </div>
-      <div class="header-route">
-        <span id="location-coords">I-10 W • Houston → San Antonio</span>
-        <span class="mono" id="speed-readout">68 mph</span>
       </div>
     </div>
 
@@ -707,10 +771,25 @@
             </div>
             <div>
               <div class="intervention-name">Cabin Audio Siren</div>
-              <div class="intervention-sub">WebAudio Synthesizer, 880Hz Chime</div>
+              <div class="intervention-sub" id="sub-audio">WebAudio Synthesizer • <span id="lbl-siren-hz">880Hz</span></div>
             </div>
           </div>
           <div class="status-pill standby" id="pill-audio" onclick="toggleManualIntervention('audio')">Standby</div>
+        </div>
+        <!-- Buzzer Sound Controls -->
+        <div class="audio-controls">
+          <div class="audio-ctrl-row">
+            <span>Volume (<span id="lbl-siren-vol">70%</span>)</span>
+            <input type="range" id="slider-siren-vol" min="0" max="100" value="70" oninput="updateSirenSettings()">
+          </div>
+          <div class="audio-ctrl-row">
+            <span>Buzzer Tone</span>
+            <div class="tone-pills">
+              <button class="tone-pill" onclick="setSirenTone(660, 'sine', this)">Soft</button>
+              <button class="tone-pill selected" onclick="setSirenTone(880, 'sawtooth', this)">Chime</button>
+              <button class="tone-pill" onclick="setSirenTone(1200, 'square', this)">Piercing</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -737,6 +816,12 @@
           </button>
         </div>
       </div>
+
+      <!-- I HAVE ARRIVED BUTTON -->
+      <button class="btn-arrived" onclick="handleArrivedSafely()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>I have arrived</span>
+      </button>
     </div>
 
     <!-- ==================== HISTORY & LOGS SCREEN ==================== -->
@@ -784,6 +869,12 @@
           </div>
         </div>
         <span style="font-size:11px;font-weight:700;color:#7c2432;">Test →</span>
+      </div>
+
+      <!-- Deep scroll spacer to trigger Easter Egg after scrolling down for a while -->
+      <div style="height: 1150px; pointer-events: none;"></div>
+      <div id="sensors-easter-egg" style="text-align: center; font-size: 10px; color: #a67b7e; padding: 24px 0 14px; opacity: 0; transition: opacity 0.6s ease; letter-spacing: 0.5px;">
+        made by David Mendoza
       </div>
     </div>
 
@@ -872,8 +963,23 @@ const appState = {
   alertnessScore: 92,
   seatActive: false,
   audioActive: false,
-  criticalStateStart: null
+  criticalStateStart: null,
+
+  // Buzzer Audio Customization
+  sirenVolume: 0.70,
+  sirenFreq: 880,
+  sirenWave: 'sawtooth',
+  gpsWatchId: null
 };
+
+// Live Real-Time Clock in Statusbar
+function updateRealClock() {
+  const now = new Date();
+  document.getElementById('clock-text').textContent = now.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
 
 // Toggle collapsible camera dropdown
 function toggleCameraDropdown() {
@@ -884,18 +990,35 @@ function toggleCameraDropdown() {
 let audioCtx = null;
 let lastBeep = 0;
 
-function playAlertChime(freq = 880, dur = 0.16) {
+function updateSirenSettings() {
+  const val = parseInt(document.getElementById('slider-siren-vol').value, 10);
+  appState.sirenVolume = val / 100;
+  document.getElementById('lbl-siren-vol').textContent = `${val}%`;
+}
+
+function setSirenTone(freq, wave, btnEl) {
+  appState.sirenFreq = freq;
+  appState.sirenWave = wave;
+  document.getElementById('lbl-siren-hz').textContent = `${freq}Hz`;
+  document.querySelectorAll('.tone-pill').forEach(b => b.classList.remove('selected'));
+  if (btnEl) btnEl.classList.add('selected');
+  playAlertChime(freq, 0.16, true);
+}
+
+function playAlertChime(freq = appState.sirenFreq, dur = 0.16, forceTest = false) {
+  if (appState.sirenVolume <= 0.01) return;
   const now = performance.now();
-  if (now - lastBeep < 650) return;
+  if (!forceTest && now - lastBeep < 650) return;
   lastBeep = now;
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    osc.type = 'sawtooth';
+    osc.type = appState.sirenWave || 'sawtooth';
     osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    const peakGain = Math.max(0.002, appState.sirenVolume * 0.18);
+    gain.gain.setValueAtTime(peakGain, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
     osc.connect(gain);
     gain.connect(audioCtx.destination);
@@ -961,17 +1084,16 @@ async function enableHardwareSensors() {
 
   // 2. Bind HTML5 Geolocation for Speed & Coordinates
   if ('geolocation' in navigator) {
-    navigator.geolocation.watchPosition(
+    if (appState.gpsWatchId !== null) {
+      navigator.geolocation.clearWatch(appState.gpsWatchId);
+    }
+    appState.gpsWatchId = navigator.geolocation.watchPosition(
       (pos) => {
-        const lat = pos.coords.latitude.toFixed(3);
-        const lon = pos.coords.longitude.toFixed(3);
-        document.getElementById('location-coords').textContent = `GPS (${lat}, ${lon})`;
         document.getElementById('gps-badge').textContent = 'GPS: LIVE';
         document.getElementById('dev-gps-status').textContent = 'Live • Tracking Location';
         document.getElementById('dev-gps-status').style.color = '#3f8a5c';
         if (pos.coords.speed !== null && pos.coords.speed > 0) {
           appState.speedMph = Math.round(pos.coords.speed * 2.23694);
-          document.getElementById('speed-readout').textContent = `${appState.speedMph} mph`;
         }
       },
       () => {
@@ -995,6 +1117,56 @@ async function enableHardwareSensors() {
 
   showToast('Phone Accelerometer, Gyro & GPS bound to Stage 1 Sentinel!');
   logEvent('Bound smartphone IMU (Accelerometer/Gyro) & GPS sensors.');
+}
+
+function handleArrivedSafely() {
+  // 1. Stop camera recording and reset Stage 2 Vision
+  appState.visionActive = false;
+  stopRealWebcam();
+  document.getElementById('vision-standby-overlay').classList.remove('hidden');
+  document.getElementById('vision-card').classList.remove('triggered');
+  const vPill = document.getElementById('vision-state-pill');
+  vPill.textContent = 'SLEEPING';
+  vPill.classList.remove('active');
+  document.getElementById('island-cam-dot').classList.remove('cam-active');
+  document.getElementById('cam-timer-lbl').textContent = 'Standby (Saves Battery)';
+  document.getElementById('dev-cam-status').textContent = 'Gated Standby • 468 Landmarks';
+
+  // 2. Disconnect phone hardware sensors (IMU + GPS)
+  window.removeEventListener('devicemotion', handleDeviceMotion);
+  if (appState.gpsWatchId !== null && 'geolocation' in navigator) {
+    navigator.geolocation.clearWatch(appState.gpsWatchId);
+    appState.gpsWatchId = null;
+  }
+  appState.hardwareSensorsBound = false;
+  appState.drivingAnomalyScore = 0;
+  appState.accelG = 1.00;
+  appState.gyroRate = 0.0;
+  appState.perclos = 0;
+  appState.closedFramesWindow = [];
+  appState.criticalStateStart = null;
+
+  // Restore frosted sensor link overlay
+  document.getElementById('telemetry-wrap').classList.add('unlinked');
+  document.getElementById('sensor-overlay').classList.remove('hidden');
+  const statusPill = document.getElementById('sensor-status-pill');
+  statusPill.textContent = 'Unlinked';
+  statusPill.classList.remove('connected');
+  const srcLbl = document.getElementById('sensor-source-lbl');
+  srcLbl.textContent = 'Awaiting Link';
+  srcLbl.style.color = '#8a5a5f';
+
+  document.getElementById('gps-badge').textContent = 'GPS: OFF';
+  document.getElementById('dev-motion-status').textContent = 'Tap to bind DeviceMotion API';
+  document.getElementById('dev-motion-status').style.color = '#c96a55';
+  document.getElementById('dev-gps-status').textContent = 'Tap to bind Geolocation API';
+  document.getElementById('dev-gps-status').style.color = '#c96a55';
+
+  setInterventionState('seat', false);
+  setInterventionState('audio', false);
+
+  showToast('You have arrived! Camera stopped & phone sensors disconnected.');
+  logEvent('Trip ended: Camera stopped and all phone sensors disconnected.');
 }
 
 function handleDeviceMotion(event) {
@@ -1265,7 +1437,7 @@ function updateFusionPipeline() {
     }
     if (now - appState.criticalStateStart >= 1000) {
       setInterventionState('audio', true);
-      playAlertChime(920, 0.18);
+      playAlertChime(appState.sirenFreq, 0.18);
     } else {
       setInterventionState('audio', false);
     }
@@ -1328,7 +1500,7 @@ function toggleManualIntervention(type) {
   const pill = document.getElementById('pill-' + type);
   const next = !pill.classList.contains('active');
   setInterventionState(type, next);
-  if (next) playAlertChime(660, 0.12);
+  if (next) playAlertChime(appState.sirenFreq, 0.14, true);
 }
 
 function navigateRestStop() {
@@ -1347,6 +1519,21 @@ function toggleNightMode() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  updateRealClock();
+  setInterval(updateRealClock, 10000);
+
+  // Reveal Easter Egg in Sensors tab when scrolling deep down
+  const phoneEl = document.getElementById('phone-root');
+  phoneEl.addEventListener('scroll', () => {
+    const sensorsScreen = document.getElementById('screen-devices');
+    if (sensorsScreen.classList.contains('active')) {
+      const egg = document.getElementById('sensors-easter-egg');
+      if (phoneEl.scrollTop > 550) {
+        egg.style.opacity = '1';
+      }
+    }
+  });
+
   initMediaPipe();
   requestAnimationFrame(updateFusionPipeline);
 });
