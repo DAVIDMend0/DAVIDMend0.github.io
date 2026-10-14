@@ -91,30 +91,28 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
     border-radius: 44px;
   }
   @media (max-width: 460px) {
-    body { padding: 0; align-items: stretch; }
+    html, body { padding: 0; height: 100dvh; overflow: hidden; align-items: stretch; }
     .device-frame { width: 100vw; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; }
     .dynamic-island, .side-btn, .home-indicator { display: none; }
-    .phone { border-radius: 0; padding-bottom: 110px; }
+    .phone { border-radius: 0; height: 100dvh; }
+    .header { padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
     .navbar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+      padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
     }
   }
 
-  /* Header */
+  /* Header (Locked at Top) */
   .header {
     background: linear-gradient(160deg, #7c2432 0%, #5e1823 100%);
     color: #fdf3f1;
     padding: 46px 20px 16px;
     position: relative;
+    flex-shrink: 0;
+    z-index: 20;
   }
   .statusbar {
     display: flex;
@@ -146,8 +144,15 @@
     width: 7px; height: 7px; border-radius: 50%; background: #4ade80;
   }
 
-  /* Screens */
-  .screen { flex: 1; padding: 14px 16px 24px; display: none; }
+  /* Screens (Only the beige middle scrolls) */
+  .screen {
+    flex: 1;
+    padding: 14px 16px 24px;
+    display: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
   .screen.active { display: block; }
 
   .section-label {
@@ -533,11 +538,10 @@
 
   /* Toast Modal (replaces alert) */
   .toast-banner {
-    position: sticky;
-    top: 8px;
+    position: absolute;
+    top: 108px;
     left: 12px;
     right: 12px;
-    margin: 0 12px;
     background: #23171a;
     color: #fdf3f1;
     padding: 10px 14px;
@@ -553,13 +557,15 @@
   }
   .toast-banner.show { display: flex; }
 
-  /* Bottom Nav */
+  /* Bottom Nav (Locked at Bottom) */
   .navbar {
-    position: sticky; bottom: 0; left: 0;
-    width: 100%; background: rgba(255,255,255,0.96);
-    border-top: 1px solid #f2dfe0; display: flex;
-    padding: 10px 6px calc(32px + env(safe-area-inset-bottom, 0px));
-    z-index: 10;
+    width: 100%;
+    background: rgba(255,255,255,0.96);
+    border-top: 1px solid #f2dfe0;
+    display: flex;
+    padding: 10px 6px 24px;
+    flex-shrink: 0;
+    z-index: 20;
   }
   .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: #c9a3a5; padding: 4px 0; }
   .nav-item.active { color: #7c2432; }
@@ -1523,14 +1529,11 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(updateRealClock, 10000);
 
   // Reveal Easter Egg in Sensors tab when scrolling deep down
-  const phoneEl = document.getElementById('phone-root');
-  phoneEl.addEventListener('scroll', () => {
-    const sensorsScreen = document.getElementById('screen-devices');
-    if (sensorsScreen.classList.contains('active')) {
-      const egg = document.getElementById('sensors-easter-egg');
-      if (phoneEl.scrollTop > 550) {
-        egg.style.opacity = '1';
-      }
+  const sensorsScreen = document.getElementById('screen-devices');
+  sensorsScreen.addEventListener('scroll', () => {
+    const egg = document.getElementById('sensors-easter-egg');
+    if (sensorsScreen.scrollTop > 550) {
+      egg.style.opacity = '1';
     }
   });
 
