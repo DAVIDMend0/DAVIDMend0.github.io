@@ -97,9 +97,10 @@
   }
   @media (max-width: 460px) {
     body { padding: 0; align-items: stretch; }
-    .device-frame { width: 100vw; height: 100vh; border-radius: 0; padding: 0; box-shadow: none; }
+    .device-frame { width: 100vw; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; }
     .dynamic-island, .side-btn, .home-indicator { display: none; }
     .phone { border-radius: 0; }
+    .navbar { padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px)); }
   }
 
   /* Header */
@@ -186,60 +187,85 @@
     align-items: center;
     gap: 6px;
   }
-  .btn-sensor-perm {
-    background: #7c2432;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 5px 10px;
-    font-size: 10.5px;
+  .sensor-status-pill {
+    font-size: 10px;
     font-weight: 700;
-    cursor: pointer;
+    padding: 3px 9px;
+    border-radius: 99px;
+    background: #f2e6e6;
+    color: #8a5a5f;
   }
-  .btn-sensor-perm.connected {
-    background: #3f8a5c;
+  .sensor-status-pill.connected {
+    background: rgba(63, 138, 92, 0.14);
+    color: #3f8a5c;
+  }
+  .telemetry-wrap {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
   }
   .telemetry-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-    margin-bottom: 10px;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+  }
+  .telemetry-wrap.unlinked .telemetry-grid {
+    filter: blur(4px);
+    opacity: 0.45;
+    pointer-events: none;
+    user-select: none;
+  }
+  .sensor-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(253, 247, 245, 0.72);
+    backdrop-filter: blur(3px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    z-index: 5;
+    transition: opacity 0.3s ease;
+  }
+  .sensor-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .btn-sensor-overlay {
+    background: linear-gradient(135deg, #7c2432 0%, #5e1823 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 9px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 6px 16px rgba(124, 36, 50, 0.28);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-sensor-overlay:active {
+    transform: scale(0.97);
+  }
+  .sensor-overlay-sub {
+    font-size: 10px;
+    color: #7a4e53;
+    font-weight: 600;
   }
   .tele-box {
     background: #fdf7f5;
     border: 1px solid #f2dfe0;
     border-radius: 12px;
-    padding: 8px 6px;
+    padding: 10px 6px;
     text-align: center;
   }
   .tele-lbl { font-size: 9.5px; color: #8a5a5f; text-transform: uppercase; font-weight: 700; }
   .tele-val { font-size: 14px; font-weight: 800; color: #3a2226; margin-top: 2px; }
   .tele-sub { font-size: 9px; color: #a67b7e; }
-
-  .event-inject-row {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  .inject-btn {
-    flex: 1;
-    padding: 7px 6px;
-    border-radius: 10px;
-    border: 1px solid #e3c9cb;
-    background: #fdf7f5;
-    color: #7c2432;
-    font-size: 10.5px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .inject-btn:hover { background: #f7e2e2; }
-  .inject-btn:active { transform: scale(0.97); }
-  .inject-btn.danger {
-    background: #7c2432;
-    color: #fff;
-    border-color: #7c2432;
-  }
 
   /* Stage 2 FaceMesh Gate Card */
   .vision-card {
@@ -256,12 +282,34 @@
     box-shadow: 0 0 20px rgba(225, 29, 72, 0.35);
   }
   .vision-topbar {
-    padding: 10px 14px;
+    padding: 12px 14px;
     background: #23171a;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 11px;
+    font-size: 11.5px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .vision-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dropdown-arrow {
+    width: 18px;
+    height: 18px;
+    color: #d8b4b8;
+    transition: transform 0.25s ease;
+  }
+  .vision-card.collapsed .dropdown-arrow {
+    transform: rotate(-90deg);
+  }
+  .vision-collapsible {
+    display: block;
+  }
+  .vision-card.collapsed .vision-collapsible {
+    display: none;
   }
   .vision-state-pill {
     padding: 3px 9px;
@@ -278,7 +326,8 @@
   .vision-viewport {
     position: relative;
     width: 100%;
-    height: 195px;
+    min-height: 210px;
+    max-height: 360px;
     background: #0e090a;
     display: flex;
     align-items: center;
@@ -288,8 +337,10 @@
   .vision-viewport video { display: none; }
   .vision-viewport canvas {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    max-height: 360px;
+    display: block;
+    object-fit: contain;
   }
   .vision-standby-overlay {
     position: absolute;
@@ -338,33 +389,6 @@
     border-radius: 8px;
     font-size: 10px;
     color: #f1e4e2;
-  }
-  .vision-controls {
-    padding: 10px 12px;
-    background: #23171a;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .vision-btn-row {
-    display: flex;
-    gap: 6px;
-  }
-  .v-btn {
-    flex: 1;
-    padding: 6px 8px;
-    border-radius: 8px;
-    border: 1px solid #4a3338;
-    background: #2e1f23;
-    color: #f0d7d7;
-    font-size: 10.5px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .v-btn.active {
-    background: #7c2432;
-    border-color: #a8434f;
-    color: #fff;
   }
 
   /* Alertness Score Card */
@@ -470,7 +494,7 @@
     position: sticky; bottom: 0; left: 0;
     width: 100%; background: rgba(255,255,255,0.96);
     border-top: 1px solid #f2dfe0; display: flex;
-    padding: 8px 6px 24px;
+    padding: 10px 6px calc(32px + env(safe-area-inset-bottom, 0px));
     z-index: 10;
   }
   .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; color: #c9a3a5; padding: 4px 0; }
@@ -484,6 +508,8 @@
   .phone.dark-mode .trip-item, .phone.dark-mode .device-item, .phone.dark-mode .setting-row,
   .phone.dark-mode .contact-item, .phone.dark-mode .log-feed { background: #2a1f21; border-color: #3a2a2c; }
   .phone.dark-mode .tele-box { background: #211719; border-color: #3a2a2c; }
+  .phone.dark-mode .sensor-overlay { background: rgba(33, 23, 25, 0.78); }
+  .phone.dark-mode .sensor-overlay-sub { color: #d8b4b8; }
   .phone.dark-mode .tele-val, .phone.dark-mode .sentinel-title, .phone.dark-mode .intervention-name,
   .phone.dark-mode .rest-name, .phone.dark-mode .trip-route, .phone.dark-mode .device-name,
   .phone.dark-mode .setting-label, .phone.dark-mode .contact-name { color: #f1e4e2; }
@@ -535,7 +561,7 @@
       <!-- STAGE 1: PHONE TELEMETRY SENTINEL -->
       <div class="section-label">
         <span>Stage 1 • Phone Sensor Sentinel</span>
-        <span id="sensor-source-lbl" style="font-size:10px;color:#3f8a5c;">Active</span>
+        <span id="sensor-source-lbl" style="font-size:10px;color:#8a5a5f;">Awaiting Link</span>
       </div>
       <div class="card">
         <div class="sentinel-header">
@@ -543,92 +569,85 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c2432" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
             <span>Motion, Gyro & GPS Monitor</span>
           </div>
-          <button class="btn-sensor-perm" id="btn-enable-sensors" onclick="enableHardwareSensors()">Link Phone Sensors</button>
+          <span class="sensor-status-pill" id="sensor-status-pill">Unlinked</span>
         </div>
 
-        <div class="telemetry-grid">
-          <div class="tele-box">
-            <div class="tele-lbl">Accel G-Force</div>
-            <div class="tele-val mono" id="tele-gforce">1.02g</div>
-            <div class="tele-sub" id="tele-g-status">Smooth</div>
+        <div class="telemetry-wrap unlinked" id="telemetry-wrap">
+          <div class="telemetry-grid">
+            <div class="tele-box">
+              <div class="tele-lbl">Accel G-Force</div>
+              <div class="tele-val mono" id="tele-gforce">1.00g</div>
+              <div class="tele-sub" id="tele-g-status">Smooth</div>
+            </div>
+            <div class="tele-box">
+              <div class="tele-lbl">Steer / Yaw</div>
+              <div class="tele-val mono" id="tele-gyro">0.0°/s</div>
+              <div class="tele-sub" id="tele-Steer-status">Stable Lane</div>
+            </div>
+            <div class="tele-box">
+              <div class="tele-lbl">AnomalyIdx</div>
+              <div class="tele-val mono" id="tele-anomaly" style="color:#3f8a5c;">0%</div>
+              <div class="tele-sub">Trig @ &gt;50%</div>
+            </div>
           </div>
-          <div class="tele-box">
-            <div class="tele-lbl">Steer / Yaw</div>
-            <div class="tele-val mono" id="tele-gyro">2.1°/s</div>
-            <div class="tele-sub" id="tele-Steer-status">Stable Lane</div>
-          </div>
-          <div class="tele-box">
-            <div class="tele-lbl">AnomalyIdx</div>
-            <div class="tele-val mono" id="tele-anomaly" style="color:#3f8a5c;">12%</div>
-            <div class="tele-sub">Trig @ &gt;50%</div>
-          </div>
-        </div>
 
-        <div style="font-size:10.5px; color:#8a5a5f; font-weight:600; margin-bottom:4px;">
-          Test Irregular Driving Event (Triggers Stage 2 Face Check):
-        </div>
-        <div class="event-inject-row">
-          <button class="inject-btn" onclick="triggerDrivingAnomaly('swerve')">〰️ Lane Swerve</button>
-          <button class="inject-btn" onclick="triggerDrivingAnomaly('brake')">🛑 Hard Brake</button>
-          <button class="inject-btn danger" onclick="triggerDrivingAnomaly(' erratic')">⚡ Swerve + Drowsy</button>
+          <!-- Professional Overlay Button shown until user links sensors -->
+          <div class="sensor-overlay" id="sensor-overlay">
+            <button class="btn-sensor-overlay" id="btn-enable-sensors" onclick="enableHardwareSensors()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>
+              <span>Link Phone Sensors</span>
+            </button>
+            <div class="sensor-overlay-sub">Tap to enable Accelerometer, Gyro & GPS</div>
+          </div>
         </div>
       </div>
 
-      <!-- STAGE 2: GATED MEDIAPIPE FACEMESH VERIFICATION -->
+      <!-- STAGE 2: GATED MEDIAPIPE FACEMESH VERIFICATION (DROPDOWN) -->
       <div class="section-label">
         <span>Stage 2 • Conditional Face Verification</span>
         <span id="cam-timer-lbl" class="mono" style="font-size:10px;">Standby (Saves Battery)</span>
       </div>
 
       <div class="vision-card" id="vision-card">
-        <div class="vision-topbar">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="font-weight:700;">MediaPipe 468-Pt FaceMesh</span>
+        <div class="vision-topbar" onclick="toggleCameraDropdown()">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f0c2c6" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span style="font-weight:700;">Driver Camera Feed</span>
           </div>
-          <span class="vision-state-pill" id="vision-state-pill">SLEEPING</span>
-        </div>
-
-        <div class="vision-viewport">
-          <video id="webcam-video" playsinline muted></video>
-          <canvas id="vision-canvas" width="380" height="200"></canvas>
-
-          <!-- Standby Power-Saving Curtain (Shown when Stage 1 driving is normal) -->
-          <div class="vision-standby-overlay" id="vision-standby-overlay">
-            <div class="standby-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-            </div>
-            <div style="font-size:13px;font-weight:800;color:#fff;">Camera in Low-Power Standby</div>
-            <p style="font-size:10.5px;color:#d8b4b8;max-width:260px;margin-top:3px;line-height:1.35;">
-              Face detection automatically rolls into action when phone sensors detect irregular driving.
-            </p>
-            <button onclick="activateStage2Vision('Manual Verification Request', 'normal')" style="margin-top:9px;padding:6px 12px;border-radius:10px;background:#7c2432;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">
-              Wake Face Detection Now
-            </button>
-          </div>
-
-          <!-- Live Vision HUD Metrics -->
-          <div class="vision-hud-bottom">
-            <div class="hud-chip mono">
-              EAR: <strong id="hud-ear" style="color:#4ade80;">0.31</strong> | PERCLOS: <strong id="hud-perclos">4%</strong>
-            </div>
-            <div class="hud-chip mono">
-              POSE: <strong id="hud-pose">0° / 0°</strong>
-            </div>
+          <div class="vision-topbar-right">
+            <span class="vision-state-pill" id="vision-state-pill">SLEEPING</span>
+            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
         </div>
 
-        <!-- Vision Source & Posture Simulator Controls -->
-        <div class="vision-controls">
-          <div class="vision-btn-row">
-            <button class="v-btn active" id="vbtn-sim" onclick="setVisionSource('synthetic')">🤖 Synthetic Face</button>
-            <button class="v-btn" id="vbtn-cam" onclick="setVisionSource('webcam')">📷 Live Webcam</button>
-            <button class="v-btn" onclick="dismissStage2ToStandby()">💤 Sleep Cam</button>
-          </div>
-          <!-- Quick facial state toggles when Stage 2 is awake -->
-          <div class="vision-btn-row" id="sim-posture-row">
-            <button class="v-btn active" id="pbtn-alert" onclick="setDriverPosture('alert')">👀 Alert Face</button>
-            <button class="v-btn" id="pbtn-drowsy" onclick="setDriverPosture('drowsy')">😴 Microsleep</button>
-            <button class="v-btn" id="pbtn-looking" onclick="setDriverPosture('distracted')">📱 Looking Away</button>
+        <div class="vision-collapsible" id="vision-collapsible">
+          <div class="vision-viewport">
+            <video id="webcam-video" playsinline muted></video>
+            <canvas id="vision-canvas"></canvas>
+
+            <!-- Standby Power-Saving Curtain (Shown when Stage 1 driving is normal) -->
+            <div class="vision-standby-overlay" id="vision-standby-overlay">
+              <div class="standby-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <div style="font-size:13px;font-weight:800;color:#fff;">Camera in Low-Power Standby</div>
+              <p style="font-size:10.5px;color:#d8b4b8;max-width:260px;margin-top:3px;line-height:1.35;">
+                Face detection automatically rolls into action when phone sensors detect irregular driving.
+              </p>
+              <button onclick="activateStage2Vision('Manual Camera Verification')" style="margin-top:9px;padding:6px 12px;border-radius:10px;background:#7c2432;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">
+                Wake Camera Now
+              </button>
+            </div>
+
+            <!-- Live Vision HUD Metrics -->
+            <div class="vision-hud-bottom">
+              <div class="hud-chip mono">
+                EAR: <strong id="hud-ear" style="color:#4ade80;">0.31</strong> | PERCLOS: <strong id="hud-perclos">0%</strong>
+              </div>
+              <div class="hud-chip mono">
+                POSE: <strong id="hud-pose">0° / 0°</strong>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -757,7 +776,7 @@
         <span style="font-size:11px;font-weight:700;color:#7c2432;">Bind →</span>
       </div>
 
-      <div class="device-item" onclick="setVisionSource('webcam')">
+      <div class="device-item" onclick="activateStage2Vision('Camera Test from Sensors Tab')">
         <div class="device-left">
           <div>
             <div class="device-name">Front Facing Camera (MediaPipe)</div>
@@ -831,30 +850,35 @@ const appState = {
   // Stage 1: Phone Telemetry
   hardwareSensorsBound: false,
   speedMph: 68,
-  accelG: 1.01,
-  gyroRate: 1.8,
-  drivingAnomalyScore: 10, // 0 - 100 (Triggers Stage 2 when > 50)
+  accelG: 1.00,
+  gyroRate: 0.0,
+  drivingAnomalyScore: 0, // 0 - 100 (Triggers Stage 2 when > 50)
   anomalyDecayRate: 0.25,
 
-  // Stage 2: Face Detection (MediaPipe or Synthetic)
+  // Stage 2: Face Detection (MediaPipe Live Camera)
   visionActive: false,
-  visionSource: 'synthetic', // 'synthetic' | 'webcam'
-  driverPosture: 'alert',    // 'alert' | 'drowsy' | 'distracted'
   webcamRunning: false,
+  faceDetected: false,
   ear: 0.31,
-  mar: 0.12,
   yaw: 0,
   pitch: 0,
-  perclos: 4,
+  pitchBaseline: null,
+  yawBaseline: null,
+  perclos: 0,
   closedFramesWindow: [],
   clearFaceSeconds: 0,
 
   // Fusion Score & Interventions
-  alertnessScore: 88,
+  alertnessScore: 92,
   seatActive: false,
   audioActive: false,
   criticalStateStart: null
 };
+
+// Toggle collapsible camera dropdown
+function toggleCameraDropdown() {
+  document.getElementById('vision-card').classList.toggle('collapsed');
+}
 
 // Audio Context for non-blocking cabin alert chimes
 let audioCtx = null;
@@ -958,9 +982,17 @@ async function enableHardwareSensors() {
   }
 
   appState.hardwareSensorsBound = true;
-  const btn = document.getElementById('btn-enable-sensors');
-  btn.textContent = 'Sensors Linked ✓';
-  btn.classList.add('connected');
+  document.getElementById('telemetry-wrap').classList.remove('unlinked');
+  document.getElementById('sensor-overlay').classList.add('hidden');
+
+  const statusPill = document.getElementById('sensor-status-pill');
+  statusPill.textContent = 'Linked ✓';
+  statusPill.classList.add('connected');
+
+  const srcLbl = document.getElementById('sensor-source-lbl');
+  srcLbl.textContent = 'Live Telemetry';
+  srcLbl.style.color = '#3f8a5c';
+
   showToast('Phone Accelerometer, Gyro & GPS bound to Stage 1 Sentinel!');
   logEvent('Bound smartphone IMU (Accelerometer/Gyro) & GPS sensors.');
 }
@@ -986,29 +1018,6 @@ function handleDeviceMotion(event) {
   }
 }
 
-// Simulate irregular driving events on desktop or testing
-function triggerDrivingAnomaly(type) {
-  if (type === 'swerve') {
-    appState.gyroRate = 48.5;
-    appState.accelG = 1.38;
-    appState.drivingAnomalyScore = 76;
-    logEvent('Stage 1 Sensor Alert: Lateral lane swerve detected (48.5°/s). Waking Stage 2 FaceMesh.', 'warn');
-    activateStage2Vision('Irregular Lane Swerve Detected!', 'alert');
-  } else if (type === 'brake') {
-    appState.accelG = 1.84;
-    appState.gyroRate = 14.2;
-    appState.drivingAnomalyScore = 72;
-    logEvent('Stage 1 Sensor Alert: Harsh braking spike (1.84g). Waking Stage 2 FaceMesh.', 'warn');
-    activateStage2Vision('Sudden Harsh Braking Detected!', 'alert');
-  } else {
-    appState.accelG = 1.65;
-    appState.gyroRate = 54.0;
-    appState.drivingAnomalyScore = 92;
-    logEvent('CRITICAL: Erratic swerve + suspected microsleep! Rolling FaceMesh into action.', 'danger');
-    activateStage2Vision('Erratic Driving! Verifying Driver Face...', 'drowsy');
-  }
-}
-
 // ============================================================================
 // STAGE 2: CONDITIONAL MEDIAPIPE FACEMESH ACTIVATION & VERIFICATION
 // ============================================================================
@@ -1030,16 +1039,15 @@ async function initMediaPipe() {
     });
     faceMesh.onResults(onMediaPipeResults);
   } catch (e) {
-    console.warn('MediaPipe fallback to synthetic:', e);
+    console.warn('MediaPipe initialization error:', e);
   }
 }
 
-function activateStage2Vision(reasonText, initialPosture = 'alert') {
+function activateStage2Vision(reasonText) {
   appState.visionActive = true;
   appState.clearFaceSeconds = 0;
-  if (initialPosture !== 'normal') {
-    setDriverPosture(initialPosture);
-  }
+  appState.pitchBaseline = null;
+  appState.yawBaseline = null;
 
   document.getElementById('vision-standby-overlay').classList.add('hidden');
   document.getElementById('vision-card').classList.add('triggered');
@@ -1050,14 +1058,15 @@ function activateStage2Vision(reasonText, initialPosture = 'alert') {
 
   showToast(reasonText);
 
-  if (appState.visionSource === 'webcam' && !appState.webcamRunning) {
+  if (!appState.webcamRunning) {
     startRealWebcam();
   }
 }
 
 function dismissStage2ToStandby() {
   appState.visionActive = false;
-  appState.drivingAnomalyScore = 10;
+  appState.drivingAnomalyScore = 8;
+  stopRealWebcam();
   document.getElementById('vision-standby-overlay').classList.remove('hidden');
   document.getElementById('vision-card').classList.remove('triggered');
   const pill = document.getElementById('vision-state-pill');
@@ -1068,35 +1077,25 @@ function dismissStage2ToStandby() {
   logEvent('Driver verified alert. Stage 2 FaceMesh returned to low-power standby.');
 }
 
-async function setVisionSource(source) {
-  appState.visionSource = source;
-  document.getElementById('vbtn-sim').classList.toggle('active', source === 'synthetic');
-  document.getElementById('vbtn-cam').classList.toggle('active', source === 'webcam');
-
-  if (source === 'webcam') {
-    if (!appState.visionActive) {
-      activateStage2Vision('Enabling Live Webcam FaceMesh...', 'alert');
-    } else {
-      await startRealWebcam();
-    }
-  } else {
-    stopRealWebcam();
-  }
-}
-
 async function startRealWebcam() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 380, height: 200, facingMode: 'user' }
+      video: { facingMode: 'user' }
     });
     videoEl.srcObject = stream;
     await videoEl.play();
+
+    // Adapt canvas dimensions directly to the native camera stream dimensions
+    if (videoEl.videoWidth && videoEl.videoHeight) {
+      canvasEl.width = videoEl.videoWidth;
+      canvasEl.height = videoEl.videoHeight;
+    }
+
     appState.webcamRunning = true;
     document.getElementById('dev-cam-status').textContent = 'Live Webcam Active';
     pumpWebcamToFaceMesh();
   } catch (err) {
-    showToast('Camera permission unavailable — using Synthetic FaceMesh.');
-    setVisionSource('synthetic');
+    showToast('Camera permission is required for live face verification.');
   }
 }
 
@@ -1106,10 +1105,11 @@ function stopRealWebcam() {
     videoEl.srcObject = null;
   }
   appState.webcamRunning = false;
+  appState.faceDetected = false;
 }
 
 async function pumpWebcamToFaceMesh() {
-  if (!appState.webcamRunning || appState.visionSource !== 'webcam') return;
+  if (!appState.webcamRunning) return;
   if (appState.visionActive && videoEl.readyState >= 2 && faceMesh) {
     await faceMesh.send({ image: videoEl });
   }
@@ -1128,6 +1128,14 @@ function calcEAR(lm, idx) {
 }
 
 function onMediaPipeResults(results) {
+  // Dynamically match canvas resolution to incoming camera frame dimensions
+  if (videoEl.videoWidth && videoEl.videoHeight) {
+    if (canvasEl.width !== videoEl.videoWidth || canvasEl.height !== videoEl.videoHeight) {
+      canvasEl.width = videoEl.videoWidth;
+      canvasEl.height = videoEl.videoHeight;
+    }
+  }
+
   const w = canvasEl.width;
   const h = canvasEl.height;
   ctx.save();
@@ -1137,6 +1145,7 @@ function onMediaPipeResults(results) {
   ctx.drawImage(results.image, 0, 0, w, h);
 
   if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+    appState.faceDetected = true;
     const lm = results.multiFaceLandmarks[0];
     const leftE = calcEAR(lm, [33, 160, 158, 133, 153, 144]);
     const rightE = calcEAR(lm, [362, 385, 387, 263, 373, 380]);
@@ -1144,90 +1153,31 @@ function onMediaPipeResults(results) {
 
     const nose = lm[1], lEye = lm[33], rEye = lm[263];
     const eyeMidX = (lEye.x + rEye.x) / 2;
+    const eyeMidY = (lEye.y + rEye.y) / 2;
     const eyeDist = dist2D(lEye, rEye) || 0.1;
-    appState.yaw = ((nose.x - eyeMidX) / eyeDist) * -85;
-    appState.pitch = ((nose.y - (lEye.y + rEye.y) / 2) / eyeDist - 0.55) * -90;
+
+    const rawYaw = ((nose.x - eyeMidX) / eyeDist) * -75;
+    const rawPitchRatio = (nose.y - eyeMidY) / eyeDist;
+
+    // Auto-calibrate neutral forward gaze so the driver doesn't have to look down
+    if (appState.pitchBaseline === null) {
+      appState.pitchBaseline = rawPitchRatio;
+      appState.yawBaseline = rawYaw;
+    } else if (Math.abs(appState.yaw) < 15 && Math.abs(appState.pitch) < 15) {
+      // Gently adapt baseline to natural upright posture
+      appState.pitchBaseline = appState.pitchBaseline * 0.995 + rawPitchRatio * 0.005;
+      appState.yawBaseline = appState.yawBaseline * 0.995 + rawYaw * 0.005;
+    }
+
+    appState.yaw = rawYaw - appState.yawBaseline;
+    appState.pitch = (appState.pitchBaseline - rawPitchRatio) * 75;
 
     drawConnectors(ctx, lm, FACEMESH_TESSELATION, { color: '#38bdf830', lineWidth: 0.6 });
     drawConnectors(ctx, lm, FACEMESH_RIGHT_EYE, { color: '#4ade80', lineWidth: 1.6 });
     drawConnectors(ctx, lm, FACEMESH_LEFT_EYE, { color: '#4ade80', lineWidth: 1.6 });
+  } else {
+    appState.faceDetected = false;
   }
-  ctx.restore();
-}
-
-function setDriverPosture(posture) {
-  appState.driverPosture = posture;
-  document.getElementById('pbtn-alert').classList.toggle('active', posture === 'alert');
-  document.getElementById('pbtn-drowsy').classList.toggle('active', posture === 'drowsy');
-  document.getElementById('pbtn-looking').classList.toggle('active', posture === 'distracted');
-}
-
-// Render Synthetic 468-style Wireframe Avatar when Webcam is not used
-function renderSyntheticVision(t) {
-  const w = canvasEl.width;
-  const h = canvasEl.height;
-  ctx.clearRect(0, 0, w, h);
-
-  // Subtle radar grid
-  ctx.strokeStyle = '#26191c';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < w; x += 32) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
-  for (let y = 0; y < h; y += 32) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
-
-  if (appState.driverPosture === 'alert') {
-    const blink = (t % 3.8 < 0.13) ? 0.12 : 0.31;
-    appState.ear = blink;
-    appState.yaw = Math.sin(t * 1.4) * 3;
-    appState.pitch = Math.cos(t * 1.1) * 2;
-  } else if (appState.driverPosture === 'drowsy') {
-    appState.ear = 0.13;
-    appState.yaw = 4;
-    appState.pitch = -16 + Math.sin(t * 2) * 2;
-  } else if (appState.driverPosture === 'distracted') {
-    appState.ear = 0.29;
-    appState.yaw = 34;
-    appState.pitch = -14;
-  }
-
-  const cx = w / 2 + appState.yaw * 1.6;
-  const cy = h / 2 - appState.pitch * 1.3;
-
-  ctx.save();
-  ctx.translate(cx, cy);
-
-  // Head mesh oval
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 52, 68, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = appState.ear < 0.22 ? '#f43f5e' : '#4ade80';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Cross contours
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 52, 18, 0, 0, Math.PI * 2);
-  ctx.ellipse(0, 0, 22, 68, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(240, 194, 198, 0.16)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  // Eyes
-  const eyeOpenH = Math.max(1.5, (appState.ear / 0.31) * 9);
-  [-20, 20].forEach(ex => {
-    ctx.beginPath();
-    ctx.ellipse(ex, -10, 11, eyeOpenH, 0, 0, Math.PI * 2);
-    ctx.strokeStyle = appState.ear < 0.22 ? '#fb7185' : '#4ade80';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  });
-
-  // 3D Gaze Vector
-  ctx.beginPath();
-  ctx.moveTo(0, 4);
-  ctx.lineTo(appState.yaw * 1.8, 4 - appState.pitch * 1.8);
-  ctx.strokeStyle = '#f43f5e';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-
   ctx.restore();
 }
 
@@ -1241,28 +1191,24 @@ function updateFusionPipeline() {
   const dt = (now - lastTick) / 1000;
   lastTick = now;
 
-  // 1. Update Stage 1 Sensor Telemetry (gentle highway cruise if no spike)
-  if (!appState.hardwareSensorsBound) {
-    appState.accelG += (1.01 + Math.sin(now / 700) * 0.03 - appState.accelG) * 0.08;
-    appState.gyroRate += (1.8 + Math.abs(Math.cos(now / 900)) * 1.5 - appState.gyroRate) * 0.08;
+  // 1. Update Stage 1 Sensor Telemetry
+  if (appState.hardwareSensorsBound) {
+    appState.drivingAnomalyScore = Math.max(0, appState.drivingAnomalyScore - appState.anomalyDecayRate);
   }
-  appState.drivingAnomalyScore = Math.max(8, appState.drivingAnomalyScore - appState.anomalyDecayRate);
 
   // Trigger Stage 2 automatically if Stage 1 anomaly crosses 50%
   if (appState.drivingAnomalyScore >= 50 && !appState.visionActive) {
-    activateStage2Vision('Sensor Threshold Breached! Rolling FaceMesh...', 'alert');
+    activateStage2Vision('Sensor Threshold Breached! Rolling FaceMesh...');
   }
 
   // 2. If Stage 2 Vision is active, process face metrics
   let isEyesClosed = false;
   let isLookingAway = false;
 
-  if (appState.visionActive) {
-    if (appState.visionSource === 'synthetic') {
-      renderSyntheticVision(now / 1000);
-    }
-    isEyesClosed = appState.ear < 0.22;
-    isLookingAway = Math.abs(appState.yaw) > 24 || Math.abs(appState.pitch) > 18;
+  if (appState.visionActive && appState.faceDetected) {
+    isEyesClosed = appState.ear < 0.21;
+    // Generous pitch/yaw tolerance so natural forward posture never triggers false alarms
+    isLookingAway = Math.abs(appState.yaw) > 28 || Math.abs(appState.pitch) > 25;
 
     appState.closedFramesWindow.push(isEyesClosed ? 1 : 0);
     if (appState.closedFramesWindow.length > 180) appState.closedFramesWindow.shift();
@@ -1279,14 +1225,14 @@ function updateFusionPipeline() {
       }
     } else {
       appState.clearFaceSeconds = 0;
-      document.getElementById('cam-timer-lbl').textContent = ' suspicious state locked!';
+      document.getElementById('cam-timer-lbl').textContent = 'Suspicious state locked!';
     }
   } else {
-    appState.perclos = Math.max(2, Math.round(appState.perclos * 0.98));
+    appState.perclos = Math.max(0, Math.round(appState.perclos * 0.98));
   }
 
   // 3. Compute Unified Fusion Alertness Score
-  const gazePenalty = isLookingAway ? 75 : (appState.visionActive ? Math.min(40, Math.abs(appState.yaw) * 1.2) : 8);
+  const gazePenalty = isLookingAway ? 75 : (appState.visionActive ? Math.min(35, Math.abs(appState.yaw) * 0.9) : 0);
   const eyePenalty = isEyesClosed ? 85 : appState.perclos;
   const sensorPenalty = Math.round(appState.drivingAnomalyScore);
 
