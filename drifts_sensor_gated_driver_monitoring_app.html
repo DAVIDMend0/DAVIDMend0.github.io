@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>DRIFTS — Sensor-Gated Driver Monitoring</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -95,13 +95,58 @@
     border-radius: 44px;
   }
   @media (max-width: 460px) {
-    html, body { padding: 0; height: 100dvh; overflow: hidden; align-items: stretch; }
-    .device-frame { width: 100vw; height: 100dvh; border-radius: 0; padding: 0; box-shadow: none; }
+    html, body {
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+      inset: 0;
+      overscroll-behavior: none;
+    }
+    .device-frame {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      padding: 0;
+      box-shadow: none;
+      background: #f7efeb;
+    }
     .dynamic-island, .side-btn, .home-indicator { display: none; }
-    .phone { border-radius: 0; height: 100dvh; }
-    .header { padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
+    .phone {
+      border-radius: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: calc(10px + env(safe-area-inset-top, 0px)) 20px 14px;
+      z-index: 50;
+    }
+    .screen {
+      position: fixed;
+      top: calc(78px + env(safe-area-inset-top, 0px));
+      bottom: 54px;
+      left: 0;
+      right: 0;
+      padding: 14px 16px 24px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
     .navbar {
-      padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 54px;
+      padding: 6px 6px 6px;
+      z-index: 50;
     }
   }
 
