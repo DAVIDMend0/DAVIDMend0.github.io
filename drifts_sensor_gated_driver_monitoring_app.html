@@ -130,17 +130,24 @@
     .screen {
       flex: 1;
       min-height: 0;
-      padding: 16px 16px 28px;
+      padding: 16px 16px 150px;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-y: contain;
     }
     .navbar {
-      flex-shrink: 0;
-      padding: 10px 6px calc(38px + env(safe-area-inset-bottom, 0px));
-      margin-bottom: 14px;
-      z-index: 50;
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+      width: auto;
+      border-radius: 22px;
+      border: 1px solid #e3c9cb;
+      box-shadow: 0 10px 28px rgba(30, 10, 15, 0.22);
+      padding: 10px 6px;
+      margin: 0;
+      z-index: 9999;
     }
   }
 
@@ -356,19 +363,38 @@
   }
   .cam-timer-bar-wrap {
     width: 100%;
-    height: 6px;
-    background: #2d1d21;
-    overflow: hidden;
+    padding: 8px 14px 10px;
+    background: #1d1215;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: none;
   }
   .vision-card.triggered .cam-timer-bar-wrap {
     display: block;
   }
+  .cam-timer-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #f0c2c6;
+    margin-bottom: 5px;
+  }
+  .cam-timer-track {
+    width: 100%;
+    height: 10px;
+    background: #362227;
+    border-radius: 99px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
   .cam-timer-bar-fill {
     height: 100%;
     width: 100%;
-    background: linear-gradient(90deg, #4ade80 0%, #f59e0b 50%, #e11d48 100%);
-    transition: width 0.15s linear;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #4ade80 0%, #f59e0b 55%, #e11d48 100%);
+    transition: width 0.1s linear;
   }
   .vision-state-pill {
     padding: 3px 9px;
@@ -745,9 +771,15 @@
           </div>
         </div>
 
-        <!-- Visual 15s Verification Progress Bar -->
+        <!-- Visual 7s Verification Progress Bar -->
         <div class="cam-timer-bar-wrap" id="cam-timer-bar-wrap">
-          <div class="cam-timer-bar-fill" id="cam-timer-bar-fill"></div>
+          <div class="cam-timer-bar-header">
+            <span>Driver Verification Timer</span>
+            <span class="mono" id="cam-timer-inline-txt">7.0s</span>
+          </div>
+          <div class="cam-timer-track">
+            <div class="cam-timer-bar-fill" id="cam-timer-bar-fill"></div>
+          </div>
         </div>
 
         <div class="vision-collapsible" id="vision-collapsible">
@@ -957,7 +989,7 @@
       <div class="setting-row">
         <div>
           <div class="setting-label">Auto-Sleep Camera After Clear</div>
-          <div class="setting-sub">Return camera to standby after 15s verification timer</div>
+          <div class="setting-sub">Return camera to standby after 7s verification timer</div>
         </div>
         <input type="checkbox" id="chk-autosleep" checked style="width:18px;height:18px;accent-color:#7c2432;">
       </div>
@@ -1024,7 +1056,7 @@ const appState = {
   perclos: 0,
   closedFramesWindow: [],
   clearFaceSeconds: 0,
-  cameraCheckDuration: 15,
+  cameraCheckDuration: 7,
 
   // Fusion Score & Interventions
   alertnessScore: 92,
@@ -1310,11 +1342,13 @@ function activateStage2Vision(reasonText) {
   vCard.classList.remove('collapsed'); // Automatically open dropdown when checking driver
   const barFill = document.getElementById('cam-timer-bar-fill');
   if (barFill) barFill.style.width = '100%';
+  const inlineTxt = document.getElementById('cam-timer-inline-txt');
+  if (inlineTxt) inlineTxt.textContent = `${appState.cameraCheckDuration.toFixed(1)}s`;
   const pill = document.getElementById('vision-state-pill');
-  pill.textContent = 'VERIFYING (15s)';
+  pill.textContent = `VERIFYING (${appState.cameraCheckDuration}s)`;
   pill.classList.add('active');
   document.getElementById('island-cam-dot').classList.add('cam-active');
-  document.getElementById('cam-timer-lbl').textContent = `Checking Driver • 15s left`;
+  document.getElementById('cam-timer-lbl').textContent = `Checking Driver • ${appState.cameraCheckDuration}s left`;
 
   showToast(reasonText);
 
@@ -1481,13 +1515,16 @@ function updateFusionPipeline() {
       appState.perclos = Math.round((closedSum / appState.closedFramesWindow.length) * 100);
     }
 
-    // Run the 15-second driver verification timer while the driver is alert
+    // Run the 7-second driver verification timer while the driver is alert
     if (!isEyesClosed && !isLookingAway && appState.drivingAnomalyScore < 40) {
       appState.clearFaceSeconds += dt;
-      const rem = Math.max(0, Math.ceil(appState.cameraCheckDuration - appState.clearFaceSeconds));
-      const pctRemaining = Math.max(0, ((appState.cameraCheckDuration - appState.clearFaceSeconds) / appState.cameraCheckDuration) * 100);
+      const remExact = Math.max(0, appState.cameraCheckDuration - appState.clearFaceSeconds);
+      const rem = Math.max(0, Math.ceil(remExact));
+      const pctRemaining = Math.max(0, (remExact / appState.cameraCheckDuration) * 100);
       const barFill = document.getElementById('cam-timer-bar-fill');
       if (barFill) barFill.style.width = `${pctRemaining}%`;
+      const inlineTxt = document.getElementById('cam-timer-inline-txt');
+      if (inlineTxt) inlineTxt.textContent = `${remExact.toFixed(1)}s`;
 
       document.getElementById('cam-timer-lbl').textContent = `Checking Driver • ${rem}s left`;
       document.getElementById('vision-state-pill').textContent = `VERIFYING (${rem}s)`;
@@ -1496,10 +1533,12 @@ function updateFusionPipeline() {
         dismissStage2ToStandby();
       }
     } else {
-      // Reset the 15s countdown if drowsiness or distraction is detected
+      // Reset the 7s countdown if drowsiness or distraction is detected
       appState.clearFaceSeconds = 0;
       const barFill = document.getElementById('cam-timer-bar-fill');
       if (barFill) barFill.style.width = '100%';
+      const inlineTxt = document.getElementById('cam-timer-inline-txt');
+      if (inlineTxt) inlineTxt.textContent = `${appState.cameraCheckDuration.toFixed(1)}s (PAUSED)`;
       document.getElementById('cam-timer-lbl').textContent = 'Suspicious state locked! Timer paused';
       document.getElementById('vision-state-pill').textContent = 'ALERT LOCKED';
     }
