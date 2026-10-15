@@ -99,7 +99,7 @@
       padding: 0;
       margin: 0;
       width: 100%;
-      height: 100%;
+      height: 100dvh;
       overflow: hidden;
       position: fixed;
       inset: 0;
@@ -138,7 +138,7 @@
     }
     .navbar {
       flex-shrink: 0;
-      padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+      padding: 10px 6px calc(18px + env(safe-area-inset-bottom, 0px));
       z-index: 50;
     }
   }
@@ -935,7 +935,7 @@
       <div class="setting-row">
         <div>
           <div class="setting-label">Auto-Sleep Camera After Clear</div>
-          <div class="setting-sub">Return camera to standby after 10s of alert face</div>
+          <div class="setting-sub">Return camera to standby after 15s verification timer</div>
         </div>
         <input type="checkbox" id="chk-autosleep" checked style="width:18px;height:18px;accent-color:#7c2432;">
       </div>
@@ -988,7 +988,7 @@ const appState = {
   accelG: 1.00,
   gyroRate: 0.0,
   drivingAnomalyScore: 0, // 0 - 100 (Triggers Stage 2 when > 50)
-  anomalyDecayRate: 0.25,
+  anomalyDecayRate: 0.45,
 
   // Stage 2: Face Detection (MediaPipe Live Camera)
   visionActive: false,
@@ -1002,6 +1002,7 @@ const appState = {
   perclos: 0,
   closedFramesWindow: [],
   clearFaceSeconds: 0,
+  cameraCheckDuration: 15,
 
   // Fusion Score & Interventions
   alertnessScore: 92,
@@ -1216,20 +1217,32 @@ function handleArrivedSafely() {
 function handleDeviceMotion(event) {
   const acc = event.accelerationIncludingGravity;
   const rot = event.rotationRate;
+
+  // Focus on sharp lateral/directional changes (Gyro yaw/steer rate & sudden high-G jolts)
+  // Normal traffic-light acceleration (~0.15g - 0.35g) is ignored so it won't false-trigger.
+  if (rot && (rot.alpha !== null || rot.beta !== null || rot.gamma !== null)) {
+    const yawRate = Math.max(
+      Math.abs(rot.alpha || 0),
+      Math.abs(rot.beta || 0),
+      Math.abs(rot.gamma || 0)
+    );
+    appState.gyroRate = yawRate;
+
+    // Require a hard directional change / sharp swerve (> 68 deg/s) to build anomaly
+    if (yawRate > 68) {
+      const dirSpike = Math.min(45, (yawRate - 68) * 0.55);
+      appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + dirSpike);
+    }
+  }
+
   if (acc && acc.x !== null) {
     const totalG = Math.hypot(acc.x, acc.y, acc.z) / 9.81;
     appState.accelG = totalG;
-    // Detect sudden jolt or braking (> 1.45g or < 0.55g)
     const gDelta = Math.abs(totalG - 1.0);
-    if (gDelta > 0.45) {
-      appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + gDelta * 45);
-    }
-  }
-  if (rot && rot.alpha !== null) {
-    const yawRate = Math.max(Math.abs(rot.alpha || 0), Math.abs(rot.beta || 0), Math.abs(rot.gamma || 0));
-    appState.gyroRate = yawRate;
-    if (yawRate > 35) {
-      appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + 28);
+
+    // Require a hard jolt/swerve (> 0.85g deviation, i.e. > 1.85g) rather than gentle stop-and-go
+    if (gDelta > 0.85) {
+      appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + (gDelta - 0.85) * 35);
     }
   }
 }
@@ -1268,9 +1281,10 @@ function activateStage2Vision(reasonText) {
   document.getElementById('vision-standby-overlay').classList.add('hidden');
   document.getElementById('vision-card').classList.add('triggered');
   const pill = document.getElementById('vision-state-pill');
-  pill.textContent = 'VERIFYING FACE';
+  pill.textContent = 'VERIFYING (15s)';
   pill.classList.add('active');
   document.getElementById('island-cam-dot').classList.add('cam-active');
+  document.getElementById('cam-timer-lbl').textContent = `Checking Driver • 15s left`;
 
   showToast(reasonText);
 
@@ -1421,27 +1435,33 @@ function updateFusionPipeline() {
   let isEyesClosed = false;
   let isLookingAway = false;
 
-  if (appState.visionActive && appState.faceDetected) {
-    isEyesClosed = appState.ear < 0.21;
-    // Generous pitch/yaw tolerance so natural forward posture never triggers false alarms
-    isLookingAway = Math.abs(appState.yaw) > 28 || Math.abs(appState.pitch) > 25;
+  if (appState.visionActive) {
+    if (appState.faceDetected) {
+      isEyesClosed = appState.ear < 0.21;
+      // Generous pitch/yaw tolerance so natural forward posture never triggers false alarms
+      isLookingAway = Math.abs(appState.yaw) > 28 || Math.abs(appState.pitch) > 25;
 
-    appState.closedFramesWindow.push(isEyesClosed ? 1 : 0);
-    if (appState.closedFramesWindow.length > 180) appState.closedFramesWindow.shift();
-    const closedSum = appState.closedFramesWindow.reduce((a, b) => a + b, 0);
-    appState.perclos = Math.round((closedSum / appState.closedFramesWindow.length) * 100);
+      appState.closedFramesWindow.push(isEyesClosed ? 1 : 0);
+      if (appState.closedFramesWindow.length > 180) appState.closedFramesWindow.shift();
+      const closedSum = appState.closedFramesWindow.reduce((a, b) => a + b, 0);
+      appState.perclos = Math.round((closedSum / appState.closedFramesWindow.length) * 100);
+    }
 
-    // Track how long face is verified clean so we can auto-sleep the camera
-    if (!isEyesClosed && !isLookingAway && appState.drivingAnomalyScore < 35) {
+    // Run the 15-second driver verification timer while the driver is alert
+    if (!isEyesClosed && !isLookingAway && appState.drivingAnomalyScore < 40) {
       appState.clearFaceSeconds += dt;
-      const rem = Math.max(0, Math.ceil(10 - appState.clearFaceSeconds));
-      document.getElementById('cam-timer-lbl').textContent = `Verified Clear • Sleep in ${rem}s`;
-      if (document.getElementById('chk-autosleep').checked && appState.clearFaceSeconds >= 10) {
+      const rem = Math.max(0, Math.ceil(appState.cameraCheckDuration - appState.clearFaceSeconds));
+      document.getElementById('cam-timer-lbl').textContent = `Checking Driver • ${rem}s left`;
+      document.getElementById('vision-state-pill').textContent = `VERIFYING (${rem}s)`;
+
+      if (document.getElementById('chk-autosleep').checked && appState.clearFaceSeconds >= appState.cameraCheckDuration) {
         dismissStage2ToStandby();
       }
     } else {
+      // Reset the 15s countdown if drowsiness or distraction is detected
       appState.clearFaceSeconds = 0;
-      document.getElementById('cam-timer-lbl').textContent = 'Suspicious state locked!';
+      document.getElementById('cam-timer-lbl').textContent = 'Suspicious state locked! Timer paused';
+      document.getElementById('vision-state-pill').textContent = 'ALERT LOCKED';
     }
   } else {
     appState.perclos = Math.max(0, Math.round(appState.perclos * 0.98));
@@ -1565,6 +1585,23 @@ function toggleNightMode() {
 window.addEventListener('DOMContentLoaded', () => {
   updateRealClock();
   setInterval(updateRealClock, 10000);
+
+  // Sync exact visible viewport height on iOS Safari so bottom bar is never hidden by browser toolbars
+  const syncViewportHeight = () => {
+    if (window.innerWidth <= 460) {
+      const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      document.body.style.height = `${vh}px`;
+      document.documentElement.style.height = `${vh}px`;
+    } else {
+      document.body.style.height = '';
+      document.documentElement.style.height = '';
+    }
+  };
+  syncViewportHeight();
+  window.addEventListener('resize', syncViewportHeight);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', syncViewportHeight);
+  }
 
   // Reveal Easter Egg in Sensors tab when scrolling deep down
   const sensorsScreen = document.getElementById('screen-devices');
