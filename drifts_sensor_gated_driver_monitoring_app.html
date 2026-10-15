@@ -130,7 +130,7 @@
     .screen {
       flex: 1;
       min-height: 0;
-      padding: 16px 16px 150px;
+      padding: 16px 16px 240px;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
@@ -138,10 +138,11 @@
     }
     .navbar {
       position: fixed;
-      left: 12px;
-      right: 12px;
-      bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-      width: auto;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      width: calc(100% - 28px);
+      max-width: 390px;
       border-radius: 22px;
       border: 1px solid #e3c9cb;
       box-shadow: 0 10px 28px rgba(30, 10, 15, 0.22);
@@ -193,7 +194,7 @@
   /* Screens (Only the beige middle scrolls) */
   .screen {
     flex: 1;
-    padding: 14px 16px 24px;
+    padding: 14px 16px 180px;
     display: none;
     overflow-y: auto;
     overflow-x: hidden;
