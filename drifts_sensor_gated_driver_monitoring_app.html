@@ -130,7 +130,7 @@
     .screen {
       flex: 1;
       min-height: 0;
-      padding: 16px 16px 24px;
+      padding: 16px 16px 28px;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
@@ -138,7 +138,8 @@
     }
     .navbar {
       flex-shrink: 0;
-      padding: 10px 6px calc(18px + env(safe-area-inset-bottom, 0px));
+      padding: 10px 6px calc(38px + env(safe-area-inset-bottom, 0px));
+      margin-bottom: 14px;
       z-index: 50;
     }
   }
@@ -352,6 +353,22 @@
   }
   .vision-card.collapsed .vision-collapsible {
     display: none;
+  }
+  .cam-timer-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: #2d1d21;
+    overflow: hidden;
+    display: none;
+  }
+  .vision-card.triggered .cam-timer-bar-wrap {
+    display: block;
+  }
+  .cam-timer-bar-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #4ade80 0%, #f59e0b 50%, #e11d48 100%);
+    transition: width 0.15s linear;
   }
   .vision-state-pill {
     padding: 3px 9px;
@@ -716,7 +733,7 @@
         <span id="cam-timer-lbl" class="mono" style="font-size:10px;">Standby (Saves Battery)</span>
       </div>
 
-      <div class="vision-card" id="vision-card">
+      <div class="vision-card collapsed" id="vision-card">
         <div class="vision-topbar" onclick="toggleCameraDropdown()">
           <div style="display:flex;align-items:center;gap:7px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f0c2c6" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -726,6 +743,11 @@
             <span class="vision-state-pill" id="vision-state-pill">SLEEPING</span>
             <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
+        </div>
+
+        <!-- Visual 15s Verification Progress Bar -->
+        <div class="cam-timer-bar-wrap" id="cam-timer-bar-wrap">
+          <div class="cam-timer-bar-fill" id="cam-timer-bar-fill"></div>
         </div>
 
         <div class="vision-collapsible" id="vision-collapsible">
@@ -988,7 +1010,7 @@ const appState = {
   accelG: 1.00,
   gyroRate: 0.0,
   drivingAnomalyScore: 0, // 0 - 100 (Triggers Stage 2 when > 50)
-  anomalyDecayRate: 0.45,
+  anomalyDecayRate: 1.15,
 
   // Stage 2: Face Detection (MediaPipe Live Camera)
   visionActive: false,
@@ -1169,7 +1191,11 @@ function handleArrivedSafely() {
   appState.visionActive = false;
   stopRealWebcam();
   document.getElementById('vision-standby-overlay').classList.remove('hidden');
-  document.getElementById('vision-card').classList.remove('triggered');
+  const vCard = document.getElementById('vision-card');
+  vCard.classList.remove('triggered');
+  vCard.classList.add('collapsed');
+  const barFill = document.getElementById('cam-timer-bar-fill');
+  if (barFill) barFill.style.width = '0%';
   const vPill = document.getElementById('vision-state-pill');
   vPill.textContent = 'SLEEPING';
   vPill.classList.remove('active');
@@ -1218,8 +1244,8 @@ function handleDeviceMotion(event) {
   const acc = event.accelerationIncludingGravity;
   const rot = event.rotationRate;
 
-  // Focus on sharp lateral/directional changes (Gyro yaw/steer rate & sudden high-G jolts)
-  // Normal traffic-light acceleration (~0.15g - 0.35g) is ignored so it won't false-trigger.
+  // Significantly reduced sensitivity: only extreme, violent swerves or very hard jolts
+  // will build up anomaly score. Everyday turns, bumps, and stops are ignored.
   if (rot && (rot.alpha !== null || rot.beta !== null || rot.gamma !== null)) {
     const yawRate = Math.max(
       Math.abs(rot.alpha || 0),
@@ -1228,9 +1254,9 @@ function handleDeviceMotion(event) {
     );
     appState.gyroRate = yawRate;
 
-    // Require a hard directional change / sharp swerve (> 68 deg/s) to build anomaly
-    if (yawRate > 68) {
-      const dirSpike = Math.min(45, (yawRate - 68) * 0.55);
+    // Require a very sharp whip/swerve (> 145 deg/s) with a gentle multiplier
+    if (yawRate > 145) {
+      const dirSpike = Math.min(20, (yawRate - 145) * 0.16);
       appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + dirSpike);
     }
   }
@@ -1240,9 +1266,9 @@ function handleDeviceMotion(event) {
     appState.accelG = totalG;
     const gDelta = Math.abs(totalG - 1.0);
 
-    // Require a hard jolt/swerve (> 0.85g deviation, i.e. > 1.85g) rather than gentle stop-and-go
-    if (gDelta > 0.85) {
-      appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + (gDelta - 0.85) * 35);
+    // Require a heavy impact/jolt (> 1.65g deviation, i.e. > 2.65g total) with smaller gain
+    if (gDelta > 1.65) {
+      appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + (gDelta - 1.65) * 14);
     }
   }
 }
@@ -1279,7 +1305,11 @@ function activateStage2Vision(reasonText) {
   appState.yawBaseline = null;
 
   document.getElementById('vision-standby-overlay').classList.add('hidden');
-  document.getElementById('vision-card').classList.add('triggered');
+  const vCard = document.getElementById('vision-card');
+  vCard.classList.add('triggered');
+  vCard.classList.remove('collapsed'); // Automatically open dropdown when checking driver
+  const barFill = document.getElementById('cam-timer-bar-fill');
+  if (barFill) barFill.style.width = '100%';
   const pill = document.getElementById('vision-state-pill');
   pill.textContent = 'VERIFYING (15s)';
   pill.classList.add('active');
@@ -1295,10 +1325,14 @@ function activateStage2Vision(reasonText) {
 
 function dismissStage2ToStandby() {
   appState.visionActive = false;
-  appState.drivingAnomalyScore = 8;
+  appState.drivingAnomalyScore = 0;
   stopRealWebcam();
   document.getElementById('vision-standby-overlay').classList.remove('hidden');
-  document.getElementById('vision-card').classList.remove('triggered');
+  const vCard = document.getElementById('vision-card');
+  vCard.classList.remove('triggered');
+  vCard.classList.add('collapsed'); // Automatically collapse and hide the camera UI
+  const barFill = document.getElementById('cam-timer-bar-fill');
+  if (barFill) barFill.style.width = '0%';
   const pill = document.getElementById('vision-state-pill');
   pill.textContent = 'SLEEPING';
   pill.classList.remove('active');
@@ -1451,6 +1485,10 @@ function updateFusionPipeline() {
     if (!isEyesClosed && !isLookingAway && appState.drivingAnomalyScore < 40) {
       appState.clearFaceSeconds += dt;
       const rem = Math.max(0, Math.ceil(appState.cameraCheckDuration - appState.clearFaceSeconds));
+      const pctRemaining = Math.max(0, ((appState.cameraCheckDuration - appState.clearFaceSeconds) / appState.cameraCheckDuration) * 100);
+      const barFill = document.getElementById('cam-timer-bar-fill');
+      if (barFill) barFill.style.width = `${pctRemaining}%`;
+
       document.getElementById('cam-timer-lbl').textContent = `Checking Driver • ${rem}s left`;
       document.getElementById('vision-state-pill').textContent = `VERIFYING (${rem}s)`;
 
@@ -1460,6 +1498,8 @@ function updateFusionPipeline() {
     } else {
       // Reset the 15s countdown if drowsiness or distraction is detected
       appState.clearFaceSeconds = 0;
+      const barFill = document.getElementById('cam-timer-bar-fill');
+      if (barFill) barFill.style.width = '100%';
       document.getElementById('cam-timer-lbl').textContent = 'Suspicious state locked! Timer paused';
       document.getElementById('vision-state-pill').textContent = 'ALERT LOCKED';
     }
