@@ -1,0 +1,3427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>DRIFTS — Driver Monitoring v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #efe3de;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-variant-numeric: lining-nums proportional-nums;
+    color: #3a2226;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 28px 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Phone Frame */
+  .device-frame {
+    width: 424px;
+    height: 890px;
+    background: #0b0b0d;
+    border-radius: 58px;
+    padding: 14px;
+    position: relative;
+    box-shadow: 0 30px 60px rgba(30,10,15,0.35), 0 2px 0 rgba(255,255,255,0.04) inset;
+    flex-shrink: 0;
+  }
+  .dynamic-island {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 118px;
+    height: 32px;
+    background: #0b0b0d;
+    border-radius: 20px;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 12px;
+  }
+  .island-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3f8a5c;
+    transition: background 0.3s ease;
+  }
+  .island-dot.cam-active {
+    background: #ef4444;
+    box-shadow: 0 0 8px #ef4444;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .side-btn { position: absolute; background: #0b0b0d; border-radius: 3px; }
+  .side-btn.vol-up { left: -3px; top: 130px; width: 3px; height: 34px; }
+  .side-btn.vol-down { left: -3px; top: 175px; width: 3px; height: 62px; }
+  .side-btn.power { right: -3px; top: 160px; width: 3px; height: 78px; }
+  .home-indicator {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    background: #3a2226;
+    border-radius: 3px;
+    opacity: 0.45;
+    z-index: 16;
+    pointer-events: none;
+  }
+  .phone {
+    width: 100%;
+    height: 100%;
+    background: #f7efeb;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 44px;
+  }
+  @media (max-width: 460px) {
+    html, body {
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+      inset: 0;
+      overscroll-behavior: none;
+    }
+    .device-frame {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      padding: 0;
+      box-shadow: none;
+      background: #f7efeb;
+    }
+    .dynamic-island, .side-btn, .home-indicator { display: none; }
+    .phone {
+      border-radius: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .header {
+      padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 14px;
+      flex-shrink: 0;
+      z-index: 50;
+    }
+    .screen {
+      flex: 1;
+      min-height: 0;
+      padding: 16px 16px 240px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
+    .navbar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      width: calc(100% - 28px);
+      max-width: 390px;
+      border-radius: 22px;
+      border: 1px solid #e3c9cb;
+      box-shadow: 0 10px 28px rgba(30, 10, 15, 0.22);
+      padding: 10px 6px;
+      margin: 0;
+      z-index: 9999;
+    }
+  }
+
+  /* Header (Locked at Top) */
+  .header {
+    background: linear-gradient(160deg, #7c2432 0%, #5e1823 100%);
+    color: #fdf3f1;
+    padding: 46px 20px 16px;
+    position: relative;
+    flex-shrink: 0;
+    z-index: 20;
+  }
+  .statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #fdf3f1;
+    margin-bottom: 12px;
+  }
+  .header-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header-title { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+  .pipeline-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.16);
+    color: #fdf3f1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pipeline-badge .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #4ade80;
+  }
+
+  /* Screens (Only the beige middle scrolls) */
+  .screen {
+    flex: 1;
+    padding: 14px 16px 180px;
+    display: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen.active { display: block; }
+
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.3px;
+    color: #8a5a5f;
+    font-weight: 700;
+    margin: 14px 0 8px 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-label:first-child { margin-top: 2px; }
+
+  .card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(122,32,43,0.06);
+    margin-bottom: 10px;
+  }
+
+  /* Stage 1 Sentinel Card */
+  .sentinel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .sentinel-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #3a2226;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sensor-status-pill {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 99px;
+    background: #f2e6e6;
+    color: #8a5a5f;
+  }
+  .sensor-status-pill.connected {
+    background: rgba(63, 138, 92, 0.14);
+    color: #3f8a5c;
+  }
+  .telemetry-wrap {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+  }
+  .telemetry-wrap.unlinked .telemetry-grid {
+    filter: blur(4px);
+    opacity: 0.45;
+    pointer-events: none;
+    user-select: none;
+  }
+  .sensor-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(253, 247, 245, 0.72);
+    backdrop-filter: blur(3px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    z-index: 5;
+    transition: opacity 0.3s ease;
+  }
+  .sensor-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .btn-sensor-overlay {
+    background: linear-gradient(135deg, #7c2432 0%, #5e1823 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 9px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 6px 16px rgba(124, 36, 50, 0.28);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-sensor-overlay:active {
+    transform: scale(0.97);
+  }
+  .sensor-overlay-sub {
+    font-size: 10px;
+    color: #7a4e53;
+    font-weight: 600;
+  }
+  .tele-box {
+    background: #fdf7f5;
+    border: 1px solid #f2dfe0;
+    border-radius: 12px;
+    padding: 10px 6px;
+    text-align: center;
+  }
+  .tele-lbl { font-size: 9.5px; color: #8a5a5f; text-transform: uppercase; font-weight: 700; }
+  .tele-val { font-size: 14px; font-weight: 800; color: #3a2226; margin-top: 2px; }
+  .tele-sub { font-size: 9px; color: #a67b7e; }
+
+  /* Bluetooth Output Card */
+  .ble-toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid #f2e6e6; font-size: 11.5px; font-weight: 600; color: #3a2226; }
+  .ble-toggle-row:first-of-type { border-top: none; }
+  .ble-toggle-row small { display: block; font-size: 10px; font-weight: 500; color: #a67b7e; }
+  .ble-toggle-row input { width: 18px; height: 18px; accent-color: #7c2432; flex-shrink: 0; }
+  .ble-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .ble-btn { flex: 1; padding: 9px; border-radius: 11px; border: 1px solid #e3c9cb; background: #fdf7f5; color: #7c2432; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+  .ble-btn.primary { background: linear-gradient(135deg, #7c2432 0%, #5e1823 100%); color: #fff; border: none; }
+  .ble-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .ble-log { margin-top: 10px; font-size: 10.5px; color: #8a5a5f; line-height: 1.5; }
+  .ble-log b { color: #3a2226; }
+  .phone.dark-mode .ble-toggle-row { color: #f1e4e2; border-top-color: #3a2a2c; }
+  .phone.dark-mode .ble-btn { background: #211719; border-color: #4a363a; color: #f0c2c6; }
+  .phone.dark-mode .ble-btn.primary { background: linear-gradient(135deg, #7c2432 0%, #5e1823 100%); color: #fff; }
+  .phone.dark-mode .ble-log b { color: #f1e4e2; }
+
+  /* Stage 1b: G29 Wheel Card */
+  .wheel-row { display: flex; gap: 14px; align-items: center; }
+  .wheel-dial { width: 78px; height: 78px; flex-shrink: 0; }
+  .wheel-dial svg { width: 100%; height: 100%; display: block; }
+  #g29-wheel-graphic { transform-origin: 0 0; }
+  .wheel-readouts { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .wheel-angle { font-size: 18px; font-weight: 800; color: #3a2226; }
+  .pedal-row { display: flex; align-items: center; gap: 8px; }
+  .pedal-lbl { font-size: 10px; font-weight: 700; color: #8a5a5f; width: 46px; text-transform: uppercase; }
+  .pedal-track { flex: 1; height: 7px; background: #f2dfe0; border-radius: 4px; overflow: hidden; }
+  .pedal-fill { height: 100%; width: 0%; border-radius: 4px; transition: width 0.05s linear; }
+  .pedal-pct { font-size: 10px; width: 30px; text-align: right; color: #6a4448; }
+  .wheel-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .phone.dark-mode .wheel-angle { color: #f1e4e2; }
+  .phone.dark-mode .pedal-track { background: #3a2a2c; }
+  .phone.dark-mode .pedal-pct { color: #d8b4b8; }
+
+  /* Stage 2 FaceMesh Gate Card */
+  .vision-card {
+    background: #181113;
+    color: #fdf3f1;
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .vision-card.triggered {
+    border-color: #e11d48;
+    box-shadow: 0 0 20px rgba(225, 29, 72, 0.35);
+  }
+  .vision-topbar {
+    padding: 12px 14px;
+    background: #23171a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .vision-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dropdown-arrow {
+    width: 18px;
+    height: 18px;
+    color: #d8b4b8;
+    transition: transform 0.25s ease;
+  }
+  .vision-card.collapsed .dropdown-arrow {
+    transform: rotate(-90deg);
+  }
+  .vision-collapsible {
+    display: block;
+  }
+  .vision-card.collapsed .vision-collapsible {
+    display: none;
+  }
+  .cam-timer-bar-wrap {
+    width: 100%;
+    padding: 8px 14px 10px;
+    background: #1d1215;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: none;
+  }
+  .vision-card.triggered .cam-timer-bar-wrap {
+    display: block;
+  }
+  .cam-timer-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #f0c2c6;
+    margin-bottom: 5px;
+  }
+  .cam-timer-track {
+    width: 100%;
+    height: 10px;
+    background: #362227;
+    border-radius: 99px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+  .cam-timer-bar-fill {
+    height: 100%;
+    width: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #4ade80 0%, #f59e0b 55%, #e11d48 100%);
+    transition: width 0.1s linear;
+  }
+  .vision-state-pill {
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 700;
+    background: #3a2a2d;
+    color: #d8b4b8;
+  }
+  .vision-state-pill.active {
+    background: #e11d48;
+    color: #fff;
+  }
+  .vision-viewport {
+    position: relative;
+    width: 100%;
+    min-height: 210px;
+    max-height: 360px;
+    background: #0e090a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .vision-viewport video { display: none; }
+  .vision-viewport canvas {
+    width: 100%;
+    height: auto;
+    max-height: 360px;
+    display: block;
+    object-fit: contain;
+  }
+  .vision-standby-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 10, 12, 0.88);
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    text-align: center;
+    z-index: 4;
+    transition: opacity 0.3s ease;
+  }
+  .vision-standby-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .standby-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(124, 36, 50, 0.35);
+    border: 1px solid rgba(232, 167, 171, 0.35);
+    color: #f0c2c6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  .vision-hud-bottom {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .hud-chip {
+    background: rgba(15, 10, 12, 0.78);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    color: #f1e4e2;
+  }
+
+  /* Alertness Score Card */
+  .score-card { display: flex; gap: 16px; align-items: center; }
+  .gauge-wrap { position: relative; width: 86px; height: 86px; flex-shrink: 0; }
+  .gauge-wrap svg { transform: rotate(-90deg); }
+  .gauge-bg { fill: none; stroke: #f2dfe0; stroke-width: 8; }
+  .gauge-fg { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease; }
+  .gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .gauge-score { font-size: 23px; font-weight: 800; color: #3f8a5c; line-height: 1; }
+  .gauge-max { font-size: 9.5px; color: #a67b7e; margin-top: 2px; }
+  .score-detail { flex: 1; }
+  .score-status { font-size: 14px; font-weight: 800; color: #3f8a5c; margin-bottom: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+  .bar-label { font-size: 11.5px; color: #8a5a5f; width: 48px; font-weight: 600; }
+  .bar-track { flex: 1; height: 6px; background: #f2dfe0; border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: #3f8a5c; transition: width 0.3s ease; }
+
+  /* Interventions */
+  .intervention-card { background: #ffffff; border-radius: 15px; padding: 12px 14px; margin-bottom: 8px; }
+  .intervention-row { display: flex; align-items: center; justify-content: space-between; }
+  .intervention-left { display: flex; align-items: center; gap: 10px; }
+  .intervention-icon {
+    width: 34px; height: 34px; border-radius: 10px; background: #f7e2e2;
+    color: #b5474f; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .intervention-icon svg { width: 17px; height: 17px; }
+  .intervention-name { font-size: 13px; font-weight: 700; color: #3a2226; }
+  .intervention-sub { font-size: 10.5px; color: #a67b7e; }
+  .status-pill {
+    padding: 5px 12px; border-radius: 14px; font-size: 10px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+  }
+  .status-pill.active { background: #7c2432; color: #fdf3f1; }
+  .status-pill.standby { background: #f2e6e6; color: #a67b7e; }
+
+  .audio-controls {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f2e6e6;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .audio-ctrl-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 11px;
+    color: #8a5a5f;
+    font-weight: 600;
+  }
+  .audio-ctrl-row input[type="range"] {
+    flex: 1;
+    accent-color: #7c2432;
+    height: 4px;
+    cursor: pointer;
+  }
+  .tone-pills {
+    display: flex;
+    gap: 5px;
+  }
+  .tone-pill {
+    padding: 3px 8px;
+    border-radius: 8px;
+    border: 1px solid #e3c9cb;
+    background: #fdf7f5;
+    color: #8a5a5f;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .tone-pill.selected {
+    background: #7c2432;
+    color: #fff;
+    border-color: #7c2432;
+  }
+
+  .btn-arrived {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px;
+    border-radius: 15px;
+    border: 1.5px solid #3f8a5c;
+    background: rgba(63, 138, 92, 0.1);
+    color: #2e6b46;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+  .btn-arrived:active {
+    transform: scale(0.98);
+    background: rgba(63, 138, 92, 0.2);
+  }
+
+  /* Rest Stop & Buttons */
+  .rest-card { background: #ffffff; border-radius: 18px; padding: 14px; }
+  .rest-info-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .rest-name { font-size: 14px; font-weight: 700; color: #3a2226; }
+  .rest-meta { font-size: 11px; color: #a67b7e; margin-top: 2px; }
+  .rest-dist { font-size: 16px; font-weight: 800; color: #7c2432; text-align: right; }
+  .rest-eta { font-size: 10px; color: #a67b7e; text-align: right; }
+  .rest-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-primary {
+    flex: 1; padding: 10px; border-radius: 12px; border: none;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: #7c2432; color: #fdf3f1; font-size: 12.5px; font-weight: 700; cursor: pointer;
+  }
+  .btn-sos {
+    width: 42px; border-radius: 12px; border: 1px solid #e3c9cb; background: #fdf3f1; color: #7c2432;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+
+  /* History & Other Tabs */
+  .trip-item, .device-item, .setting-row, .contact-item {
+    background: #ffffff; border-radius: 15px; padding: 12px 15px; margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .trip-left, .device-left { display: flex; align-items: center; gap: 11px; }
+  .trip-dot { width: 9px; height: 9px; border-radius: 50%; }
+  .trip-route, .device-name, .setting-label, .contact-name { font-size: 13px; font-weight: 700; color: #3a2226; }
+  .trip-date, .device-status, .setting-sub, .contact-rel { font-size: 10.5px; color: #a67b7e; margin-top: 2px; }
+
+  .log-feed {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 10px 12px;
+    max-height: 150px;
+    overflow-y: auto;
+    font-size: 11px;
+    border: 1px solid #f2dfe0;
+  }
+  .log-entry { padding: 4px 0; border-bottom: 1px solid #f9f1ef; color: #6a4448; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-entry.warn { color: #b45309; font-weight: 600; }
+  .log-entry.danger { color: #be123c; font-weight: 700; }
+
+  /* Toast Modal (replaces alert) */
+  .toast-banner {
+    position: absolute;
+    top: 108px;
+    left: 12px;
+    right: 12px;
+    background: #23171a;
+    color: #fdf3f1;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 30;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    border-left: 4px solid #e11d48;
+  }
+  .toast-banner.show { display: flex; }
+
+  /* Bottom Nav (Locked at Bottom) */
+  .navbar {
+    width: 100%;
+    background: rgba(255,255,255,0.96);
+    border-top: 1px solid #f2dfe0;
+    display: flex;
+    padding: 10px 6px 24px;
+    flex-shrink: 0;
+    z-index: 20;
+  }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; color: #c9a3a5; padding: 4px 0; }
+  .nav-item.active { color: #7c2432; }
+  .nav-item svg { width: 20px; height: 20px; min-width: 20px; min-height: 20px; flex-shrink: 0; display: block; }
+  .nav-label { font-size: 10px; font-weight: 700; line-height: 1.1; }
+
+  /* Dark mode support */
+  .phone.dark-mode { background: #1b1315; color: #f1e4e2; }
+  .phone.dark-mode .card, .phone.dark-mode .intervention-card, .phone.dark-mode .rest-card,
+  .phone.dark-mode .trip-item, .phone.dark-mode .device-item, .phone.dark-mode .setting-row,
+  .phone.dark-mode .contact-item, .phone.dark-mode .log-feed { background: #2a1f21; border-color: #3a2a2c; }
+  .phone.dark-mode .tele-box { background: #211719; border-color: #3a2a2c; }
+  .phone.dark-mode .sensor-overlay { background: rgba(33, 23, 25, 0.78); }
+  .phone.dark-mode .sensor-overlay-sub { color: #d8b4b8; }
+  .phone.dark-mode .tele-val, .phone.dark-mode .sentinel-title, .phone.dark-mode .intervention-name,
+  .phone.dark-mode .rest-name, .phone.dark-mode .trip-route, .phone.dark-mode .device-name,
+  .phone.dark-mode .setting-label, .phone.dark-mode .contact-name { color: #f1e4e2; }
+  .phone.dark-mode .navbar { background: rgba(27,19,21,0.97); border-top-color: #3a2a2c; }
+  .phone.dark-mode .audio-controls { border-top-color: #3a2a2c; }
+  .phone.dark-mode .tone-pill { background: #211719; border-color: #4a363a; color: #d8b4b8; }
+  .phone.dark-mode .tone-pill.selected { background: #7c2432; color: #fff; }
+  .phone.dark-mode .btn-arrived { color: #6ee7b7; border-color: #3f8a5c; background: rgba(63, 138, 92, 0.16); }
+
+  /* ---------- Driving session button ---------- */
+  .btn-arrived.btn-start {
+    border: none;
+    background: linear-gradient(135deg, #7c2432 0%, #5e1823 100%);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(124, 36, 50, 0.25);
+  }
+  .btn-arrived.btn-start:active { background: linear-gradient(135deg, #6a1e2a 0%, #4f141d 100%); }
+  .phone.dark-mode .btn-arrived.btn-start { color: #fff; background: linear-gradient(135deg, #7c2432 0%, #5e1823 100%); border: none; }
+  .gauge-wrap.idle .gauge-fg { stroke: #c9a3a5; }
+  .ufas-alert-line { font-size: 10.5px; font-weight: 700; color: #8a5a5f; margin: -4px 0 7px; }
+
+  /* ---------- Profile: alert preferences ---------- */
+  .setting-select {
+    padding: 6px 8px; border-radius: 9px; border: 1px solid #e3c9cb; background: #fdf7f5;
+    color: #3a2226; font: inherit; font-size: 12px; font-weight: 700;
+  }
+  .phone.dark-mode .setting-select { background: #211719; border-color: #4a363a; color: #f1e4e2; }
+  .sound-owner { font-size: 10px; font-weight: 700; color: #3f8a5c; margin-top: 3px; }
+
+  /* ---------- Full-screen lockout alarm ("I am safe") ---------- */
+  .dynamic-island { z-index: 70; }
+  .lockout {
+    position: absolute; inset: 0; z-index: 60;
+    background: #000; color: #fff;
+    display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+    padding: 96px 24px 54px; text-align: center; overflow: hidden;
+    animation: lockout-in 0.35s ease-out;
+    user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  .lockout[hidden] { display: none; }
+  .lockout.clearing { animation: lockout-out 0.5s ease-in forwards; }
+  @keyframes lockout-in { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+  @keyframes lockout-out { to { opacity: 0; } }
+  .lockout-glow {
+    position: absolute; left: 50%; top: 38%; width: 520px; height: 520px; margin: -260px 0 0 -260px;
+    background: radial-gradient(circle, rgba(225, 29, 46, 0.34) 0%, rgba(225, 29, 46, 0) 62%);
+    animation: lockout-pulse 1.5s ease-in-out infinite; pointer-events: none;
+  }
+  @keyframes lockout-pulse { 0%, 100% { opacity: 0.35; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.04); } }
+  .lockout-top, .lockout-bottom { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .lockout-label { display: flex; align-items: center; gap: 8px; font-size: 21px; font-weight: 600; color: #b8b8bd; }
+  .lockout-label svg { width: 24px; height: 24px; color: #ff5a5f; }
+  .lockout-time {
+    font-size: 96px; font-weight: 700; line-height: 1; letter-spacing: -2px; margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .lockout-reason { margin-top: 18px; font-size: 15px; font-weight: 800; color: #ff6b70; }
+  .lockout-msg { margin-top: 6px; font-size: 13px; line-height: 1.45; color: #a1a1a6; max-width: 280px; }
+  .lockout-route {
+    width: 100%; max-width: 340px; padding: 17px; border: none; border-radius: 999px;
+    background: #ff9230; color: #fff; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer;
+  }
+  .lockout-route:active { background: #e57d1f; }
+  .safe-hold { position: relative; width: 190px; height: 190px; margin-top: 26px; display: grid; place-items: center; }
+  .safe-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); pointer-events: none; }
+  .safe-ring circle { fill: none; stroke-width: 9; }
+  .safe-ring-track { stroke: rgba(255, 255, 255, 0.14); }
+  .safe-ring-fill { stroke: #fff; stroke-linecap: round; transition: stroke-dashoffset 0.35s ease-out; }
+  .safe-hold.holding .safe-ring-fill { transition: none; }
+  .safe-hold.done .safe-ring-fill { stroke: #4ade80; }
+  .safe-btn {
+    width: 148px; height: 148px; border-radius: 50%; border: none; cursor: pointer;
+    background: radial-gradient(circle at 50% 35%, #ff3b47 0%, #d70f1f 70%);
+    color: #fff; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    box-shadow: 0 0 0 6px rgba(225, 29, 46, 0.18), 0 12px 30px rgba(225, 29, 46, 0.35);
+    touch-action: none; -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease, background 0.3s ease;
+  }
+  .safe-btn:focus { outline: none; }
+  .safe-btn:focus-visible { box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.32), 0 12px 30px rgba(225, 29, 46, 0.35); }
+  .safe-hold.holding .safe-btn { transform: scale(0.95); }
+  .safe-hold.done .safe-btn { background: radial-gradient(circle at 50% 35%, #4ade80 0%, #16a34a 70%); box-shadow: none; }
+  .safe-btn-main { font-size: 20px; font-weight: 800; }
+  .safe-btn-sub { font-size: 12px; font-weight: 700; opacity: 0.85; font-variant-numeric: tabular-nums; }
+  .safe-hint { margin-top: 16px; font-size: 13px; font-weight: 600; color: #8e8e93; min-height: 18px; }
+  @media (prefers-reduced-motion: reduce) {
+    .lockout, .lockout.clearing, .lockout-glow { animation: none; }
+    .lockout.clearing { opacity: 0; }
+  }
+
+  /* ---------- UFAS trip log (Logs tab) ---------- */
+  .trip-clear { background: none; border: none; color: #8a5a5f; font: inherit; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; text-transform: uppercase; }
+  .trip-chart { display: flex; gap: 6px; align-items: flex-end; height: 132px; }
+  .trip-bar-slot {
+    flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    background: none; border: none; padding: 0; font: inherit; cursor: pointer; border-radius: 8px;
+  }
+  .trip-bar-slot.empty { cursor: default; }
+  .trip-bar-val { font-size: 11px; font-weight: 800; height: 14px; }
+  .trip-bar-track { flex: 1; width: 100%; max-width: 30px; background: #f6e9e8; border-radius: 6px; position: relative; overflow: hidden; }
+  .trip-bar-slot.empty .trip-bar-track { background: none; border: 1.5px dashed #ead6d7; }
+  .trip-bar-fill { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 6px; }
+  .trip-bar-slot.selected .trip-bar-track { box-shadow: 0 0 0 2px #7c2432; }
+  .trip-bar-slot.live .trip-bar-fill { animation: trip-live 1.6s ease-in-out infinite; }
+  @keyframes trip-live { 50% { opacity: 0.55; } }
+  .trip-bar-date { font-size: 9.5px; font-weight: 700; color: #a67b7e; }
+  .trip-bar-slot.live .trip-bar-date { color: #7c2432; }
+  .trip-chart-note { margin-top: 8px; font-size: 10px; color: #a67b7e; }
+  .trip-empty { background: #fff; border-radius: 15px; padding: 18px 16px; font-size: 11.5px; color: #8a5a5f; text-align: center; line-height: 1.5; }
+  .trip-card { background: #fff; border-radius: 15px; margin-bottom: 8px; overflow: hidden; }
+  .trip-head { width: 100%; display: flex; align-items: center; gap: 12px; padding: 11px 13px; background: none; border: none; font: inherit; text-align: left; cursor: pointer; color: inherit; }
+  .trip-score { width: 44px; height: 44px; border-radius: 50%; border: 3px solid; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; }
+  .trip-score span { font-size: 14px; font-weight: 800; }
+  .trip-score small { font-size: 8px; font-weight: 700; text-transform: uppercase; opacity: 0.8; }
+  .trip-head-text { flex: 1; min-width: 0; }
+  .trip-title { font-size: 13px; font-weight: 700; color: #3a2226; }
+  .trip-meta { font-size: 10.5px; color: #a67b7e; margin-top: 2px; }
+  .trip-live { font-size: 9px; font-weight: 800; color: #fff; background: #7c2432; padding: 1px 6px; border-radius: 999px; vertical-align: 1px; }
+  .trip-warn { font-size: 9px; font-weight: 700; color: #b45309; background: #fdf0e1; padding: 1px 6px; border-radius: 999px; vertical-align: 1px; }
+  .trip-chev { width: 18px; height: 18px; color: #c9a3a5; flex-shrink: 0; transition: transform 0.2s ease; }
+  .trip-card.open .trip-chev { transform: rotate(180deg); }
+  .trip-events { border-top: 1px solid #f6e9e8; padding: 8px 13px 12px; }
+  .trip-ev-title { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #8a5a5f; margin: 2px 0 6px; }
+  .trip-events ul { list-style: none; }
+  .trip-ev { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid #faf2f1; }
+  .trip-ev:last-child { border-bottom: none; }
+  .trip-ev-icon { width: 20px; height: 20px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 800; display: grid; place-items: center; flex-shrink: 0; margin-top: 1px; }
+  .trip-ev-body { flex: 1; min-width: 0; }
+  .trip-ev-head { display: flex; justify-content: space-between; gap: 8px; font-size: 11.5px; color: #3a2226; }
+  .trip-ev-head .mono { font-size: 10px; color: #a67b7e; font-weight: 500; }
+  .trip-ev-text { font-size: 11px; color: #6a4448; margin-top: 2px; line-height: 1.4; }
+  .trip-ev-ufas { font-size: 11px; font-weight: 700; width: 24px; text-align: right; flex-shrink: 0; margin-top: 1px; }
+  .phone.dark-mode .trip-card, .phone.dark-mode .trip-empty { background: #2a1f21; }
+  .phone.dark-mode .trip-title, .phone.dark-mode .trip-ev-head { color: #f1e4e2; }
+  .phone.dark-mode .trip-ev-text { color: #d8b4b8; }
+  .phone.dark-mode .trip-bar-track { background: #3a2a2c; }
+  .phone.dark-mode .trip-events, .phone.dark-mode .trip-ev { border-color: #3a2a2c; }
+  @media (prefers-reduced-motion: reduce) { .trip-bar-slot.live .trip-bar-fill { animation: none; } }
+
+  ::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+
+<div class="device-frame">
+  <div class="dynamic-island">
+    <div class="island-dot" id="island-cam-dot" title="Sensor / Camera Indicator"></div>
+  </div>
+  <div class="side-btn vol-up"></div>
+  <div class="side-btn vol-down"></div>
+  <div class="side-btn power"></div>
+
+  <div class="phone" id="phone-root">
+    <!-- Top Header -->
+    <div class="header">
+      <div class="statusbar">
+        <span id="clock-text">9:41</span>
+        <span id="ble-header-lbl">DRIFTS Prototype</span>
+        <span id="gps-badge">GPS: READY</span>
+      </div>
+      <div class="header-title-row">
+        <div class="header-title">DRIFTS</div>
+        <div class="pipeline-badge" id="pipeline-stage-badge">
+          <span class="dot" id="stage-dot"></span>
+          <span id="stage-text">STAGE 1: SENSORS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Non-blocking In-App Notification Banner -->
+    <div class="toast-banner" id="toast-banner">
+      <span id="toast-text">Irregular driving detected! Activating FaceMesh...</span>
+      <button onclick="hideToast()" style="background:none;border:none;color:#f0c2c6;font-weight:800;cursor:pointer;margin-left:8px;">✕</button>
+    </div>
+
+
+    <!-- ==================== FULL-SCREEN LOCKOUT ALARM ==================== -->
+    <div class="lockout" id="lockout" role="alertdialog" aria-modal="true" aria-labelledby="lockout-title" aria-describedby="lockout-desc lockout-msg" hidden>
+      <div class="lockout-glow"></div>
+      <div class="lockout-top">
+        <div class="lockout-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M5 3 2 6M22 6l-3-3"/></svg>
+          <span id="lockout-title">Drowsiness Alarm</span>
+        </div>
+        <div class="lockout-time" id="lockout-time">10:08</div>
+        <div class="lockout-reason" id="lockout-desc">4 camera alerts this trip</div>
+        <div class="lockout-msg" id="lockout-msg">Pull over somewhere safe and rest. The alarm stops only when you hold the button.</div>
+      </div>
+      <div class="lockout-bottom">
+        <button class="lockout-route" onclick="navigateRestStop()">Route to Rest Stop · 12 mi</button>
+        <div class="safe-hold" id="safe-hold">
+          <svg class="safe-ring" viewBox="0 0 190 190" aria-hidden="true">
+            <circle class="safe-ring-track" cx="95" cy="95" r="86"/>
+            <circle class="safe-ring-fill" id="safe-ring-fill" cx="95" cy="95" r="86"/>
+          </svg>
+          <button class="safe-btn" id="safe-btn" aria-label="I am safe. Press and hold for 7 seconds to stop the alarm">
+            <span class="safe-btn-main">I am safe</span>
+            <span class="safe-btn-sub" id="safe-btn-sub">Hold 7s</span>
+          </button>
+        </div>
+        <div class="safe-hint" id="safe-hint" aria-live="polite">Press and hold for 7 seconds</div>
+      </div>
+    </div>
+
+    <!-- ==================== HOME SCREEN ==================== -->
+    <div class="screen active" id="screen-home">
+
+      <!-- COMBINED FUSION ALERTNESS SCORE -->
+      <div class="section-label">Unified Fusion Alertness Score</div>
+      <div class="card score-card">
+        <div class="gauge-wrap idle" id="gauge-wrap">
+          <svg width="86" height="86" viewBox="0 0 92 92">
+            <circle class="gauge-bg" cx="46" cy="46" r="38"></circle>
+            <circle class="gauge-fg" id="gauge-fg" cx="46" cy="46" r="38" stroke="#3f8a5c" stroke-dasharray="238.8" stroke-dashoffset="28"></circle>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-score" id="score-num">100</div>
+            <div class="gauge-max">/100</div>
+          </div>
+        </div>
+        <div class="score-detail">
+          <div class="score-status" id="status-text" style="color:#8a5a5f;">Not Driving • Tap Start Driving</div>
+          <div class="ufas-alert-line" id="ufas-alert-line" style="display:none;">Camera alerts this trip: 0 of 4</div>
+          <div class="mono" id="home-collision-line" style="display:none;font-size:10.5px;font-weight:700;color:#8a5a5f;margin:-4px 0 6px;">ATS Collision Score 100 • 0 hits</div>
+          <div class="bar-row">
+            <div class="bar-label">Sensors</div>
+            <div class="bar-track"><div class="bar-fill" id="bar-steer" style="width:12%;"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Eyes</div>
+            <div class="bar-track"><div class="bar-fill" id="bar-eyes" style="width:8%;"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Gaze</div>
+            <div class="bar-track"><div class="bar-fill" id="bar-gaze" style="width:10%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 2: GATED MEDIAPIPE FACEMESH VERIFICATION (DROPDOWN) -->
+      <div class="section-label">
+        <span>Stage 2 • Conditional Face Verification</span>
+        <span id="cam-timer-lbl" class="mono" style="font-size:10px;">Standby (Saves Battery)</span>
+      </div>
+
+      <div class="vision-card collapsed" id="vision-card">
+        <div class="vision-topbar" onclick="toggleCameraDropdown()">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f0c2c6" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span style="font-weight:700;">Driver Camera Feed</span>
+          </div>
+          <div class="vision-topbar-right">
+            <span class="vision-state-pill" id="vision-state-pill">SLEEPING</span>
+            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+
+        <!-- Visual 7s Verification Progress Bar -->
+        <div class="cam-timer-bar-wrap" id="cam-timer-bar-wrap">
+          <div class="cam-timer-bar-header">
+            <span>Driver Verification Timer</span>
+            <span class="mono" id="cam-timer-inline-txt">7.0s</span>
+          </div>
+          <div class="cam-timer-track">
+            <div class="cam-timer-bar-fill" id="cam-timer-bar-fill"></div>
+          </div>
+        </div>
+
+        <div class="vision-collapsible" id="vision-collapsible">
+          <div class="vision-viewport">
+            <video id="webcam-video" playsinline muted></video>
+            <canvas id="vision-canvas"></canvas>
+
+            <!-- Standby Power-Saving Curtain (Shown when Stage 1 driving is normal) -->
+            <div class="vision-standby-overlay" id="vision-standby-overlay">
+              <div class="standby-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <div style="font-size:13px;font-weight:800;color:#fff;">Camera in Low-Power Standby</div>
+              <p style="font-size:10.5px;color:#d8b4b8;max-width:260px;margin-top:3px;line-height:1.35;">
+                Face detection automatically rolls into action when phone sensors detect irregular driving.
+              </p>
+              <button onclick="activateStage2Vision('Manual Camera Verification')" style="margin-top:9px;padding:6px 12px;border-radius:10px;background:#7c2432;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">
+                Wake Camera Now
+              </button>
+            </div>
+
+            <!-- Live Vision HUD Metrics -->
+            <div class="vision-hud-bottom">
+              <div class="hud-chip mono">
+                EAR: <strong id="hud-ear" style="color:#4ade80;">0.31</strong> | PERCLOS: <strong id="hud-perclos">0%</strong>
+              </div>
+              <div class="hud-chip mono">
+                POSE: <strong id="hud-pose">0° / 0°</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEAREST REST STOP -->
+      <div class="section-label">Nearest Safe Pull-Over</div>
+      <div class="rest-card">
+        <div class="rest-info-row">
+          <div>
+            <div class="rest-name">Seguin Rest Area • I-10 W</div>
+            <div class="rest-meta">24/7 Well-Lit Parking • Restrooms</div>
+          </div>
+          <div>
+            <div class="rest-dist">12 mi</div>
+            <div class="rest-eta">~11 min</div>
+          </div>
+        </div>
+        <div class="rest-actions">
+          <button class="btn-primary" onclick="navigateRestStop()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>
+            Route to Rest Stop
+          </button>
+          <button class="btn-sos" onclick="triggerSOS()" title="Emergency Contact Call">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.7a2 2 0 01-.5 2.1L8 9.7a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.5c.9.3 1.8.5 2.7.6a2 2 0 011.7 2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- DRIVING SESSION: START DRIVING / I HAVE ARRIVED -->
+      <button class="btn-arrived btn-start" id="btn-session" onclick="toggleDrivingSession()">
+        <svg id="btn-session-icon-start" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>
+        <svg id="btn-session-icon-end" style="display:none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="btn-session-lbl">Start Driving</span>
+      </button>
+    </div>
+
+    <!-- ==================== HISTORY & LOGS SCREEN ==================== -->
+    <div class="screen" id="screen-history">
+      <div class="section-label">
+        <span>UFAS Log • Last 7 Trips <span id="trip-count-lbl" style="letter-spacing:0;font-weight:600;color:#a67b7e;">0 of 7</span></span>
+        <button class="trip-clear" id="trip-clear-btn" onclick="clearTripLog()">Clear</button>
+      </div>
+      <div class="card">
+        <div class="trip-chart" id="trip-chart"></div>
+        <div class="trip-chart-note">Lowest UFAS reached on each trip. Tap a bar or a trip to see its important events.</div>
+      </div>
+      <div id="trip-list"></div>
+
+      <div class="section-label">Live Sensor-to-Vision Gate Log</div>
+      <div class="log-feed mono" id="event-log-list">
+        <div class="log-entry">[SYSTEM] Stage 1 motion & GPS sentinel active. FaceMesh in low-power standby.</div>
+      </div>
+    </div>
+
+    <!-- ==================== DEVICES & SENSORS SCREEN ==================== -->
+    <div class="screen" id="screen-devices">
+      <!-- STAGE 1: PHONE TELEMETRY SENTINEL -->
+      <div class="section-label">
+        <span>Stage 1 • Phone Sensor Sentinel</span>
+        <span id="sensor-source-lbl" style="font-size:10px;color:#8a5a5f;">Awaiting Link</span>
+      </div>
+      <div class="card">
+        <div class="sentinel-header">
+          <div class="sentinel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c2432" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <span>Motion, Gyro & GPS Monitor</span>
+          </div>
+          <span class="sensor-status-pill" id="sensor-status-pill">Unlinked</span>
+        </div>
+
+        <div class="telemetry-wrap unlinked" id="telemetry-wrap">
+          <div class="telemetry-grid">
+            <div class="tele-box">
+              <div class="tele-lbl">Accel G-Force</div>
+              <div class="tele-val mono" id="tele-gforce">1.00g</div>
+              <div class="tele-sub" id="tele-g-status">Smooth</div>
+            </div>
+            <div class="tele-box">
+              <div class="tele-lbl">Steer / Yaw</div>
+              <div class="tele-val mono" id="tele-gyro">0.0°/s</div>
+              <div class="tele-sub" id="tele-Steer-status">Stable Lane</div>
+            </div>
+            <div class="tele-box">
+              <div class="tele-lbl">AnomalyIdx</div>
+              <div class="tele-val mono" id="tele-anomaly" style="color:#3f8a5c;">0%</div>
+              <div class="tele-sub">Trig @ &gt;50%</div>
+            </div>
+          </div>
+
+          <!-- Professional Overlay Button shown until user links sensors -->
+          <div class="sensor-overlay" id="sensor-overlay">
+            <button class="btn-sensor-overlay" id="btn-enable-sensors" onclick="enableHardwareSensors()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>
+              <span>Link Phone Sensors & Camera</span>
+            </button>
+            <div class="sensor-overlay-sub">Grants Accelerometer, Gyro, GPS & camera access in one tap</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 1b: LOGITECH G29 WHEEL & PEDAL SENTINEL -->
+      <div class="section-label">
+        <span>Stage 1b • G29 Wheel & Pedals</span>
+        <span id="wheel-source-lbl" style="font-size:10px;color:#8a5a5f;">Awaiting Link</span>
+      </div>
+      <div class="card">
+        <div class="sentinel-header">
+          <div class="sentinel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c2432" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M3.5 10.5l6.2 1M14.3 11.5l6.2-1M12 14.5V21"/></svg>
+            <span>Steering & Pedal Monitor</span>
+          </div>
+          <span class="sensor-status-pill" id="wheel-status-pill">Unlinked</span>
+        </div>
+
+        <div class="telemetry-wrap unlinked" id="wheel-wrap">
+          <div class="telemetry-grid" style="display:block;">
+            <div class="wheel-row">
+              <div class="wheel-dial">
+                <svg viewBox="-50 -50 100 100">
+                  <g id="g29-wheel-graphic">
+                    <circle r="42" fill="none" stroke="#7c2432" stroke-width="7"/>
+                    <rect x="-3" y="-49" width="6" height="7" rx="1.5" fill="#e11d48"/>
+                    <path d="M -40 4 L -13 8 L -9 24 L 9 24 L 13 8 L 40 4" fill="none" stroke="#7c2432" stroke-width="6" stroke-linejoin="round"/>
+                    <circle r="11" fill="#f7efeb" stroke="#7c2432" stroke-width="3"/>
+                  </g>
+                </svg>
+              </div>
+              <div class="wheel-readouts">
+                <div class="wheel-angle mono" id="wheel-angle">+0.0°</div>
+                <div class="pedal-row">
+                  <span class="pedal-lbl">Throttle</span>
+                  <div class="pedal-track"><div class="pedal-fill" id="pedal-throttle" style="background:#3f8a5c;"></div></div>
+                  <span class="pedal-pct mono" id="pedal-throttle-pct">0%</span>
+                </div>
+                <div class="pedal-row">
+                  <span class="pedal-lbl">Brake</span>
+                  <div class="pedal-track"><div class="pedal-fill" id="pedal-brake" style="background:#e11d48;"></div></div>
+                  <span class="pedal-pct mono" id="pedal-brake-pct">0%</span>
+                </div>
+                <div class="pedal-row">
+                  <span class="pedal-lbl">Clutch</span>
+                  <div class="pedal-track"><div class="pedal-fill" id="pedal-clutch" style="background:#d99a2b;"></div></div>
+                  <span class="pedal-pct mono" id="pedal-clutch-pct">0%</span>
+                </div>
+              </div>
+            </div>
+            <div class="wheel-metrics">
+              <div class="tele-box">
+                <div class="tele-lbl">Steer Rate</div>
+                <div class="tele-val mono" id="wheel-rate">0°/s</div>
+                <div class="tele-sub" id="wheel-rate-status">Smooth</div>
+              </div>
+              <div class="tele-box">
+                <div class="tele-lbl">Reversals</div>
+                <div class="tele-val mono" id="wheel-srr">0/min</div>
+                <div class="tele-sub">Micro-corrections</div>
+              </div>
+              <div class="tele-box">
+                <div class="tele-lbl">Still Time</div>
+                <div class="tele-val mono" id="wheel-still">0.0s</div>
+                <div class="tele-sub" id="wheel-still-status">Active Hands</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sensor-overlay" id="wheel-overlay">
+            <button class="btn-sensor-overlay" onclick="enableWheelInput()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/></svg>
+              <span>Link G29 Wheel</span>
+            </button>
+            <div class="sensor-overlay-sub" id="wheel-overlay-sub">Plug in the wheel, then tap and press any wheel button</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE 1c: AMERICAN TRUCK SIMULATOR TELEMETRY (via ats_bridge.py) -->
+      <div class="section-label">
+        <span>Stage 1c • American Truck Simulator</span>
+        <span id="ats-source-lbl" style="font-size:10px;color:#8a5a5f;">Bridge Offline</span>
+      </div>
+      <div class="card">
+        <div class="sentinel-header">
+          <div class="sentinel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c2432" stroke-width="2.2"><rect x="1" y="6" width="14" height="10" rx="1"/><path d="M15 9h4l3 3v4h-7"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+            <span>Collision & Fine Monitor</span>
+          </div>
+          <span class="sensor-status-pill" id="ats-status-pill">Offline</span>
+        </div>
+
+        <div class="telemetry-wrap unlinked" id="ats-wrap">
+          <div class="telemetry-grid">
+            <div class="tele-box">
+              <div class="tele-lbl">Collision Score</div>
+              <div class="tele-val mono" id="ats-score" style="color:#3f8a5c;">100</div>
+              <div class="tele-sub" id="ats-collisions">0 collisions</div>
+            </div>
+            <div class="tele-box">
+              <div class="tele-lbl">Truck Damage</div>
+              <div class="tele-val mono" id="ats-damage">0.0%</div>
+              <div class="tele-sub" id="ats-damage-sub">Cabin / Chassis</div>
+            </div>
+            <div class="tele-box">
+              <div class="tele-lbl">Speed</div>
+              <div class="tele-val mono" id="ats-speed">0 mph</div>
+              <div class="tele-sub" id="ats-fines">0 fines</div>
+            </div>
+          </div>
+          <div class="sensor-overlay" id="ats-overlay">
+            <button class="btn-sensor-overlay" onclick="connectATS()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+              <span>Connect ATS Bridge</span>
+            </button>
+            <div class="sensor-overlay-sub" id="ats-overlay-sub">Run ats_bridge.py on the PC, then tap</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
+          <input id="ats-url" class="mono" value="ws://localhost:8765" spellcheck="false"
+            style="flex:1;min-width:0;padding:6px 8px;border-radius:9px;border:1px solid #e3c9cb;background:#fdf7f5;color:#3a2226;font-size:11px;">
+          <button onclick="disconnectATS()" style="padding:6px 10px;border-radius:9px;border:1px solid #e3c9cb;background:#fdf7f5;color:#7c2432;font-size:11px;font-weight:700;cursor:pointer;">Disconnect</button>
+        </div>
+        <div class="tele-sub" id="ats-last-event" style="margin-top:8px;font-size:10.5px;">No events yet</div>
+      </div>
+
+      <!-- OUTPUT: BLUETOOTH LINK TO ESP32 / RASPBERRY PI -->
+      <div class="section-label">
+        <span>Output • DRIFTS Module (Bluetooth)</span>
+        <span id="ble-source-lbl" style="font-size:10px;color:#8a5a5f;">Not Linked</span>
+      </div>
+      <div class="card">
+        <div class="sentinel-header">
+          <div class="sentinel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c2432" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10-5 5V2l5 5L7 17"/></svg>
+            <span id="ble-device-name">ESP32 / Raspberry Pi</span>
+          </div>
+          <span class="sensor-status-pill" id="ble-status-pill">Unlinked</span>
+        </div>
+
+        <label class="ble-toggle-row">
+          <span>Signal when camera activates<small>Sends CAM ON / CAM OFF with the trigger source</small></span>
+          <input type="checkbox" id="ble-opt-camera" checked>
+        </label>
+        <label class="ble-toggle-row">
+          <span>Module handles alarm sound<small>The phone goes silent once you tap Link Module; the module drives the buzzer &amp; motors</small></span>
+          <input type="checkbox" id="ble-opt-interventions" checked onchange="updateSoundOwner()">
+        </label>
+        <label class="ble-toggle-row">
+          <span>Stream alertness score<small>Score once per second</small></span>
+          <input type="checkbox" id="ble-opt-score">
+        </label>
+
+        <div class="ble-actions">
+          <button class="ble-btn primary" id="ble-connect-btn" onclick="connectBLE()">Link Module</button>
+          <button class="ble-btn" id="ble-test-btn" onclick="sendBLETest()" disabled>Test Signal</button>
+          <button class="ble-btn" id="ble-disconnect-btn" onclick="disconnectBLE(true)" disabled>Unlink</button>
+        </div>
+        <div class="ble-log mono">
+          <div>Sent: <b id="ble-last-sent">—</b></div>
+          <div>Module: <b id="ble-last-ack">—</b></div>
+          <div>Alarm sound: <b id="ble-sound-owner">This phone</b></div>
+        </div>
+        <div class="tele-sub" id="ble-support-note" style="margin-top:6px;font-size:10px;">Works in Chrome/Edge on Android, Windows, macOS &amp; ChromeOS. On iPhone use the Bluefy browser.</div>
+      </div>
+
+      <div class="section-label">Smartphone Web APIs</div>
+      <div class="device-item" onclick="enableHardwareSensors()">
+        <div class="device-left">
+          <div>
+            <div class="device-name">Accelerometer & Gyroscope</div>
+            <div class="device-status" id="dev-motion-status" style="color:#c96a55;">Tap to bind DeviceMotion API</div>
+          </div>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:#7c2432;">Bind →</span>
+      </div>
+
+      <div class="device-item" onclick="enableHardwareSensors()">
+        <div class="device-left">
+          <div>
+            <div class="device-name">HTML5 Geolocation (GPS Speed)</div>
+            <div class="device-status" id="dev-gps-status" style="color:#c96a55;">Tap to bind Geolocation API</div>
+          </div>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:#7c2432;">Bind →</span>
+      </div>
+
+      <div class="device-item" onclick="enableWheelInput()">
+        <div class="device-left">
+          <div>
+            <div class="device-name">Logitech G29 Wheel & Pedals</div>
+            <div class="device-status" id="dev-wheel-status" style="color:#c96a55;">Tap to bind Gamepad API</div>
+          </div>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:#7c2432;">Bind →</span>
+      </div>
+
+      <div class="device-item" onclick="activateStage2Vision('Camera Test from Sensors Tab', 'M', { test: true })">
+        <div class="device-left">
+          <div>
+            <div class="device-name">Front Facing Camera (MediaPipe)</div>
+            <div class="device-status" id="dev-cam-status" style="color:#3f8a5c;">Gated Standby • 468 Landmarks</div>
+          </div>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:#7c2432;">Test →</span>
+      </div>
+
+      <!-- Deep scroll spacer to trigger Easter Egg after scrolling down for a while -->
+      <div style="height: 1150px; pointer-events: none;"></div>
+      <div id="sensors-easter-egg" style="text-align: center; font-size: 10px; color: #a67b7e; padding: 24px 0 14px; opacity: 0; transition: opacity 0.6s ease; letter-spacing: 0.5px;">
+        made by David Mendoza
+      </div>
+    </div>
+
+    <!-- ==================== PROFILE SCREEN ==================== -->
+    <div class="screen" id="screen-profile">
+      <div class="section-label">Driver Profile & Gate Settings</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Driver Profile</div>
+          <div class="setting-sub">Sensor-Gated DMS • Active Protection</div>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Auto-Sleep Camera After Clear</div>
+          <div class="setting-sub">Return camera to standby after 7s verification timer</div>
+        </div>
+        <input type="checkbox" id="chk-autosleep" checked style="width:18px;height:18px;accent-color:#7c2432;">
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Night Dark Theme</div>
+          <div class="setting-sub">Low-glare cabin color palette</div>
+        </div>
+        <input type="checkbox" id="chk-darkmode" onchange="toggleNightMode()" style="width:18px;height:18px;accent-color:#7c2432;">
+      </div>
+
+      <!-- DRIVING ALERT PREFERENCES (moved from Monitor) -->
+      <div class="section-label">Driving Alert Preferences</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Full-Screen Alarm</div>
+          <div class="setting-sub">Each camera alert lowers the score 25 pts; it climbs back ~5 pts/min</div>
+        </div>
+        <select class="setting-select" id="sel-lockout-alerts" onchange="updateUfasAlertLine()" aria-label="Camera alerts before the full-screen alarm">
+          <option value="3">After 3 alerts</option>
+          <option value="4" selected>After 4 alerts</option>
+          <option value="5">After 5 alerts</option>
+        </select>
+      </div>
+      <!-- AUTOMATED INTERVENTIONS -->
+      <div class="intervention-card">
+        <div class="intervention-row">
+          <div class="intervention-left">
+            <div class="intervention-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3"/></svg>
+            </div>
+            <div>
+              <div class="intervention-name">Haptic / Seat Vibration</div>
+              <div class="intervention-sub" id="sub-seat">Phone Vibration API + 4x ERM Array</div>
+            </div>
+          </div>
+          <div class="status-pill standby" id="pill-seat" onclick="toggleManualIntervention('seat')">Standby</div>
+        </div>
+      </div>
+
+      <div class="intervention-card">
+        <div class="intervention-row">
+          <div class="intervention-left">
+            <div class="intervention-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15v-3a9 9 0 0118 0v3"/><path d="M21 16a2 2 0 01-2 2h-1v-6h1a2 2 0 012 2v2z"/><path d="M3 16a2 2 0 002 2h1v-6H5a2 2 0 00-2 2v2z"/></svg>
+            </div>
+            <div>
+              <div class="intervention-name">Cabin Audio Siren</div>
+              <div class="intervention-sub" id="sub-audio">WebAudio Synthesizer • <span id="lbl-siren-hz">880Hz</span></div>
+              <div class="sound-owner" id="sub-audio-owner" style="color:#a67b7e;">Sound plays on this phone</div>
+            </div>
+          </div>
+          <div class="status-pill standby" id="pill-audio" onclick="toggleManualIntervention('audio')">Standby</div>
+        </div>
+        <!-- Buzzer Sound Controls -->
+        <div class="audio-controls">
+          <div class="audio-ctrl-row">
+            <span>Volume (<span id="lbl-siren-vol">70%</span>)</span>
+            <input type="range" id="slider-siren-vol" min="0" max="100" value="70" oninput="updateSirenSettings()">
+          </div>
+          <div class="audio-ctrl-row">
+            <span>Buzzer Tone</span>
+            <div class="tone-pills">
+              <button class="tone-pill" onclick="setSirenTone(660, 'sine', this)">Soft</button>
+              <button class="tone-pill selected" onclick="setSirenTone(880, 'sawtooth', this)">Chime</button>
+              <button class="tone-pill" onclick="setSirenTone(1200, 'square', this)">Piercing</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="navbar">
+      <div class="nav-item active" id="nav-home" onclick="showScreen('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        <div class="nav-label">Monitor</div>
+      </div>
+      <div class="nav-item" id="nav-history" onclick="showScreen('history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l2 6 4-12 2 6h6"/></svg>
+        <div class="nav-label">Logs</div>
+      </div>
+      <div class="nav-item" id="nav-devices" onclick="showScreen('devices')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/></svg>
+        <div class="nav-label">Sensors</div>
+      </div>
+      <div class="nav-item" id="nav-profile" onclick="showScreen('profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        <div class="nav-label">Profile</div>
+      </div>
+    </div>
+  </div>
+  <div class="home-indicator"></div>
+</div>
+
+<script>
+// ============================================================================
+// UNIFIED STATE: STAGE 1 (PHONE SENSORS) + STAGE 2 (FACE DETECTION GATE)
+// ============================================================================
+const CIRC = 2 * Math.PI * 38;
+
+const appState = {
+  // Pipeline stage: 'stage1_sentinel' | 'stage2_verifying' | 'stage3_intervention'
+  pipelineStage: 'stage1_sentinel',
+
+  // Stage 1: Phone Telemetry
+  hardwareSensorsBound: false,
+  speedMph: 68,
+  accelG: 1.00,
+  gyroRate: 0.0,
+  drivingAnomalyScore: 0, // 0 - 100 (Triggers Stage 2 when > 50)
+  anomalyDecayRate: 1.15,
+
+  // Stage 2: Face Detection (MediaPipe Live Camera)
+  visionActive: false,
+  webcamRunning: false,
+  faceDetected: false,
+  ear: 0.31,
+  yaw: 0,
+  pitch: 0,
+  pitchBaseline: null,
+  yawBaseline: null,
+  perclos: 0,
+  closedFramesWindow: [],
+  clearFaceSeconds: 0,
+  cameraCheckDuration: 7,
+  eyesClosedSince: null,    // when the current eye closure began (performance.now ms)
+  eyesClosedFor: 0,         // seconds the eyes have been closed right now
+  cameraWokeAt: null,
+  lockoutStartedAt: null,
+
+  // Fusion Score & Interventions
+  alertnessScore: 100,    // UFAS shown on the gauge (min of ceiling and live score)
+  liveScore: 100,         // instantaneous fusion score, drives interventions
+  sessionActive: false,
+  sessionStartedAt: null,
+  ufasCeiling: 100,       // drops 25 per camera alert, recovers slowly
+  cameraAlerts: 0,
+  lockoutActive: false,
+  lockoutCount: 0,
+  seatActive: false,
+  audioActive: false,
+  criticalStateStart: null,
+
+  // Buzzer Audio Customization
+  sirenVolume: 0.70,
+  sirenFreq: 880,
+  sirenWave: 'sawtooth',
+  gpsWatchId: null,
+
+  // Stage 1b: Logitech G29 Wheel (Gamepad API)
+  wheelBound: false,
+  wheelLinkRequested: false,
+  wheelIndex: null,
+  steerDeg: 0,
+  steerRate: 0,           // smoothed deg/s at the wheel rim
+  throttle: 0,            // 0..1
+  brake: 0,               // 0..1
+  clutch: 0,              // 0..1
+  steerStillSeconds: 0,
+  steerReversalsPerMin: 0,
+  lastAnomalyReason: null,
+
+  // Stage 1c: American Truck Simulator (WebSocket bridge)
+  atsWanted: false,
+  atsConnected: false,
+  atsGameLive: false,
+  atsCollisions: 0,
+  atsFines: 0,
+  atsCollisionScore: 100,
+  atsDamagePct: 0,
+  lastAnomalySource: null,   // 'S' phone sensors, 'W' wheel, 'A' ATS (sent to the module)
+
+  // Bluetooth output module
+  bleConnected: false,
+  bleWantConnected: false,
+  bleLinkPending: false
+};
+
+// ============================================================================
+// ATS CONFIGURATION — how game events feed the Stage 1 anomaly score
+// ============================================================================
+const ATS_CONFIG = {
+  collisionImpulse: 60,            // any collision wakes the camera (>= 50)
+  scorePenaltyBase: 5,             // collision score lost per hit…
+  scorePenaltyPerDamagePct: 3,     // …plus this much per % of damage the hit caused
+  scorePenaltyMax: 25,
+  // Fines: offence name from the SCS SDK -> anomaly points
+  fineImpulse: {
+    avoid_sleeping: 60,            // ATS fatigue fine: directly relevant to drowsiness
+    wrong_way: 50,
+    red_signal: 35,
+    hard_shoulder_violation: 35,
+    crash: 0,                      // already counted as a collision
+    default: 20
+  },
+  reconnectMs: 3000
+};
+
+// ============================================================================
+// G29 CONFIGURATION — use g29-tester.html to confirm axis numbers on your PC
+// ============================================================================
+const WHEEL_CONFIG = {
+  // Axis mapping (Chrome/Edge on Windows defaults for the G29)
+  steerAxis: 0,
+  steerInvert: false,
+  rangeDeg: 900,            // must match G HUB "Operating Range"
+  throttleAxis: 2,
+  brakeAxis: 5,
+  clutchAxis: 1,
+  pedalsInverted: true,     // G29 pedals read +1 at rest, -1 fully pressed
+
+  // 1) Swerve: steering wheel spun faster than this (deg/s at the rim)
+  swerveRateDegPerSec: 540,
+  swerveImpulse: 55,        // anomaly points added (>= 50 wakes the camera on its own)
+
+  // 2) Drowsy "drift then jerk" pattern: hands go still while driving,
+  //    then a sudden large correction. Classic microsleep steering signature.
+  stillAngleDeg: 1.0,       // movement smaller than this counts as "still"
+  stillSeconds: 3.5,        // how long hands must be still to arm the check
+  minThrottleForStill: 0.08,// only counts while on the throttle (car moving)
+  correctionDeg: 25,        // correction size that fires the event…
+  correctionWindowSec: 0.6, // …if it happens within this long after stillness ends
+  correctionImpulse: 60,
+
+  // 3) Panic brake: brake goes from released to hard within a short window
+  hardBrakeLevel: 0.70,
+  hardBrakeWindowMs: 400,
+  hardBrakeImpulse: 35,     // below 50 alone; combines with other events
+
+  // Steering reversal rate (info + light contribution when very erratic)
+  reversalGapDeg: 2.0,
+  erraticReversalsPerMin: 45,
+
+  eventCooldownSec: 1.5     // minimum time between repeat events of the same type
+};
+
+const wheelState = {
+  lastSteerDeg: null,
+  stillAnchorDeg: 0,
+  stillStart: performance.now(),
+  correction: null,         // { start, baseDeg } while a post-stillness window is open
+  reversalDir: 0,
+  reversalExtreme: 0,
+  reversalTimes: [],
+  brakeLowTime: performance.now(),
+  pedalSeen: {},            // some browsers report 0 until a pedal first moves
+  lastEvent: {}
+};
+
+// Live Real-Time Clock in Statusbar
+function updateRealClock() {
+  const now = new Date();
+  document.getElementById('clock-text').textContent = now.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+}
+
+// Toggle collapsible camera dropdown
+function toggleCameraDropdown() {
+  document.getElementById('vision-card').classList.toggle('collapsed');
+}
+
+// Audio Context for non-blocking cabin alert chimes
+let audioCtx = null;
+let lastBeep = 0;
+
+function updateSirenSettings() {
+  const val = parseInt(document.getElementById('slider-siren-vol').value, 10);
+  appState.sirenVolume = val / 100;
+  document.getElementById('lbl-siren-vol').textContent = `${val}%`;
+}
+
+function setSirenTone(freq, wave, btnEl) {
+  appState.sirenFreq = freq;
+  appState.sirenWave = wave;
+  document.getElementById('lbl-siren-hz').textContent = `${freq}Hz`;
+  document.querySelectorAll('.tone-pill').forEach(b => b.classList.remove('selected'));
+  if (btnEl) btnEl.classList.add('selected');
+  playAlertChime(freq, 0.16, true, { preview: true });
+}
+
+// Plays one tone on the phone speaker (no vibration, no rate limit)
+function playTone(freq, dur, volume = appState.sirenVolume) {
+  if (volume <= 0.01) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = appState.sirenWave || 'sawtooth';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(Math.max(0.002, volume * 0.18), audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur);
+  } catch (e) {}
+}
+
+// Alert chime + phone haptics. When the Bluetooth module owns the alarm sound,
+// the phone stays silent (only tone previews in Profile still play).
+function playAlertChime(freq = appState.sirenFreq, dur = 0.16, forceTest = false, opts = {}) {
+  const now = performance.now();
+  if (!forceTest && now - lastBeep < 650) return;
+  lastBeep = now;
+  if (opts.preview || !moduleOwnsSound()) playTone(freq, dur);
+  // Trigger mobile haptic vibration if supported
+  if (!opts.preview && navigator.vibrate) navigator.vibrate([160, 80, 160]);
+}
+
+// Navigation & Toast Helpers
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const banner = document.getElementById('toast-banner');
+  document.getElementById('toast-text').textContent = msg;
+  banner.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => banner.classList.remove('show'), 4200);
+}
+function hideToast() {
+  document.getElementById('toast-banner').classList.remove('show');
+}
+
+function logEvent(msg, level = 'normal') {
+  const list = document.getElementById('event-log-list');
+  const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const item = document.createElement('div');
+  item.className = 'log-entry ' + (level !== 'normal' ? level : '');
+  item.textContent = `[${time}] ${msg}`;
+  list.prepend(item);
+}
+
+// ============================================================================
+// STAGE 1: REAL SMARTPHONE SENSORS (ACCELEROMETER, GYRO, GPS) + INJECTORS
+// ============================================================================
+// Asks for camera permission up front, then immediately releases the camera so it
+// stays in gated standby. Later Stage 2 activations reuse the granted permission.
+async function requestCameraPermission() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+    stream.getTracks().forEach(t => t.stop());
+    return true;
+  } catch (e) {
+    console.warn('Camera permission error:', e);
+    return false;
+  }
+}
+
+async function enableHardwareSensors() {
+  // Start every permission request inside the same tap. iOS only shows the
+  // motion prompt if requestPermission() is called directly from the gesture,
+  // so it is kicked off first, before anything is awaited.
+  let motionRequest;
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    motionRequest = DeviceMotionEvent.requestPermission()
+      .then(resp => resp === 'granted')
+      .catch(e => { console.warn('DeviceMotion permission error:', e); return false; });
+  } else {
+    motionRequest = Promise.resolve('DeviceMotionEvent' in window);
+  }
+  const cameraRequest = requestCameraPermission();
+
+  // 1. Accelerometer & Gyroscope
+  const granted = await motionRequest;
+  if (granted) {
+    window.addEventListener('devicemotion', handleDeviceMotion);
+    document.getElementById('dev-motion-status').textContent = 'Live • Streaming 60Hz IMU';
+    document.getElementById('dev-motion-status').style.color = '#3f8a5c';
+  }
+
+  // 2. Bind HTML5 Geolocation for Speed & Coordinates
+  if ('geolocation' in navigator) {
+    if (appState.gpsWatchId !== null) {
+      navigator.geolocation.clearWatch(appState.gpsWatchId);
+    }
+    appState.gpsWatchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        document.getElementById('gps-badge').textContent = 'GPS: LIVE';
+        document.getElementById('dev-gps-status').textContent = 'Live • Tracking Location';
+        document.getElementById('dev-gps-status').style.color = '#3f8a5c';
+        if (pos.coords.speed !== null && pos.coords.speed > 0) {
+          appState.speedMph = Math.round(pos.coords.speed * 2.23694);
+        }
+      },
+      () => {
+        document.getElementById('gps-badge').textContent = 'GPS: SIM';
+      },
+      { enableHighAccuracy: true }
+    );
+  }
+
+  appState.hardwareSensorsBound = true;
+  document.getElementById('telemetry-wrap').classList.remove('unlinked');
+  document.getElementById('sensor-overlay').classList.add('hidden');
+
+  const statusPill = document.getElementById('sensor-status-pill');
+  statusPill.textContent = 'Linked ✓';
+  statusPill.classList.add('connected');
+
+  const srcLbl = document.getElementById('sensor-source-lbl');
+  srcLbl.textContent = 'Live Telemetry';
+  srcLbl.style.color = '#3f8a5c';
+
+  // 3. Camera permission (camera itself stays off until Stage 2 is triggered)
+  const camGranted = await cameraRequest;
+  const camStatus = document.getElementById('dev-cam-status');
+  if (camGranted) {
+    camStatus.textContent = 'Permission Granted • Gated Standby';
+    camStatus.style.color = '#3f8a5c';
+  } else {
+    camStatus.textContent = 'Camera blocked • Allow in browser settings';
+    camStatus.style.color = '#c96a55';
+  }
+
+  if (camGranted) {
+    showToast('Motion, GPS & camera access granted. Camera stays in standby until needed.');
+    logEvent('Bound smartphone IMU (Accelerometer/Gyro) & GPS sensors. Camera permission granted (standby).');
+  } else {
+    showToast('Motion & GPS linked, but camera access was denied. Face verification will not work.');
+    logEvent('Bound smartphone IMU & GPS sensors. Camera permission denied.', 'warn');
+  }
+}
+
+function handleArrivedSafely() {
+  // 0. End the driving session (an active alarm can only be cleared by "I am safe")
+  if (appState.lockoutActive) return;
+  endTripLog();
+  const tripMin = appState.sessionStartedAt ? Math.round((Date.now() - appState.sessionStartedAt) / 60000) : 0;
+  const tripAlerts = appState.cameraAlerts;
+  appState.sessionActive = false;
+  appState.sessionStartedAt = null;
+  appState.ufasCeiling = 100;
+  appState.cameraAlerts = 0;
+  updateSessionButton();
+  updateUfasAlertLine();
+
+  // 1. Stop camera recording and reset Stage 2 Vision
+  if (appState.visionActive) bleCameraSignal(false);
+  bleSend('R', { force: true });   // tells the module the trip ended (all outputs off)
+  appState.visionActive = false;
+  stopRealWebcam();
+  document.getElementById('vision-standby-overlay').classList.remove('hidden');
+  const vCard = document.getElementById('vision-card');
+  vCard.classList.remove('triggered');
+  vCard.classList.add('collapsed');
+  const barFill = document.getElementById('cam-timer-bar-fill');
+  if (barFill) barFill.style.width = '0%';
+  const vPill = document.getElementById('vision-state-pill');
+  vPill.textContent = 'SLEEPING';
+  vPill.classList.remove('active');
+  document.getElementById('island-cam-dot').classList.remove('cam-active');
+  document.getElementById('cam-timer-lbl').textContent = 'Standby (Saves Battery)';
+  document.getElementById('dev-cam-status').textContent = 'Gated Standby • 468 Landmarks';
+
+  // 2. Disconnect phone hardware sensors (IMU + GPS)
+  window.removeEventListener('devicemotion', handleDeviceMotion);
+  if (appState.gpsWatchId !== null && 'geolocation' in navigator) {
+    navigator.geolocation.clearWatch(appState.gpsWatchId);
+    appState.gpsWatchId = null;
+  }
+  appState.hardwareSensorsBound = false;
+  appState.drivingAnomalyScore = 0;
+  appState.accelG = 1.00;
+  appState.gyroRate = 0.0;
+  appState.perclos = 0;
+  appState.closedFramesWindow = [];
+  appState.criticalStateStart = null;
+
+  // Restore frosted sensor link overlay
+  document.getElementById('telemetry-wrap').classList.add('unlinked');
+  document.getElementById('sensor-overlay').classList.remove('hidden');
+  const statusPill = document.getElementById('sensor-status-pill');
+  statusPill.textContent = 'Unlinked';
+  statusPill.classList.remove('connected');
+  const srcLbl = document.getElementById('sensor-source-lbl');
+  srcLbl.textContent = 'Awaiting Link';
+  srcLbl.style.color = '#8a5a5f';
+
+  document.getElementById('gps-badge').textContent = 'GPS: OFF';
+  document.getElementById('dev-motion-status').textContent = 'Tap to bind DeviceMotion API';
+  document.getElementById('dev-motion-status').style.color = '#c96a55';
+  document.getElementById('dev-gps-status').textContent = 'Tap to bind Geolocation API';
+  document.getElementById('dev-gps-status').style.color = '#c96a55';
+
+  // 3. Unlink the G29 wheel
+  unbindWheel(false);
+
+  // 4. Disconnect ATS telemetry and start the next trip with a clean collision score
+  disconnectATS();
+  resetATSTrip();
+
+  setInterventionState('seat', false);
+  setInterventionState('audio', false);
+
+  showToast('You have arrived! Camera stopped & all sensors disconnected.');
+  logEvent(`Trip ended after ${tripMin} min with ${tripAlerts} camera alert${tripAlerts === 1 ? '' : 's'}. Camera stopped and all sensors disconnected.`);
+}
+
+// ============================================================================
+// STAGE 1b: LOGITECH G29 WHEEL & PEDALS (GAMEPAD API)
+// ============================================================================
+const isWheelPad = (gp) => /G29|c24f|Driving Force|Logitech/i.test(gp.id);
+
+function findWheelPad() {
+  if (!navigator.getGamepads) return null;
+  const pads = [...navigator.getGamepads()].filter(Boolean);
+  return pads.find(isWheelPad) || pads[0] || null;
+}
+
+function enableWheelInput() {
+  if (!('getGamepads' in navigator)) {
+    showToast('This browser does not support the Gamepad API. Use Chrome or Edge.');
+    return;
+  }
+  appState.wheelLinkRequested = true;
+  const gp = findWheelPad();
+  if (gp) {
+    bindWheel(gp);
+  } else {
+    // Browsers hide gamepads until a button is pressed after the page loads
+    document.getElementById('wheel-overlay-sub').textContent = 'Waiting… press any button on the wheel';
+    document.getElementById('dev-wheel-status').textContent = 'Waiting for wheel button press…';
+    showToast('Press any button on the G29 to finish linking.');
+  }
+}
+
+function bindWheel(gp) {
+  appState.wheelBound = true;
+  appState.wheelIndex = gp.index;
+
+  // Reset detector state so old values don't fire false events
+  const now = performance.now();
+  wheelState.lastSteerDeg = null;
+  wheelState.stillStart = now;
+  wheelState.correction = null;
+  wheelState.reversalDir = 0;
+  wheelState.reversalTimes = [];
+  wheelState.brakeLowTime = now;
+  wheelState.pedalSeen = {};
+  wheelState.lastEvent = {};
+
+  document.getElementById('wheel-wrap').classList.remove('unlinked');
+  document.getElementById('wheel-overlay').classList.add('hidden');
+  const pill = document.getElementById('wheel-status-pill');
+  pill.textContent = 'Linked ✓';
+  pill.classList.add('connected');
+  const lbl = document.getElementById('wheel-source-lbl');
+  lbl.textContent = isWheelPad(gp) ? 'Live G29 Input' : 'Live Gamepad Input';
+  lbl.style.color = '#3f8a5c';
+  const dev = document.getElementById('dev-wheel-status');
+  dev.textContent = `Live • ${gp.id.slice(0, 38)}`;
+  dev.style.color = '#3f8a5c';
+
+  showToast('G29 wheel & pedals bound to Stage 1 Sentinel!');
+  logEvent(`Bound steering wheel: ${gp.id} (${gp.axes.length} axes, ${gp.buttons.length} buttons).`);
+  if (!isWheelPad(gp)) {
+    logEvent('Linked controller does not identify as a G29. Check axis mapping in WHEEL_CONFIG.', 'warn');
+  }
+}
+
+function unbindWheel(lost) {
+  const wasBound = appState.wheelBound;
+  appState.wheelBound = false;
+  appState.wheelLinkRequested = false;
+  appState.wheelIndex = null;
+  appState.steerRate = 0;
+  appState.steerStillSeconds = 0;
+  appState.steerReversalsPerMin = 0;
+
+  document.getElementById('wheel-wrap').classList.add('unlinked');
+  document.getElementById('wheel-overlay').classList.remove('hidden');
+  document.getElementById('wheel-overlay-sub').textContent = 'Plug in the wheel, then tap and press any wheel button';
+  const pill = document.getElementById('wheel-status-pill');
+  pill.textContent = lost ? 'Disconnected' : 'Unlinked';
+  pill.classList.remove('connected');
+  const lbl = document.getElementById('wheel-source-lbl');
+  lbl.textContent = 'Awaiting Link';
+  lbl.style.color = '#8a5a5f';
+  const dev = document.getElementById('dev-wheel-status');
+  dev.textContent = 'Tap to bind Gamepad API';
+  dev.style.color = '#c96a55';
+
+  if (lost && wasBound) {
+    showToast('G29 wheel disconnected!');
+    logEvent('Steering wheel disconnected. Stage 1b input lost.', 'danger');
+  }
+}
+
+window.addEventListener('gamepadconnected', (e) => {
+  if (appState.wheelLinkRequested && !appState.wheelBound) bindWheel(e.gamepad);
+});
+window.addEventListener('gamepaddisconnected', (e) => {
+  if (appState.wheelBound && e.gamepad.index === appState.wheelIndex) unbindWheel(true);
+});
+
+function readPedal(gp, axis) {
+  const raw = gp.axes[axis];
+  if (raw === undefined) return 0;
+  // Some browsers report exactly 0 until the pedal first moves; treat that as released
+  if (!wheelState.pedalSeen[axis]) {
+    if (raw === 0) return 0;
+    wheelState.pedalSeen[axis] = true;
+  }
+  const v = WHEEL_CONFIG.pedalsInverted ? -raw : raw;
+  return Math.min(1, Math.max(0, (v + 1) / 2));
+}
+
+function fireWheelEvent(type, impulse, reason, now) {
+  const last = wheelState.lastEvent[type] || 0;
+  if (now - last < WHEEL_CONFIG.eventCooldownSec * 1000) return;
+  wheelState.lastEvent[type] = now;
+  appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + impulse);
+  appState.lastAnomalyReason = reason;
+  appState.lastAnomalySource = 'W';
+  logEvent(`[WHEEL] ${reason} (+${impulse} anomaly)`, impulse >= 50 ? 'danger' : 'warn');
+}
+
+function pollWheel(now, dt) {
+  if (!appState.wheelBound) return;
+  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  const gp = pads[appState.wheelIndex];
+  if (!gp) return;
+  const C = WHEEL_CONFIG;
+
+  // --- Raw inputs ---
+  let s = gp.axes[C.steerAxis] ?? 0;
+  if (C.steerInvert) s = -s;
+  const deg = s * C.rangeDeg / 2;
+  appState.steerDeg = deg;
+  appState.throttle = readPedal(gp, C.throttleAxis);
+  appState.brake = readPedal(gp, C.brakeAxis);
+  appState.clutch = readPedal(gp, C.clutchAxis);
+
+  // --- Steering rate (smoothed) ---
+  if (wheelState.lastSteerDeg !== null && dt > 0 && dt < 0.25) {
+    const instRate = Math.abs(deg - wheelState.lastSteerDeg) / dt;
+    appState.steerRate = appState.steerRate * 0.7 + instRate * 0.3;
+  }
+  wheelState.lastSteerDeg = deg;
+
+  // 1) Swerve detection
+  if (appState.steerRate > C.swerveRateDegPerSec) {
+    fireWheelEvent('swerve', C.swerveImpulse,
+      `Sudden swerve: ${Math.round(appState.steerRate)}°/s steering input`, now);
+  }
+
+  // 2) Stillness → sudden correction (microsleep signature)
+  if (Math.abs(deg - wheelState.stillAnchorDeg) > C.stillAngleDeg) {
+    const stillFor = (now - wheelState.stillStart) / 1000;
+    if (stillFor >= C.stillSeconds && appState.throttle >= C.minThrottleForStill) {
+      // Hands were frozen while driving; open a short window to watch for a jerk correction
+      wheelState.correction = { start: now, baseDeg: wheelState.stillAnchorDeg, stillFor };
+    }
+    wheelState.stillAnchorDeg = deg;
+    wheelState.stillStart = now;
+  }
+  appState.steerStillSeconds = (now - wheelState.stillStart) / 1000;
+
+  if (wheelState.correction) {
+    const c = wheelState.correction;
+    if ((now - c.start) / 1000 > C.correctionWindowSec) {
+      wheelState.correction = null;
+    } else if (Math.abs(deg - c.baseDeg) >= C.correctionDeg) {
+      fireWheelEvent('correction', C.correctionImpulse,
+        `Drift-and-jerk steering: ${c.stillFor.toFixed(1)}s no input, then ${Math.round(Math.abs(deg - c.baseDeg))}° correction`, now);
+      wheelState.correction = null;
+    }
+  }
+
+  // Steering reversals (direction changes larger than the gap)
+  if (wheelState.reversalDir === 0) {
+    if (Math.abs(deg - wheelState.reversalExtreme) > C.reversalGapDeg) {
+      wheelState.reversalDir = Math.sign(deg - wheelState.reversalExtreme);
+      wheelState.reversalExtreme = deg;
+    }
+  } else if ((deg - wheelState.reversalExtreme) * wheelState.reversalDir > 0) {
+    wheelState.reversalExtreme = deg; // still moving the same way; extend the extreme
+  } else if (Math.abs(deg - wheelState.reversalExtreme) > C.reversalGapDeg) {
+    wheelState.reversalTimes.push(now);
+    wheelState.reversalDir = -wheelState.reversalDir;
+    wheelState.reversalExtreme = deg;
+  }
+  while (wheelState.reversalTimes.length && now - wheelState.reversalTimes[0] > 60000) {
+    wheelState.reversalTimes.shift();
+  }
+  appState.steerReversalsPerMin = wheelState.reversalTimes.length;
+  if (appState.steerReversalsPerMin > C.erraticReversalsPerMin) {
+    fireWheelEvent('erratic', 20, `Erratic steering: ${appState.steerReversalsPerMin} reversals/min`, now);
+  }
+
+  // 3) Panic brake
+  if (appState.brake < 0.10) {
+    wheelState.brakeLowTime = now;
+  } else if (appState.brake >= C.hardBrakeLevel && now - wheelState.brakeLowTime <= C.hardBrakeWindowMs) {
+    fireWheelEvent('brake', C.hardBrakeImpulse,
+      `Panic brake: 0→${Math.round(appState.brake * 100)}% in ${Math.round(now - wheelState.brakeLowTime)}ms`, now);
+    wheelState.brakeLowTime = -Infinity; // one event per press
+  }
+}
+
+function renderWheel() {
+  if (!appState.wheelBound) return;
+  const C = WHEEL_CONFIG;
+  document.getElementById('g29-wheel-graphic').setAttribute('transform', `rotate(${appState.steerDeg.toFixed(1)})`);
+  document.getElementById('wheel-angle').textContent =
+    `${appState.steerDeg >= 0 ? '+' : ''}${appState.steerDeg.toFixed(1)}°`;
+
+  for (const [key, val] of [['throttle', appState.throttle], ['brake', appState.brake], ['clutch', appState.clutch]]) {
+    const pct = Math.round(val * 100);
+    document.getElementById(`pedal-${key}`).style.width = `${pct}%`;
+    document.getElementById(`pedal-${key}-pct`).textContent = `${pct}%`;
+  }
+
+  const rateEl = document.getElementById('wheel-rate');
+  rateEl.textContent = `${Math.round(appState.steerRate)}°/s`;
+  rateEl.style.color = appState.steerRate > C.swerveRateDegPerSec ? '#e11d48' : '';
+  document.getElementById('wheel-rate-status').textContent =
+    appState.steerRate > C.swerveRateDegPerSec ? 'SWERVE' : appState.steerRate > C.swerveRateDegPerSec * 0.5 ? 'Aggressive' : 'Smooth';
+
+  const srrEl = document.getElementById('wheel-srr');
+  srrEl.textContent = `${appState.steerReversalsPerMin}/min`;
+  srrEl.style.color = appState.steerReversalsPerMin > C.erraticReversalsPerMin ? '#e11d48' : '';
+
+  const still = appState.steerStillSeconds;
+  const stillEl = document.getElementById('wheel-still');
+  stillEl.textContent = `${Math.min(still, 99).toFixed(1)}s`;
+  const armed = still >= C.stillSeconds && appState.throttle >= C.minThrottleForStill;
+  stillEl.style.color = armed ? '#c96a55' : '';
+  document.getElementById('wheel-still-status').textContent = armed ? 'No Input • Watching' : 'Active Hands';
+}
+
+// ============================================================================
+// STAGE 1c: AMERICAN TRUCK SIMULATOR TELEMETRY (WebSocket from ats_bridge.py)
+// ============================================================================
+let atsSocket = null;
+let atsReconnectTimer = null;
+
+const OFFENCE_LABELS = {
+  crash: 'Crash', avoid_sleeping: 'Driving while fatigued', wrong_way: 'Wrong way',
+  red_signal: 'Ran red light', speeding: 'Speeding', speeding_camera: 'Speed camera',
+  no_lights: 'No headlights', hard_shoulder_violation: 'Hard shoulder', avoid_weighing: 'Skipped weigh station',
+  illegal_trailer: 'Illegal trailer', avoid_inspection: 'Skipped inspection',
+  illegal_border_crossing: 'Illegal border crossing', damaged_vehicle_usage: 'Damaged vehicle', generic: 'Traffic offence'
+};
+
+function addAnomaly(impulse, reason, level) {
+  if (impulse <= 0) return;
+  appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + impulse);
+  appState.lastAnomalyReason = reason;
+  appState.lastAnomalySource = 'A';
+  logEvent(`${reason} (+${impulse} anomaly)`, level || (impulse >= 50 ? 'danger' : 'warn'));
+}
+
+function connectATS() {
+  appState.atsWanted = true;
+  if (atsReconnectTimer) { clearTimeout(atsReconnectTimer); atsReconnectTimer = null; }
+  if (atsSocket && (atsSocket.readyState === WebSocket.OPEN || atsSocket.readyState === WebSocket.CONNECTING)) return;
+
+  const url = document.getElementById('ats-url').value.trim() || 'ws://localhost:8765';
+  setATSStatus('Connecting…', false);
+  try {
+    atsSocket = new WebSocket(url);
+  } catch (e) {
+    setATSStatus('Bad URL', false);
+    showToast('Could not open the ATS bridge URL.');
+    return;
+  }
+
+  atsSocket.onopen = () => {
+    appState.atsConnected = true;
+    setATSStatus('Bridge Linked', true);
+    logEvent(`Connected to ATS telemetry bridge at ${url}.`);
+    showToast('ATS bridge connected. Waiting for game telemetry…');
+  };
+  atsSocket.onmessage = (e) => {
+    let msg;
+    try { msg = JSON.parse(e.data); } catch { return; }
+    handleATSMessage(msg);
+  };
+  atsSocket.onclose = () => {
+    const wasConnected = appState.atsConnected;
+    appState.atsConnected = false;
+    appState.atsGameLive = false;
+    atsSocket = null;
+    if (appState.atsWanted) {
+      setATSStatus('Retrying…', false);
+      if (wasConnected) logEvent('ATS bridge connection lost. Retrying…', 'warn');
+      atsReconnectTimer = setTimeout(connectATS, ATS_CONFIG.reconnectMs);
+    } else {
+      setATSStatus('Offline', false);
+    }
+  };
+  atsSocket.onerror = () => {
+    document.getElementById('ats-overlay-sub').textContent = 'Bridge not reachable. Is ats_bridge.py running?';
+  };
+}
+
+function disconnectATS() {
+  appState.atsWanted = false;
+  if (atsReconnectTimer) { clearTimeout(atsReconnectTimer); atsReconnectTimer = null; }
+  if (atsSocket) atsSocket.close();
+  atsSocket = null;
+  appState.atsConnected = false;
+  appState.atsGameLive = false;
+  setATSStatus('Offline', false);
+}
+
+function setATSStatus(text, linked) {
+  const pill = document.getElementById('ats-status-pill');
+  pill.textContent = linked ? `${text} ✓` : text;
+  pill.classList.toggle('connected', linked);
+  document.getElementById('ats-wrap').classList.toggle('unlinked', !linked);
+  document.getElementById('ats-overlay').classList.toggle('hidden', linked);
+  if (!linked) document.getElementById('ats-overlay-sub').textContent = 'Run ats_bridge.py on the PC, then tap';
+  const lbl = document.getElementById('ats-source-lbl');
+  if (!linked) { lbl.textContent = 'Bridge Offline'; lbl.style.color = '#8a5a5f'; }
+  document.getElementById('home-collision-line').style.display = linked ? 'block' : 'none';
+}
+
+function handleATSMessage(msg) {
+  const lbl = document.getElementById('ats-source-lbl');
+  switch (msg.type) {
+    case 'status': {
+      appState.atsGameLive = msg.game === 'connected';
+      lbl.textContent = appState.atsGameLive ? (msg.demo ? 'Demo Telemetry' : 'Live Game Telemetry') : 'Waiting for ATS…';
+      lbl.style.color = appState.atsGameLive ? '#3f8a5c' : '#c96a55';
+      if (appState.atsGameLive) logEvent(msg.demo ? 'ATS bridge running in DEMO mode.' : 'ATS game telemetry live.');
+      break;
+    }
+    case 'telemetry': {
+      appState.speedMph = Math.round(msg.speedMph);
+      const d = msg.damage || {};
+      appState.atsDamagePct = Math.max(d.cabin || 0, d.chassis || 0);
+      document.getElementById('ats-speed').textContent = `${Math.round(msg.speedMph)} mph`;
+      const dmgEl = document.getElementById('ats-damage');
+      dmgEl.textContent = `${appState.atsDamagePct.toFixed(1)}%`;
+      dmgEl.style.color = appState.atsDamagePct >= 20 ? '#e11d48' : appState.atsDamagePct >= 5 ? '#c96a55' : '';
+      document.getElementById('ats-damage-sub').textContent =
+        `Cab ${(d.cabin || 0).toFixed(0)}% • Chas ${(d.chassis || 0).toFixed(0)}%`;
+      if (msg.paused) lbl.textContent = 'Game Paused';
+      else if (appState.atsGameLive && lbl.textContent === 'Game Paused') lbl.textContent = 'Live Game Telemetry';
+      break;
+    }
+    case 'collision': {
+      appState.atsCollisions++;
+      const dmg = msg.damageDelta || 0;
+      const penalty = Math.min(ATS_CONFIG.scorePenaltyMax,
+        ATS_CONFIG.scorePenaltyBase + dmg * ATS_CONFIG.scorePenaltyPerDamagePct);
+      appState.atsCollisionScore = Math.max(0, Math.round(appState.atsCollisionScore - penalty));
+      const desc = dmg > 0
+        ? `ATS collision at ${Math.round(msg.speedMph)} mph (+${dmg.toFixed(1)}% damage)`
+        : `ATS collision at ${Math.round(msg.speedMph)} mph (police crash fine)`;
+      addAnomaly(ATS_CONFIG.collisionImpulse, desc);
+      tripEvent('collision', desc.replace(/^ATS collision/, 'Collision'));
+      setATSLastEvent(`💥 ${desc}`);
+      updateATSScore();
+      playAlertChime(appState.sirenFreq, 0.18, true);
+      break;
+    }
+    case 'fine': {
+      appState.atsFines++;
+      const name = OFFENCE_LABELS[msg.offence] || msg.offence;
+      const impulse = ATS_CONFIG.fineImpulse[msg.offence] ?? ATS_CONFIG.fineImpulse.default;
+      const desc = `ATS fine: ${name}${msg.amount ? ` ($${msg.amount})` : ''}`;
+      addAnomaly(impulse, desc, impulse >= 50 ? 'danger' : 'warn');
+      if (impulse <= 0) logEvent(desc, 'warn');
+      tripEvent('fine', desc.replace(/^ATS fine: /, ''));
+      setATSLastEvent(`🚨 ${desc}`);
+      document.getElementById('ats-fines').textContent = `${appState.atsFines} fine${appState.atsFines === 1 ? '' : 's'}`;
+      break;
+    }
+  }
+}
+
+function setATSLastEvent(text) {
+  const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+  document.getElementById('ats-last-event').textContent = `${time} • ${text}`;
+}
+
+function updateATSScore() {
+  const s = appState.atsCollisionScore;
+  const color = s >= 80 ? '#3f8a5c' : s >= 50 ? '#c96a55' : '#be123c';
+  const scoreEl = document.getElementById('ats-score');
+  scoreEl.textContent = s;
+  scoreEl.style.color = color;
+  const hits = appState.atsCollisions;
+  document.getElementById('ats-collisions').textContent = `${hits} collision${hits === 1 ? '' : 's'}`;
+  const home = document.getElementById('home-collision-line');
+  home.textContent = `ATS Collision Score ${s} • ${hits} hit${hits === 1 ? '' : 's'}`;
+  home.style.color = color;
+}
+
+function resetATSTrip() {
+  appState.atsCollisions = 0;
+  appState.atsFines = 0;
+  appState.atsCollisionScore = 100;
+  updateATSScore();
+  document.getElementById('ats-fines').textContent = '0 fines';
+  document.getElementById('ats-last-event').textContent = 'No events yet';
+}
+
+// ============================================================================
+// BLUETOOTH OUTPUT: DRIFTS MODULE (ESP32 / RASPBERRY PI) VIA WEB BLUETOOTH
+// ----------------------------------------------------------------------------
+// Uses the Nordic UART Service UUIDs so generic BLE tools (nRF Connect, etc.)
+// can also see the messages. Every message is short ASCII (< 20 bytes):
+//   C1:<src>  camera activated   src = M manual, S phone sensors, W wheel, A ATS
+//   C0        camera back to standby
+//   I<s><b>   interventions      e.g. I10 = seat vibration on, buzzer off
+//   S<0-100>  alertness score    (only if streaming is enabled)
+//   P         heartbeat every 5 s, so the module can detect a lost link
+//   L1 / L0   full-screen alarm on / off (module sounds a continuous alarm)
+//   R         trip ended: turn everything off
+//   T         test signal
+// The module may reply on the TX characteristic (notify); replies are shown in the card.
+// ============================================================================
+const BLE_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const BLE_RX_CHAR = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // app -> module (write)
+const BLE_TX_CHAR = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // module -> app (notify)
+const BLE_SOURCE_NAMES = { M: 'manual', S: 'phone sensors', W: 'G29 wheel', A: 'ATS telemetry' };
+
+let bleDevice = null;
+let bleRx = null;
+let bleQueue = Promise.resolve();
+let bleQueueDepth = 0;
+let bleReconnectTries = 0;
+const bleOutputs = { seat: false, audio: false };
+const bleLast = { interventions: null, scoreAt: 0, score: null, heartbeatAt: 0 };
+
+function bleSupported() {
+  return typeof navigator !== 'undefined' && !!navigator.bluetooth;
+}
+
+async function connectBLE() {
+  if (!bleSupported()) {
+    showToast('Web Bluetooth is not available in this browser. Use Chrome/Edge, or Bluefy on iPhone.');
+    return;
+  }
+  // The phone gives the alarm sound to the module as soon as Link is tapped
+  appState.bleLinkPending = true;
+  updateSoundOwner();
+  try {
+    bleDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [BLE_SERVICE] }, { namePrefix: 'DRIFTS' }],
+      optionalServices: [BLE_SERVICE]
+    });
+  } catch (e) {
+    if (e.name !== 'NotFoundError') showToast('Bluetooth pairing failed: ' + e.message);
+    appState.bleLinkPending = false;   // nothing linked: the phone keeps the alarm sound
+    updateSoundOwner();
+    return; // NotFoundError = user closed the picker
+  }
+  appState.bleWantConnected = true;
+  bleDevice.addEventListener('gattserverdisconnected', onBLEDisconnected);
+  await openBLEConnection();
+}
+
+async function openBLEConnection() {
+  setBLEStatus('Connecting…', false);
+  try {
+    const server = await bleDevice.gatt.connect();
+    const service = await server.getPrimaryService(BLE_SERVICE);
+    bleRx = await service.getCharacteristic(BLE_RX_CHAR);
+    try {
+      const tx = await service.getCharacteristic(BLE_TX_CHAR);
+      await tx.startNotifications();
+      tx.addEventListener('characteristicvaluechanged', (e) => {
+        const text = new TextDecoder().decode(e.target.value);
+        document.getElementById('ble-last-ack').textContent = text;
+      });
+    } catch (e) {
+      document.getElementById('ble-last-ack').textContent = 'no reply channel (send-only)';
+    }
+    appState.bleConnected = true;
+    appState.bleLinkPending = false;
+    updateSoundOwner();
+    bleReconnectTries = 0;
+    bleQueueDepth = 0;
+    bleQueue = Promise.resolve();
+    bleLast.interventions = null;   // resend current state to the new connection
+    bleLast.score = null;
+    setBLEStatus('Linked ✓', true);
+    logEvent(`Bluetooth module linked: ${bleDevice.name || 'unnamed device'}.`);
+    showToast(`DRIFTS module linked over Bluetooth (${bleDevice.name || 'device'}).`);
+    // Bring the module up to date right away
+    if (appState.visionActive && document.getElementById('ble-opt-camera').checked) bleSend('C1:M');
+    if (appState.lockoutActive) bleSend('L1', { force: true });
+  } catch (e) {
+    appState.bleConnected = false;
+    appState.bleLinkPending = false;   // phone takes the alarm sound back until the module reconnects
+    updateSoundOwner();
+    setBLEStatus('Failed', false);
+    logEvent('Bluetooth connection failed: ' + e.message, 'warn');
+    scheduleBLEReconnect();
+  }
+}
+
+function onBLEDisconnected() {
+  const was = appState.bleConnected;
+  appState.bleConnected = false;
+  appState.bleLinkPending = false;   // module gone: the phone sounds alarms again
+  updateSoundOwner();
+  bleRx = null;
+  if (was) logEvent('Bluetooth module disconnected.', appState.bleWantConnected ? 'warn' : 'normal');
+  if (appState.bleWantConnected) {
+    setBLEStatus('Reconnecting…', false);
+    scheduleBLEReconnect();
+  } else {
+    setBLEStatus('Unlinked', false);
+  }
+}
+
+function scheduleBLEReconnect() {
+  if (!appState.bleWantConnected || !bleDevice) return;
+  if (bleReconnectTries >= 5) {
+    setBLEStatus('Lost', false);
+    showToast('Lost the Bluetooth module. Tap Link Module to reconnect.');
+    appState.bleWantConnected = false;
+    return;
+  }
+  const delay = 1000 * Math.pow(2, bleReconnectTries++); // 1s, 2s, 4s, 8s, 16s
+  setTimeout(() => {
+    if (appState.bleWantConnected && !appState.bleConnected) openBLEConnection();
+  }, delay);
+}
+
+function disconnectBLE(userInitiated) {
+  appState.bleWantConnected = false;
+  const finish = () => {
+    if (bleDevice && bleDevice.gatt.connected) bleDevice.gatt.disconnect();
+    appState.bleConnected = false;
+    appState.bleLinkPending = false;
+    bleRx = null;
+    updateSoundOwner();
+    setBLEStatus('Unlinked', false);
+    if (userInitiated) logEvent('Bluetooth module unlinked. Alarm sound back on this phone.');
+  };
+  // Let the module switch its outputs off before the link drops
+  if (appState.bleConnected) bleSend('R', { force: true }).finally(finish); else finish();
+}
+
+function setBLEStatus(text, linked) {
+  const pill = document.getElementById('ble-status-pill');
+  pill.textContent = text;
+  pill.classList.toggle('connected', linked);
+  const lbl = document.getElementById('ble-source-lbl');
+  lbl.textContent = linked ? 'Live Output' : (appState.bleWantConnected ? text : 'Not Linked');
+  lbl.style.color = linked ? '#3f8a5c' : '#8a5a5f';
+  if (bleDevice && bleDevice.name) document.getElementById('ble-device-name').textContent = bleDevice.name;
+  document.getElementById('ble-connect-btn').disabled = linked;
+  document.getElementById('ble-test-btn').disabled = !linked;
+  document.getElementById('ble-disconnect-btn').disabled = !linked && !appState.bleWantConnected;
+  document.getElementById('ble-header-lbl').textContent = linked ? `BLE • ${bleDevice?.name || 'Module'}` : 'DRIFTS Prototype';
+}
+
+// Queue writes: GATT only allows one operation at a time.
+function bleSend(msg, opts = {}) {
+  if (!appState.bleConnected || !bleRx) return Promise.resolve(false);
+  if (opts.droppable && bleQueueDepth > 2) return Promise.resolve(false); // don't let score updates pile up
+  bleQueueDepth++;
+  const data = new TextEncoder().encode(msg);
+  bleQueue = bleQueue
+    .then(() => (bleRx.writeValueWithoutResponse ? bleRx.writeValueWithoutResponse(data) : bleRx.writeValue(data)))
+    .then(() => {
+      if (!opts.quiet) document.getElementById('ble-last-sent').textContent =
+        `${msg}  (${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' })})`;
+      return true;
+    })
+    .catch((e) => { console.warn('BLE write failed', e); return false; })
+    .finally(() => { bleQueueDepth--; });
+  return bleQueue;
+}
+
+function bleCameraSignal(on, sourceCode = 'M', reasonText = '') {
+  if (!appState.bleConnected || !document.getElementById('ble-opt-camera').checked) return;
+  if (on) {
+    bleSend(`C1:${sourceCode}`);
+    logEvent(`[BLE] Camera activation sent to module (source: ${BLE_SOURCE_NAMES[sourceCode] || sourceCode}).`);
+  } else {
+    bleSend('C0');
+    logEvent('[BLE] Camera standby sent to module.');
+  }
+}
+
+function bleSyncState(now) {
+  if (!appState.bleConnected) return;
+
+  if (document.getElementById('ble-opt-interventions').checked) {
+    const code = `I${bleOutputs.seat ? 1 : 0}${bleOutputs.audio ? 1 : 0}`;
+    if (code !== bleLast.interventions) {
+      bleLast.interventions = code;
+      bleSend(code);
+    }
+  }
+
+  if (document.getElementById('ble-opt-score').checked && now - bleLast.scoreAt >= 1000) {
+    bleLast.scoreAt = now;
+    if (appState.alertnessScore !== bleLast.score) {
+      bleLast.score = appState.alertnessScore;
+      bleSend(`S${appState.alertnessScore}`, { droppable: true, quiet: true });
+    }
+  }
+
+  if (now - bleLast.heartbeatAt >= 5000) {
+    bleLast.heartbeatAt = now;
+    bleSend('P', { droppable: true, quiet: true });
+  }
+}
+
+function sendBLETest() {
+  bleSend('T');
+  showToast('Test signal sent. The module should blink its LED and chirp.');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (!bleSupported()) {
+    const note = document.getElementById('ble-support-note');
+    note.textContent = 'This browser has no Web Bluetooth. Use Chrome/Edge (Android, Windows, macOS) or the Bluefy browser on iPhone.';
+    note.style.color = '#c96a55';
+    document.getElementById('ble-connect-btn').disabled = true;
+  }
+});
+
+// ============================================================================
+// DRIVING SESSION, UFAS PENALTIES & FULL-SCREEN LOCKOUT ALARM
+// ----------------------------------------------------------------------------
+// UFAS = min(session ceiling, live fusion score)
+//  • Every camera alert during a session lowers the ceiling by 25 points.
+//  • The ceiling then climbs back slowly (only while the camera is in standby
+//    and driving is calm), so the score can't snap back to 100 after a check.
+//  • After N camera alerts in one session (Profile setting, default 4) a
+//    full-screen alarm starts and only stops when "I am safe" is held for 7 s.
+//    Every further alert in the same session sounds the alarm again.
+// Interventions (seat vibration / buzzer) still follow the LIVE score, so a
+// low ceiling alone never sets off the buzzer.
+// ============================================================================
+// Eye closures shorter than this are treated as normal blinks: they don't reset
+// the 7 s verification timer and don't trigger an alert. Longer closures do.
+const CAMERA_CONFIG = {
+  blinkToleranceSec: 0.5
+};
+
+const UFAS_CONFIG = {
+  penaltyPerCameraAlert: 25,
+  recoveryPointsPerMin: 5,      // 75 -> 100 takes about 5 minutes of calm driving
+  recoveryMaxAnomaly: 25,       // no recovery while Stage 1 sensors are still agitated
+  safeHoldMs: 7000,
+  lockoutMinVolume: 0.6         // the lockout alarm ignores a volume slider set lower than this
+};
+
+let lockoutSoundTimer = null;
+let lockoutClockTimer = null;
+const safeHold = { start: null, raf: null };
+const SAFE_RING_CIRC = 2 * Math.PI * 86;
+
+function lockoutThreshold() {
+  const v = parseInt(document.getElementById('sel-lockout-alerts')?.value, 10);
+  return Number.isFinite(v) ? v : 4;
+}
+
+function unlockAudio() {
+  // iOS only allows WebAudio after a tap, so warm it up on Start Driving
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (e) {}
+}
+
+function toggleDrivingSession() {
+  if (appState.sessionActive) handleArrivedSafely();
+  else startDrivingSession();
+}
+
+function startDrivingSession() {
+  unlockAudio();
+  const anyInput = appState.hardwareSensorsBound || appState.wheelBound || appState.atsConnected;
+  // Same single permission request as the Sensors tab (motion, GPS & camera).
+  // Must run inside this tap so iOS shows its motion prompt.
+  if (!anyInput) enableHardwareSensors();
+
+  appState.sessionActive = true;
+  appState.sessionStartedAt = Date.now();
+  appState.ufasCeiling = 100;
+  appState.cameraAlerts = 0;
+  appState.lockoutCount = 0;
+  appState.drivingAnomalyScore = 0;
+  appState.alertnessScore = Math.min(100, appState.liveScore);
+  updateSessionButton();
+  updateUfasAlertLine();
+  beginTripLog();
+  logEvent(`Driving session started. Full-screen alarm after ${lockoutThreshold()} camera alerts.`);
+  if (anyInput) showToast('Driving session started. DRIFTS is monitoring.');
+}
+
+function updateSessionButton() {
+  const btn = document.getElementById('btn-session');
+  const active = appState.sessionActive;
+  btn.classList.toggle('btn-start', !active);
+  document.getElementById('btn-session-lbl').textContent = active ? 'I have arrived' : 'Start Driving';
+  document.getElementById('btn-session-icon-start').style.display = active ? 'none' : '';
+  document.getElementById('btn-session-icon-end').style.display = active ? '' : 'none';
+}
+
+function updateUfasAlertLine() {
+  const el = document.getElementById('ufas-alert-line');
+  if (!appState.sessionActive) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  const n = appState.cameraAlerts, max = lockoutThreshold();
+  el.textContent = `Camera alerts this trip: ${n} of ${max}`;
+  el.style.color = n >= max ? '#be123c' : n >= max - 1 ? '#c96a55' : '#8a5a5f';
+}
+
+// Called once each time the camera wakes up during a session
+function applyCameraAlertPenalty(sourceCode, reasonText = '') {
+  appState.cameraAlerts++;
+  const before = Math.round(appState.ufasCeiling);
+  appState.ufasCeiling = Math.max(0, appState.ufasCeiling - UFAS_CONFIG.penaltyPerCameraAlert);
+  appState.alertnessScore = Math.min(appState.alertnessScore, Math.round(appState.ufasCeiling));
+  updateUfasAlertLine();
+  const why = String(reasonText).replace(/\s*—\s*Rolling FaceMesh\.*$/, '').replace(/ Rolling FaceMesh\.*$/, '');
+  const src = (typeof BLE_SOURCE_NAMES !== 'undefined' && BLE_SOURCE_NAMES[sourceCode]) || 'manual';
+  tripEvent('camera', `#${appState.cameraAlerts} from ${src}${why ? `: ${why}` : ''}. UFAS ceiling ${before} → ${Math.round(appState.ufasCeiling)}.`);
+  logEvent(`Camera alert #${appState.cameraAlerts} this trip: UFAS ceiling ${before} → ${Math.round(appState.ufasCeiling)}.`,
+    appState.cameraAlerts >= lockoutThreshold() - 1 ? 'danger' : 'warn');
+  if (appState.cameraAlerts >= lockoutThreshold()) triggerLockout();
+}
+
+// Slow climb back toward 100 while things are calm
+function recoverUfasCeiling(dt) {
+  if (!appState.sessionActive || appState.visionActive || appState.lockoutActive) return;
+  if (appState.drivingAnomalyScore > UFAS_CONFIG.recoveryMaxAnomaly) return;
+  if (appState.ufasCeiling >= 100) return;
+  appState.ufasCeiling = Math.min(100, appState.ufasCeiling + (UFAS_CONFIG.recoveryPointsPerMin / 60) * dt);
+}
+
+// ---------- Who makes the alarm noise: this phone or the Bluetooth module ----------
+function moduleOwnsSound() {
+  const mirror = document.getElementById('ble-opt-interventions');
+  return (appState.bleLinkPending || appState.bleConnected) && (!mirror || mirror.checked);
+}
+
+function updateSoundOwner() {
+  const owner = moduleOwnsSound()
+    ? (appState.bleConnected ? (bleDevice?.name || 'DRIFTS module') : 'DRIFTS module (linking…)')
+    : 'This phone';
+  const bleLbl = document.getElementById('ble-sound-owner');
+  if (bleLbl) bleLbl.textContent = owner;
+  const sub = document.getElementById('sub-audio-owner');
+  if (sub) {
+    sub.textContent = moduleOwnsSound() ? `Sound handled by ${owner}` : 'Sound plays on this phone';
+    sub.style.color = moduleOwnsSound() ? '#3f8a5c' : '#a67b7e';
+  }
+}
+
+// ---------- Lockout alarm ----------
+function formatAlarmClock(d = new Date()) {
+  return `${d.getHours() % 12 || 12}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function triggerLockout() {
+  const overlay = document.getElementById('lockout');
+  appState.lockoutCount++;
+  const n = appState.cameraAlerts;
+  document.getElementById('lockout-desc').textContent = `${n} camera alert${n === 1 ? '' : 's'} this trip`;
+  document.getElementById('lockout-time').textContent = formatAlarmClock();
+  clearInterval(lockoutClockTimer);
+  lockoutClockTimer = setInterval(() => {
+    document.getElementById('lockout-time').textContent = formatAlarmClock();
+  }, 1000);
+
+  if (appState.lockoutActive) return;           // already showing; just refresh the count
+  appState.lockoutActive = true;
+  appState.lockoutStartedAt = Date.now();
+  tripEvent('alarm', `${n} camera alerts this trip. Alarm sounding until "I am safe" is held for 7 s.`);
+  resetSafeHold();
+  overlay.classList.remove('clearing');
+  overlay.hidden = false;
+  document.getElementById('safe-btn').focus({ preventScroll: true });
+
+  startLockoutSound();
+  bleSend('L1', { force: true });
+  logEvent(`FULL-SCREEN ALARM: ${n} camera alerts this trip. Waiting for driver to hold "I am safe".`, 'danger');
+}
+
+function startLockoutSound() {
+  clearInterval(lockoutSoundTimer);
+  let high = false;
+  const tick = () => {
+    if (navigator.vibrate) navigator.vibrate([350, 150, 350]);
+    if (moduleOwnsSound()) return;             // the ESP32 / Pi is sounding the alarm
+    high = !high;
+    const base = appState.sirenFreq || 880;
+    playTone(high ? base * 1.26 : base, 0.32, Math.max(UFAS_CONFIG.lockoutMinVolume, appState.sirenVolume));
+  };
+  tick();
+  lockoutSoundTimer = setInterval(tick, 420);
+}
+
+function stopLockoutSound() {
+  clearInterval(lockoutSoundTimer);
+  lockoutSoundTimer = null;
+  if (navigator.vibrate) navigator.vibrate(0);
+}
+
+function clearLockout(reason) {
+  if (!appState.lockoutActive) return;
+  appState.lockoutActive = false;
+  stopLockoutSound();
+  clearInterval(lockoutClockTimer);
+  bleSend('L0', { force: true });
+  const overlay = document.getElementById('lockout');
+  overlay.classList.add('clearing');
+  setTimeout(() => { if (!appState.lockoutActive) overlay.hidden = true; }, 520);
+  if (reason === 'safe') {
+    const waited = appState.lockoutStartedAt ? Math.round((Date.now() - appState.lockoutStartedAt) / 1000) : 0;
+    tripEvent('safe', `Driver held the button for 7 s, ${waited} s after the alarm started.`);
+    logEvent(`Driver held "I am safe" for 7 s. Alarm stopped. Any further camera alert this trip sounds it again.`);
+    showToast('Alarm stopped. If you feel drowsy, pull over and rest.');
+  }
+}
+
+// ---------- 7-second "I am safe" hold ----------
+function setSafeRing(p) {
+  document.getElementById('safe-ring-fill').style.strokeDashoffset = String(SAFE_RING_CIRC * (1 - p));
+}
+
+function resetSafeHold() {
+  cancelAnimationFrame(safeHold.raf);
+  safeHold.start = null;
+  const wrap = document.getElementById('safe-hold');
+  wrap.classList.remove('holding', 'done');
+  setSafeRing(0);
+  document.getElementById('safe-btn-sub').textContent = 'Hold 7s';
+  document.getElementById('safe-hint').textContent = 'Press and hold for 7 seconds';
+}
+
+function beginSafeHold(e) {
+  if (!appState.lockoutActive || safeHold.start !== null) return;
+  if (e && e.cancelable) e.preventDefault();
+  if (e && e.pointerId !== undefined) {
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+  }
+  safeHold.start = performance.now();
+  document.getElementById('safe-hold').classList.add('holding');
+  document.getElementById('safe-hint').textContent = 'Keep holding…';
+  safeHold.raf = requestAnimationFrame(safeHoldFrame);
+}
+
+function safeHoldFrame() {
+  if (safeHold.start === null) return;
+  const elapsed = performance.now() - safeHold.start;
+  const p = Math.min(1, elapsed / UFAS_CONFIG.safeHoldMs);
+  setSafeRing(p);
+  document.getElementById('safe-btn-sub').textContent = `${Math.ceil((UFAS_CONFIG.safeHoldMs - elapsed) / 1000)}s`;
+  if (p >= 1) { completeSafeHold(); return; }
+  safeHold.raf = requestAnimationFrame(safeHoldFrame);
+}
+
+function endSafeHold() {
+  if (safeHold.start === null) return;
+  cancelAnimationFrame(safeHold.raf);
+  safeHold.start = null;
+  document.getElementById('safe-hold').classList.remove('holding');
+  setSafeRing(0);                                  // ring drains back (CSS transition)
+  document.getElementById('safe-btn-sub').textContent = 'Hold 7s';
+  document.getElementById('safe-hint').textContent = 'Released too early. Hold for the full 7 seconds';
+}
+
+function completeSafeHold() {
+  safeHold.start = null;
+  const wrap = document.getElementById('safe-hold');
+  wrap.classList.remove('holding');
+  wrap.classList.add('done');
+  setSafeRing(1);
+  document.getElementById('safe-btn-sub').textContent = 'Confirmed';
+  document.getElementById('safe-hint').textContent = 'Stay alert';
+  clearLockout('safe');
+}
+
+function initSafeButton() {
+  const btn = document.getElementById('safe-btn');
+  const ring = document.getElementById('safe-ring-fill');
+  ring.style.strokeDasharray = String(SAFE_RING_CIRC);
+  setSafeRing(0);
+  btn.addEventListener('pointerdown', beginSafeHold);
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => btn.addEventListener(t, endSafeHold));
+  btn.addEventListener('contextmenu', e => e.preventDefault());
+  btn.addEventListener('keydown', e => {
+    if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) beginSafeHold(e);
+  });
+  btn.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') endSafeHold(); });
+  btn.addEventListener('blur', endSafeHold);
+}
+
+// ============================================================================
+// UFAS TRIP LOG — last 7 driving sessions with their important events
+// ----------------------------------------------------------------------------
+// Each trip records its LOWEST UFAS (the safety-relevant number), the score it
+// ended on, and a timeline of important events. Stored in this browser only.
+// ============================================================================
+const TRIP_LOG_KEY = 'drifts:tripLog:v1';
+const TRIP_LOG_MAX = 7;
+const TRIP_EVENT_META = {
+  start:     { icon: '▶', color: '#3f8a5c', label: 'Trip started' },
+  camera:    { icon: '◉', color: '#c96a55', label: 'Camera alert' },
+  clear:     { icon: '✓', color: '#3f8a5c', label: 'Driver verified' },
+  eyes:      { icon: '◐', color: '#be123c', label: 'Eyes closed' },
+  distract:  { icon: '↗', color: '#c96a55', label: 'Looking away' },
+  alarm:     { icon: '!', color: '#be123c', label: 'Full-screen alarm' },
+  safe:      { icon: '✔', color: '#7c2432', label: 'I am safe' },
+  collision: { icon: '✱', color: '#be123c', label: 'ATS collision' },
+  fine:      { icon: '$', color: '#c96a55', label: 'ATS fine' },
+  end:       { icon: '■', color: '#7c2432', label: 'Trip ended' }
+};
+
+let tripLog = [];
+let currentTrip = null;
+let openTripId = null;
+let tripSavedAt = 0;
+let tripRenderedAt = 0;
+let tripClearArmed = false;
+
+function loadTripLog() {
+  try {
+    const raw = localStorage.getItem(TRIP_LOG_KEY);
+    tripLog = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(tripLog)) tripLog = [];
+  } catch (e) { tripLog = []; }
+  // A trip without an end means the app was closed mid-drive
+  tripLog.forEach(t => {
+    if (!t.end) {
+      t.end = t.events.length ? t.events[t.events.length - 1].t : t.start;
+      t.interrupted = true;
+    }
+  });
+}
+
+function saveTripLog() {
+  tripSavedAt = Date.now();
+  try { localStorage.setItem(TRIP_LOG_KEY, JSON.stringify(tripLog)); } catch (e) {}
+}
+
+function beginTripLog() {
+  currentTrip = {
+    id: Date.now().toString(36),
+    start: Date.now(), end: null,
+    lowest: 100, final: null, alerts: 0, alarms: 0,
+    events: []
+  };
+  tripLog.unshift(currentTrip);
+  tripLog = tripLog.slice(0, TRIP_LOG_MAX);
+  openTripId = currentTrip.id;
+  tripEvent('start', `Monitoring with ${describeInputs()}. Alarm after ${lockoutThreshold()} camera alerts.`);
+}
+
+function describeInputs() {
+  const parts = [];
+  if (appState.hardwareSensorsBound) parts.push('phone sensors');
+  if (appState.wheelBound) parts.push('G29 wheel');
+  if (appState.atsConnected) parts.push('ATS telemetry');
+  if (appState.bleConnected) parts.push('Bluetooth module');
+  return parts.length ? parts.join(', ') : 'phone sensors (linking)';
+}
+
+function tripEvent(type, text) {
+  if (!currentTrip) return;
+  currentTrip.events.push({ t: Date.now(), type, text, ufas: appState.alertnessScore });
+  if (type === 'camera') currentTrip.alerts++;
+  if (type === 'alarm') currentTrip.alarms++;
+  saveTripLog();
+  renderTripLog();
+}
+
+function endTripLog() {
+  if (!currentTrip) return;
+  currentTrip.final = appState.alertnessScore;
+  const mins = Math.max(0, Math.round((Date.now() - currentTrip.start) / 60000));
+  tripEvent('end', `Arrived after ${mins} min. Ended at UFAS ${currentTrip.final}, lowest ${currentTrip.lowest}.`);
+  currentTrip.end = Date.now();
+  currentTrip = null;
+  saveTripLog();
+  renderTripLog();
+}
+
+// Called every frame from the fusion loop
+function trackTripScore() {
+  if (!currentTrip) return;
+  if (appState.alertnessScore < currentTrip.lowest) currentTrip.lowest = appState.alertnessScore;
+  const now = Date.now();
+  if (now - tripSavedAt > 5000) saveTripLog();
+  if (now - tripRenderedAt > 2000 && document.getElementById('screen-history').classList.contains('active')) renderTripLog();
+}
+
+function ufasBandColor(v) {
+  return v >= 75 ? '#3f8a5c' : v >= 50 ? '#c96a55' : '#be123c';
+}
+
+function fmtTripDate(ms) {
+  const d = new Date(ms), today = new Date();
+  const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (d.toDateString() === today.toDateString()) return `Today, ${time}`;
+  const y = new Date(today); y.setDate(today.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return `Yesterday, ${time}`;
+  return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${time}`;
+}
+
+function fmtDuration(ms) {
+  const m = Math.max(0, Math.round(ms / 60000));
+  return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function toggleTripDetails(id) {
+  openTripId = openTripId === id ? null : id;
+  renderTripLog();
+  // Scroll inside the Logs screen only (never the page around the phone frame)
+  const el = document.getElementById(`trip-${id}`);
+  const screen = document.getElementById('screen-history');
+  if (el && openTripId === id && screen.classList.contains('active')) {
+    const top = el.getBoundingClientRect().top - screen.getBoundingClientRect().top + screen.scrollTop - 8;
+    screen.scrollTo({ top, behavior: 'smooth' });
+  }
+}
+
+function clearTripLog() {
+  const btn = document.getElementById('trip-clear-btn');
+  if (!tripClearArmed) {
+    tripClearArmed = true;
+    btn.textContent = 'Tap again to clear';
+    setTimeout(() => { tripClearArmed = false; if (btn) btn.textContent = 'Clear'; }, 3000);
+    return;
+  }
+  tripClearArmed = false;
+  tripLog = currentTrip ? [currentTrip] : [];
+  openTripId = currentTrip ? currentTrip.id : null;
+  saveTripLog();
+  renderTripLog();
+  btn.textContent = 'Clear';
+}
+
+function renderTripLog() {
+  tripRenderedAt = Date.now();
+  const chart = document.getElementById('trip-chart');
+  const list = document.getElementById('trip-list');
+  if (!chart || !list) return;
+  document.getElementById('trip-count-lbl').textContent = `${tripLog.length} of ${TRIP_LOG_MAX}`;
+
+  // Bar chart: oldest on the left, newest (or live) on the right
+  const ordered = tripLog.slice().reverse();
+  let bars = '';
+  for (let i = 0; i < TRIP_LOG_MAX; i++) {
+    const t = ordered[i];
+    if (!t) { bars += '<div class="trip-bar-slot empty"><div class="trip-bar-track"></div><div class="trip-bar-date">—</div></div>'; continue; }
+    const live = t === currentTrip;
+    const v = t.lowest;
+    const d = new Date(t.start);
+    bars += `<button class="trip-bar-slot${openTripId === t.id ? ' selected' : ''}${live ? ' live' : ''}" onclick="toggleTripDetails('${t.id}')"
+        aria-label="Trip ${fmtTripDate(t.start)}, lowest UFAS ${v}${live ? ', in progress' : ''}">
+        <div class="trip-bar-val" style="color:${ufasBandColor(v)}">${v}</div>
+        <div class="trip-bar-track"><div class="trip-bar-fill" style="height:${Math.max(4, v)}%;background:${ufasBandColor(v)}"></div></div>
+        <div class="trip-bar-date">${live ? 'Live' : `${d.getMonth() + 1}/${d.getDate()}`}</div>
+      </button>`;
+  }
+  chart.innerHTML = bars;
+
+  if (!tripLog.length) {
+    list.innerHTML = '<div class="trip-empty">No trips yet. Tap <b>Start Driving</b> on the Monitor tab and each drive\'s UFAS will be logged here.</div>';
+    return;
+  }
+
+  list.innerHTML = tripLog.map(t => {
+    const live = t === currentTrip;
+    const open = openTripId === t.id;
+    const dur = fmtDuration((t.end || Date.now()) - t.start);
+    const endTxt = live ? `now ${appState.alertnessScore}` : (t.final !== null ? `ended ${t.final}` : 'not ended');
+    const meta = [dur, `${t.alerts} camera alert${t.alerts === 1 ? '' : 's'}`, endTxt];
+    if (t.alarms) meta.splice(2, 0, `${t.alarms} alarm${t.alarms === 1 ? '' : 's'}`);
+    const events = open ? t.events.slice().reverse().map(e => {
+      const m = TRIP_EVENT_META[e.type] || { icon: '•', color: '#8a5a5f', label: e.type };
+      const time = new Date(e.t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+      return `<li class="trip-ev">
+          <span class="trip-ev-icon" style="background:${m.color}" aria-hidden="true">${m.icon}</span>
+          <div class="trip-ev-body">
+            <div class="trip-ev-head"><b>${m.label}</b><span class="mono">${time}</span></div>
+            <div class="trip-ev-text">${escapeHTML(e.text)}</div>
+          </div>
+          <span class="trip-ev-ufas mono" style="color:${ufasBandColor(e.ufas)}" title="UFAS at this moment">${e.ufas}</span>
+        </li>`;
+    }).join('') : '';
+    return `<div class="trip-card${open ? ' open' : ''}" id="trip-${t.id}">
+        <button class="trip-head" onclick="toggleTripDetails('${t.id}')" aria-expanded="${open}">
+          <div class="trip-score" title="Lowest UFAS this trip" style="border-color:${ufasBandColor(t.lowest)};color:${ufasBandColor(t.lowest)}">
+            <span>${t.lowest}</span>
+          </div>
+          <div class="trip-head-text">
+            <div class="trip-title">${fmtTripDate(t.start)}${live ? ' <span class="trip-live">LIVE</span>' : ''}${t.interrupted ? ' <span class="trip-warn">app closed</span>' : ''}</div>
+            <div class="trip-meta">${meta.join(' • ')}</div>
+          </div>
+          <svg class="trip-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        ${open ? `<div class="trip-events"><div class="trip-ev-title">Important Events</div><ul>${events}</ul></div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function handleDeviceMotion(event) {
+  const acc = event.accelerationIncludingGravity;
+  const rot = event.rotationRate;
+
+  // Significantly reduced sensitivity: only extreme, violent swerves or very hard jolts
+  // will build up anomaly score. Everyday turns, bumps, and stops are ignored.
+  if (rot && (rot.alpha !== null || rot.beta !== null || rot.gamma !== null)) {
+    const yawRate = Math.max(
+      Math.abs(rot.alpha || 0),
+      Math.abs(rot.beta || 0),
+      Math.abs(rot.gamma || 0)
+    );
+    appState.gyroRate = yawRate;
+
+    // Require a very sharp whip/swerve (> 145 deg/s) with a gentle multiplier
+    if (yawRate > 145) {
+      const dirSpike = Math.min(20, (yawRate - 145) * 0.16);
+      appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + dirSpike);
+      appState.lastAnomalySource = 'S';
+    }
+  }
+
+  if (acc && acc.x !== null) {
+    const totalG = Math.hypot(acc.x, acc.y, acc.z) / 9.81;
+    appState.accelG = totalG;
+    const gDelta = Math.abs(totalG - 1.0);
+
+    // Require a heavy impact/jolt (> 1.65g deviation, i.e. > 2.65g total) with smaller gain
+    if (gDelta > 1.65) {
+      appState.drivingAnomalyScore = Math.min(100, appState.drivingAnomalyScore + (gDelta - 1.65) * 14);
+      appState.lastAnomalySource = 'S';
+    }
+  }
+}
+
+// ============================================================================
+// STAGE 2: CONDITIONAL MEDIAPIPE FACEMESH ACTIVATION & VERIFICATION
+// ============================================================================
+const videoEl = document.getElementById('webcam-video');
+const canvasEl = document.getElementById('vision-canvas');
+const ctx = canvasEl.getContext('2d');
+let faceMesh = null;
+
+async function initMediaPipe() {
+  try {
+    faceMesh = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+    });
+    faceMesh.setOptions({
+      maxNumFaces: 1,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    faceMesh.onResults(onMediaPipeResults);
+  } catch (e) {
+    console.warn('MediaPipe initialization error:', e);
+  }
+}
+
+function activateStage2Vision(reasonText, sourceCode = 'M', opts = {}) {
+  const wasActive = appState.visionActive;
+  appState.visionActive = true;
+  if (!wasActive) bleCameraSignal(true, sourceCode, reasonText);
+  // Every real camera alert during a driving session lowers the UFAS ceiling
+  if (!wasActive) { appState.cameraWokeAt = performance.now(); appState.eyesClosedSince = null; appState.eyesClosedFor = 0; }
+  if (!wasActive && appState.sessionActive && !opts.test) applyCameraAlertPenalty(sourceCode, reasonText);
+  appState.clearFaceSeconds = 0;
+  appState.pitchBaseline = null;
+  appState.yawBaseline = null;
+
+  document.getElementById('vision-standby-overlay').classList.add('hidden');
+  const vCard = document.getElementById('vision-card');
+  vCard.classList.add('triggered');
+  vCard.classList.remove('collapsed'); // Automatically open dropdown when checking driver
+  const barFill = document.getElementById('cam-timer-bar-fill');
+  if (barFill) barFill.style.width = '100%';
+  const inlineTxt = document.getElementById('cam-timer-inline-txt');
+  if (inlineTxt) inlineTxt.textContent = `${appState.cameraCheckDuration.toFixed(1)}s`;
+  const pill = document.getElementById('vision-state-pill');
+  pill.textContent = `VERIFYING (${appState.cameraCheckDuration}s)`;
+  pill.classList.add('active');
+  document.getElementById('island-cam-dot').classList.add('cam-active');
+  document.getElementById('cam-timer-lbl').textContent = `Checking Driver • ${appState.cameraCheckDuration}s left`;
+
+  showToast(reasonText);
+
+  if (!appState.webcamRunning) {
+    startRealWebcam();
+  }
+}
+
+function dismissStage2ToStandby() {
+  if (appState.visionActive) bleCameraSignal(false);
+  appState.visionActive = false;
+  appState.drivingAnomalyScore = 0;
+  stopRealWebcam();
+  document.getElementById('vision-standby-overlay').classList.remove('hidden');
+  const vCard = document.getElementById('vision-card');
+  vCard.classList.remove('triggered');
+  vCard.classList.add('collapsed'); // Automatically collapse and hide the camera UI
+  const barFill = document.getElementById('cam-timer-bar-fill');
+  if (barFill) barFill.style.width = '0%';
+  const pill = document.getElementById('vision-state-pill');
+  pill.textContent = 'SLEEPING';
+  pill.classList.remove('active');
+  document.getElementById('island-cam-dot').classList.remove('cam-active');
+  document.getElementById('cam-timer-lbl').textContent = 'Standby (Saves Battery)';
+  if (appState.sessionActive) {
+    const secs = appState.cameraWokeAt ? ((performance.now() - appState.cameraWokeAt) / 1000).toFixed(0) : '?';
+    tripEvent('clear', `Camera back to standby after ${secs} s. UFAS held at ${Math.round(appState.ufasCeiling)}, recovering ~${UFAS_CONFIG.recoveryPointsPerMin} pts/min.`);
+  }
+  logEvent(appState.sessionActive
+    ? `Driver verified alert. Camera back to standby. UFAS held at ${Math.round(appState.ufasCeiling)} and recovering slowly.`
+    : 'Driver verified alert. Stage 2 FaceMesh returned to low-power standby.');
+}
+
+async function startRealWebcam() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user' }
+    });
+    videoEl.srcObject = stream;
+    await videoEl.play();
+
+    // Adapt canvas dimensions directly to the native camera stream dimensions
+    if (videoEl.videoWidth && videoEl.videoHeight) {
+      canvasEl.width = videoEl.videoWidth;
+      canvasEl.height = videoEl.videoHeight;
+    }
+
+    appState.webcamRunning = true;
+    document.getElementById('dev-cam-status').textContent = 'Live Webcam Active';
+    pumpWebcamToFaceMesh();
+  } catch (err) {
+    showToast('Camera permission is required for live face verification.');
+  }
+}
+
+function stopRealWebcam() {
+  if (videoEl.srcObject) {
+    videoEl.srcObject.getTracks().forEach(t => t.stop());
+    videoEl.srcObject = null;
+  }
+  appState.webcamRunning = false;
+  appState.faceDetected = false;
+}
+
+async function pumpWebcamToFaceMesh() {
+  if (!appState.webcamRunning) return;
+  if (appState.visionActive && videoEl.readyState >= 2 && faceMesh) {
+    await faceMesh.send({ image: videoEl });
+  }
+  requestAnimationFrame(pumpWebcamToFaceMesh);
+}
+
+function dist2D(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function calcEAR(lm, idx) {
+  const v1 = dist2D(lm[idx[1]], lm[idx[5]]);
+  const v2 = dist2D(lm[idx[2]], lm[idx[4]]);
+  const h = dist2D(lm[idx[0]], lm[idx[3]]) || 0.1;
+  return (v1 + v2) / (2.0 * h);
+}
+
+function onMediaPipeResults(results) {
+  // Dynamically match canvas resolution to incoming camera frame dimensions
+  if (videoEl.videoWidth && videoEl.videoHeight) {
+    if (canvasEl.width !== videoEl.videoWidth || canvasEl.height !== videoEl.videoHeight) {
+      canvasEl.width = videoEl.videoWidth;
+      canvasEl.height = videoEl.videoHeight;
+    }
+  }
+
+  const w = canvasEl.width;
+  const h = canvasEl.height;
+  ctx.save();
+  ctx.clearRect(0, 0, w, h);
+  ctx.translate(w, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(results.image, 0, 0, w, h);
+
+  if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+    appState.faceDetected = true;
+    const lm = results.multiFaceLandmarks[0];
+    const leftE = calcEAR(lm, [33, 160, 158, 133, 153, 144]);
+    const rightE = calcEAR(lm, [362, 385, 387, 263, 373, 380]);
+    appState.ear = (leftE + rightE) / 2;
+
+    const nose = lm[1], lEye = lm[33], rEye = lm[263];
+    const eyeMidX = (lEye.x + rEye.x) / 2;
+    const eyeMidY = (lEye.y + rEye.y) / 2;
+    const eyeDist = dist2D(lEye, rEye) || 0.1;
+
+    const rawYaw = ((nose.x - eyeMidX) / eyeDist) * -75;
+    const rawPitchRatio = (nose.y - eyeMidY) / eyeDist;
+
+    // Auto-calibrate neutral forward gaze so the driver doesn't have to look down
+    if (appState.pitchBaseline === null) {
+      appState.pitchBaseline = rawPitchRatio;
+      appState.yawBaseline = rawYaw;
+    } else if (Math.abs(appState.yaw) < 15 && Math.abs(appState.pitch) < 15) {
+      // Gently adapt baseline to natural upright posture
+      appState.pitchBaseline = appState.pitchBaseline * 0.995 + rawPitchRatio * 0.005;
+      appState.yawBaseline = appState.yawBaseline * 0.995 + rawYaw * 0.005;
+    }
+
+    appState.yaw = rawYaw - appState.yawBaseline;
+    appState.pitch = (appState.pitchBaseline - rawPitchRatio) * 75;
+
+    drawConnectors(ctx, lm, FACEMESH_TESSELATION, { color: '#38bdf830', lineWidth: 0.6 });
+    drawConnectors(ctx, lm, FACEMESH_RIGHT_EYE, { color: '#4ade80', lineWidth: 1.6 });
+    drawConnectors(ctx, lm, FACEMESH_LEFT_EYE, { color: '#4ade80', lineWidth: 1.6 });
+  } else {
+    appState.faceDetected = false;
+  }
+  ctx.restore();
+}
+
+// ============================================================================
+// MAIN SENSOR-TO-VISION FUSION LOOP
+// ============================================================================
+let lastTick = performance.now();
+
+function updateFusionPipeline() {
+  const now = performance.now();
+  const dt = (now - lastTick) / 1000;
+  lastTick = now;
+
+  // 1. Update Stage 1 Sensor Telemetry (phone IMU events arrive via handleDeviceMotion)
+  if (appState.hardwareSensorsBound || appState.wheelBound || appState.atsConnected) {
+    appState.drivingAnomalyScore = Math.max(0, appState.drivingAnomalyScore - appState.anomalyDecayRate);
+  }
+
+  // 1b. Poll the G29 wheel and pedals (adds anomaly impulses on swerves, drift-and-jerk, panic brakes)
+  pollWheel(now, dt);
+  renderWheel();
+
+  // Trigger Stage 2 automatically if Stage 1 anomaly crosses 50% (only while driving)
+  if (appState.sessionActive && appState.drivingAnomalyScore >= 50 && !appState.visionActive) {
+    activateStage2Vision(appState.lastAnomalyReason
+      ? `${appState.lastAnomalyReason} — Rolling FaceMesh...`
+      : 'Sensor Threshold Breached! Rolling FaceMesh...',
+      appState.lastAnomalySource || 'S');
+  }
+  appState.lastAnomalyReason = null;
+  appState.lastAnomalySource = null;
+
+  // 2. If Stage 2 Vision is active, process face metrics
+  let isEyesClosed = false;
+  let isLookingAway = false;
+
+  if (appState.visionActive) {
+    if (appState.faceDetected) {
+      // A closure only counts once it outlasts a normal blink
+      const rawClosed = appState.ear < 0.21;
+      if (rawClosed) {
+        if (appState.eyesClosedSince === null) appState.eyesClosedSince = now;
+        appState.eyesClosedFor = (now - appState.eyesClosedSince) / 1000;
+      } else {
+        appState.eyesClosedSince = null;
+        appState.eyesClosedFor = 0;
+      }
+      isEyesClosed = appState.eyesClosedFor >= CAMERA_CONFIG.blinkToleranceSec;
+      // Generous pitch/yaw tolerance so natural forward posture never triggers false alarms
+      isLookingAway = Math.abs(appState.yaw) > 28 || Math.abs(appState.pitch) > 25;
+
+      appState.closedFramesWindow.push(rawClosed ? 1 : 0);   // PERCLOS still counts every closed frame
+      if (appState.closedFramesWindow.length > 180) appState.closedFramesWindow.shift();
+      const closedSum = appState.closedFramesWindow.reduce((a, b) => a + b, 0);
+      appState.perclos = Math.round((closedSum / appState.closedFramesWindow.length) * 100);
+    }
+
+    // Run the 7-second driver verification timer while the driver is alert
+    // (blinks shorter than CAMERA_CONFIG.blinkToleranceSec don't pause or reset it)
+    if (!isEyesClosed && !isLookingAway && appState.drivingAnomalyScore < 40) {
+      appState.clearFaceSeconds += dt;
+      const remExact = Math.max(0, appState.cameraCheckDuration - appState.clearFaceSeconds);
+      const rem = Math.max(0, Math.ceil(remExact));
+      const pctRemaining = Math.max(0, (remExact / appState.cameraCheckDuration) * 100);
+      const barFill = document.getElementById('cam-timer-bar-fill');
+      if (barFill) barFill.style.width = `${pctRemaining}%`;
+      const inlineTxt = document.getElementById('cam-timer-inline-txt');
+      if (inlineTxt) inlineTxt.textContent = `${remExact.toFixed(1)}s`;
+
+      document.getElementById('cam-timer-lbl').textContent = `Checking Driver • ${rem}s left`;
+      document.getElementById('vision-state-pill').textContent = `VERIFYING (${rem}s)`;
+
+      if (document.getElementById('chk-autosleep').checked && appState.clearFaceSeconds >= appState.cameraCheckDuration) {
+        dismissStage2ToStandby();
+      }
+    } else {
+      // Reset the 7s countdown if drowsiness or distraction is detected
+      appState.clearFaceSeconds = 0;
+      const barFill = document.getElementById('cam-timer-bar-fill');
+      if (barFill) barFill.style.width = '100%';
+      const inlineTxt = document.getElementById('cam-timer-inline-txt');
+      if (inlineTxt) inlineTxt.textContent = `${appState.cameraCheckDuration.toFixed(1)}s (PAUSED)`;
+      document.getElementById('cam-timer-lbl').textContent = 'Suspicious state locked! Timer paused';
+      document.getElementById('vision-state-pill').textContent = 'ALERT LOCKED';
+    }
+  } else {
+    appState.perclos = Math.max(0, Math.round(appState.perclos * 0.98));
+  }
+
+  // 3. Compute Unified Fusion Alertness Score
+  const gazePenalty = isLookingAway ? 75 : (appState.visionActive ? Math.min(35, Math.abs(appState.yaw) * 0.9) : 0);
+  const eyePenalty = isEyesClosed ? 85 : appState.perclos;
+  const sensorPenalty = Math.round(appState.drivingAnomalyScore);
+
+  const fatigueIndex = (0.45 * eyePenalty) + (0.30 * sensorPenalty) + (0.25 * gazePenalty);
+  appState.liveScore = Math.max(0, Math.min(100, Math.round(100 - fatigueIndex)));
+
+  // UFAS shown to the driver: capped by the session ceiling, which only climbs back slowly
+  recoverUfasCeiling(dt);
+  appState.alertnessScore = appState.sessionActive
+    ? Math.max(0, Math.min(Math.round(appState.ufasCeiling), appState.liveScore))
+    : appState.liveScore;
+  trackTripScore();
+
+  // 4. Update DOM Readouts
+  document.getElementById('tele-gforce').textContent = `${appState.accelG.toFixed(2)}g`;
+  document.getElementById('tele-gyro').textContent = `${appState.gyroRate.toFixed(1)}°/s`;
+  const anomEl = document.getElementById('tele-anomaly');
+  anomEl.textContent = `${Math.round(appState.drivingAnomalyScore)}%`;
+  anomEl.style.color = appState.drivingAnomalyScore >= 50 ? '#e11d48' : '#3f8a5c';
+
+  document.getElementById('hud-ear').textContent = appState.ear.toFixed(2);
+  document.getElementById('hud-ear').style.color = isEyesClosed ? '#fb7185' : (appState.eyesClosedFor > 0 ? '#fbbf24' : '#4ade80');
+  document.getElementById('hud-perclos').textContent = `${appState.perclos}%`;
+  document.getElementById('hud-pose').textContent = `${Math.round(appState.yaw)}° / ${Math.round(appState.pitch)}°`;
+
+  // Update Gauge & Status
+  let color = '#3f8a5c';
+  let statusLabel = 'Driving Normal • Alert';
+  if (appState.liveScore < 45 || (appState.visionActive && (isEyesClosed || isLookingAway))) {
+    color = '#be123c';
+    statusLabel = isEyesClosed ? 'CRITICAL: MICROSLEEP VERIFIED' : 'WARNING: DRIVER DISTRACTED';
+    setInterventionState('seat', true);
+
+    // 1-second delay before activating the audio buzzer
+    if (!appState.criticalStateStart) {
+      appState.criticalStateStart = now;
+      if (isEyesClosed) tripEvent('eyes', `Eyes closed longer than a blink (${appState.eyesClosedFor.toFixed(1)} s). Seat vibration on, buzzer after 1 s.`);
+      else if (isLookingAway) tripEvent('distract', `Driver looking away from the road (yaw ${Math.round(appState.yaw)}°, pitch ${Math.round(appState.pitch)}°).`);
+    }
+    if (now - appState.criticalStateStart >= 1000) {
+      setInterventionState('audio', true);
+      playAlertChime(appState.sirenFreq, 0.18);
+    } else {
+      setInterventionState('audio', false);
+    }
+  } else if (appState.drivingAnomalyScore >= 50 || appState.liveScore < 70) {
+    appState.criticalStateStart = null;
+    color = '#c96a55';
+    statusLabel = 'Stage 2 Active • Checking Face...';
+    setInterventionState('seat', true);
+    setInterventionState('audio', false);
+  } else {
+    appState.criticalStateStart = null;
+    setInterventionState('seat', false);
+    setInterventionState('audio', false);
+    if (!appState.sessionActive) {
+      color = '#a67b7e';
+      statusLabel = 'Not Driving • Tap Start Driving';
+    } else if (appState.visionActive) {
+      color = '#c96a55';
+      statusLabel = 'Camera Check • Verifying Driver';
+    } else if (appState.alertnessScore < 100) {
+      color = appState.alertnessScore >= 75 ? '#3f8a5c' : appState.alertnessScore >= 50 ? '#c96a55' : '#be123c';
+      statusLabel = `Recovering • ${appState.cameraAlerts} camera alert${appState.cameraAlerts === 1 ? '' : 's'}`;
+    }
+  }
+
+  // Update Header Pipeline Stage Badge
+  const stageText = document.getElementById('stage-text');
+  const stageDot = document.getElementById('stage-dot');
+  if (color === '#be123c') {
+    stageText.textContent = 'STAGE 3: INTERVENTION';
+    stageDot.style.background = '#fb7185';
+  } else if (appState.visionActive) {
+    stageText.textContent = 'STAGE 2: FACE VERIFY';
+    stageDot.style.background = '#fbbf24';
+  } else {
+    stageText.textContent = 'STAGE 1: SENSORS';
+    stageDot.style.background = '#4ade80';
+  }
+
+  const scoreNum = document.getElementById('score-num');
+  const gaugeFg = document.getElementById('gauge-fg');
+  const statusEl = document.getElementById('status-text');
+
+  scoreNum.textContent = appState.alertnessScore;
+  document.getElementById('gauge-wrap').classList.toggle('idle', !appState.sessionActive);
+  scoreNum.style.color = color;
+  gaugeFg.setAttribute('stroke', color);
+  gaugeFg.setAttribute('stroke-dashoffset', CIRC - (CIRC * appState.alertnessScore / 100));
+  statusEl.textContent = statusLabel;
+  statusEl.style.color = color;
+
+  document.getElementById('bar-steer').style.width = `${sensorPenalty}%`;
+  document.getElementById('bar-steer').style.background = color;
+  document.getElementById('bar-eyes').style.width = `${eyePenalty}%`;
+  document.getElementById('bar-eyes').style.background = color;
+  document.getElementById('bar-gaze').style.width = `${gazePenalty}%`;
+  document.getElementById('bar-gaze').style.background = color;
+
+  // 5. Mirror state to the Bluetooth module (only sends on change / once per second)
+  bleSyncState(now);
+
+  requestAnimationFrame(updateFusionPipeline);
+}
+
+function setInterventionState(type, active) {
+  const pill = document.getElementById('pill-' + type);
+  if (!pill) return;
+  bleOutputs[type] = active;
+  pill.classList.toggle('active', active);
+  pill.classList.toggle('standby', !active);
+  pill.textContent = active ? 'Active' : 'Standby';
+}
+
+function toggleManualIntervention(type) {
+  const pill = document.getElementById('pill-' + type);
+  const next = !pill.classList.contains('active');
+  setInterventionState(type, next);
+  if (next) playAlertChime(appState.sirenFreq, 0.14, true);
+}
+
+function navigateRestStop() {
+  logEvent('Navigation started to Seguin Rest Area (I-10 W).');
+  window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent('Seguin Rest Area, I-10 W, Seguin, TX'), '_blank');
+}
+
+function triggerSOS() {
+  logEvent('Emergency SOS triggered! Dispatching GPS coordinates.', 'danger');
+  showToast('SOS Alert: Contacting emergency contact & roadside assistance...');
+  playAlertChime(1040, 0.25);
+}
+
+function toggleNightMode() {
+  document.getElementById('phone-root').classList.toggle('dark-mode');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  updateRealClock();
+  setInterval(updateRealClock, 10000);
+
+  // Sync exact visible viewport height on iOS Safari so bottom bar is never hidden by browser toolbars
+  const syncViewportHeight = () => {
+    if (window.innerWidth <= 460) {
+      const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      document.body.style.height = `${vh}px`;
+      document.documentElement.style.height = `${vh}px`;
+    } else {
+      document.body.style.height = '';
+      document.documentElement.style.height = '';
+    }
+  };
+  syncViewportHeight();
+  window.addEventListener('resize', syncViewportHeight);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', syncViewportHeight);
+  }
+
+  // Reveal Easter Egg in Sensors tab when scrolling deep down
+  const sensorsScreen = document.getElementById('screen-devices');
+  sensorsScreen.addEventListener('scroll', () => {
+    const egg = document.getElementById('sensors-easter-egg');
+    if (sensorsScreen.scrollTop > 550) {
+      egg.style.opacity = '1';
+    }
+  });
+
+  initSafeButton();
+  loadTripLog();
+  renderTripLog();
+  updateSessionButton();
+  updateSoundOwner();
+
+  initMediaPipe();
+  requestAnimationFrame(updateFusionPipeline);
+});
+</script>
+</body>
+</html>
