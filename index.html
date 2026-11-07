@@ -3,45 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>David Mendoza | Computer Engineering Portfolio</title>
-    
+    <title>David Mendoza | Computer Engineer — Embedded, RF &amp; Edge AI</title>
+
     <!-- SEO & Metadata -->
-    <meta name="description" content="Portfolio of David Mendoza - Computer Engineering student specializing in embedded systems, FPGA, robotics, and software development.">
+    <meta name="description" content="David Mendoza — Computer Engineering student building where hardware meets software: embedded systems, FPGA logic, RF/satellite DSP, robotics and edge AI. Currently building DRIFTS, a sensor-gated driver monitoring system.">
     <meta name="author" content="David Mendoza">
-    <meta name="theme-color" content="#0a0f1d">
-    
+    <meta name="theme-color" content="#0a0a0b">
+
     <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="David Mendoza | Portfolio">
-    <meta property="og:description" content="Computer Engineering student specializing in embedded systems, FPGA, robotics, and software development.">
-    <meta property="og:image" content="WebsiteImages/Profile/ProfileMain.webp">
-    <meta property="og:image:width" content="600">
-    <meta property="og:image:height" content="800">
-    
+    <meta property="og:title" content="David Mendoza | Computer Engineer">
+    <meta property="og:description" content="Embedded systems, FPGA, RF/satellite DSP, robotics and edge AI — plus live broadcast operations at the 2026 FIFA World Cup.">
+    <meta property="og:image" content="assets/profile/portrait.webp">
+
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="David Mendoza | Computer Engineer & Robotics">
-    <meta name="twitter:description" content="Portfolio of David Mendoza — Embedded systems, robotics, machine learning, and FPGA hardware projects.">
-    <meta name="twitter:image" content="WebsiteImages/Profile/ProfileMain.webp">
-    
-    <!-- Favicon -->
+    <meta name="twitter:title" content="David Mendoza | Computer Engineer">
+    <meta name="twitter:description" content="Embedded systems, FPGA, RF/satellite DSP, robotics and edge AI.">
+    <meta name="twitter:image" content="assets/profile/portrait.webp">
+
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    
-    <!-- Google Fonts: Plus Jakarta Sans (body) & Outfit (headings) -->
+
+    <!-- Fonts: Inter (text), JetBrains Mono (labels & data) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css?v=20261106f">
+    <link rel="stylesheet" href="css/features.css?v=20261106f">
+    <link rel="stylesheet" href="css/theme.css?v=20261106f">
+    <link rel="stylesheet" href="css/case-study.css?v=20261106f">
 
-    <!-- Zero-flicker Theme Initializer (prevents FOUC) -->
+    <!-- Zero-flicker theme initializer: dark by default, light only if chosen -->
     <script>
         (function() {
             try {
-                var savedTheme = localStorage.getItem('theme');
-                if (savedTheme === 'dark') {
-                    document.documentElement.classList.remove('light-mode');
-                } else {
+                if (localStorage.getItem('theme') === 'light') {
                     document.documentElement.classList.add('light-mode');
                 }
             } catch (e) {}
@@ -50,13 +47,15 @@
 </head>
 <body>
 
-    <!-- Floating Glassmorphic Navbar -->
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- Navbar -->
     <nav id="navbar">
         <div class="nav-container">
-            <a href="#" class="logo">
+            <a href="#hero" class="logo">
                 <span class="logo-accent">DM</span> DAVID MENDOZA
             </a>
-            
+
             <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-navigation">
                 <span class="bar"></span>
                 <span class="bar"></span>
@@ -64,14 +63,16 @@
             </button>
 
             <ul class="nav-links" id="primary-navigation">
+                <li><a href="#drifts">DRIFTS</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#experience">Experience</a></li>
                 <li><a href="#projects">Projects</a></li>
+                <li><a href="#playground">Playground</a></li>
                 <li><a href="#skills">Skills</a></li>
                 <li><a href="#contact">Contact</a></li>
-                <li><a href="WebsiteImages/Profile/DM_Res.pdf" target="_blank" rel="noopener noreferrer" class="nav-resume-btn">Resume <i class="fas fa-arrow-up-right-from-square"></i></a></li>
+                <li><a href="assets/docs/David_Mendoza_Resume.pdf" target="_blank" rel="noopener noreferrer" class="nav-resume-btn">Resume <i class="fas fa-arrow-up-right-from-square"></i></a></li>
                 <li class="toggle-container">
-                    <label class="theme-switch" for="checkbox" aria-label="Toggle Dark and Light Mode">
+                    <label class="theme-switch" for="checkbox" aria-label="Toggle dark and light mode">
                         <input type="checkbox" id="checkbox" />
                         <div class="slider round"></div>
                     </label>
@@ -80,66 +81,155 @@
         </div>
     </nav>
 
-    <!-- Modern Hero Section -->
+    <!-- Hero -->
     <header id="hero">
-        <div class="hero-overlay"></div>
-        <div class="hero-mesh"></div>
-        <div class="hero-content">
-            
-            <div class="hero-avatar-wrapper">
-                <div class="hero-avatar-glow"></div>
-                <img src="WebsiteImages/Profile/ProfileMain.webp" alt="David Mendoza portrait" class="hero-avatar" width="190" height="190" fetchpriority="high">
+        <canvas id="scopeCanvas" class="hero-scope" aria-hidden="true"></canvas>
+        <div class="hero-inner">
+            <div class="hero-text">
+                <p class="hero-meta"><span class="hero-meta-dot"></span>Computer Engineering &middot; University of Houston</p>
+
+                <h1 class="hero-title">David Mendoza</h1>
+
+                <p class="hero-tagline">I build where hardware meets software.</p>
+
+                <p class="hero-focus">
+                    Embedded Systems <span class="divider-dot">/</span> FPGA &amp; Digital Logic <span class="divider-dot">/</span> RF &amp; SDR <span class="divider-dot">/</span> Edge AI
+                </p>
+
+                <div class="hero-cta-group">
+                    <a href="#drifts" class="btn btn-primary">See what I'm building <i class="fas fa-arrow-down"></i></a>
+                    <a href="assets/docs/David_Mendoza_Resume.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Resume <i class="fas fa-arrow-up-right-from-square"></i></a>
+                </div>
+
+                <div class="social-pills">
+                    <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" class="social-pill" aria-label="LinkedIn profile">LinkedIn <span aria-hidden="true">&nearr;</span></a>
+                    <a href="https://github.com/DAVIDMend0" target="_blank" rel="noopener noreferrer" class="social-pill" aria-label="GitHub profile">GitHub <span aria-hidden="true">&nearr;</span></a>
+                    <a href="mailto:9davemend@gmail.com" class="social-pill" aria-label="Send email">Email <span aria-hidden="true">&nearr;</span></a>
+                </div>
             </div>
 
-            <h1 class="hero-title">
-                <span class="hero-name">DAVID MENDOZA</span>
-            </h1>
-            
-            <p class="hero-subtitle">
-                Computer Engineering Student <span class="divider-dot">&bull;</span> Embedded Systems <span class="divider-dot">&bull;</span> Hardware &amp; Software
-            </p>
-
-            <div class="hero-cta-group">
-                <a href="#projects" class="btn btn-primary">Explore Projects <i class="fas fa-arrow-down"></i></a>
-                <a href="#contact" class="btn btn-secondary">Get In Touch <i class="fas fa-envelope"></i></a>
-            </div>
-
-            <div class="social-pills">
-                <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" class="social-pill" aria-label="LinkedIn profile">
-                    <i class="fab fa-linkedin" aria-hidden="true"></i> LinkedIn
-                </a>
-                <a href="https://github.com/DAVIDMend0" target="_blank" rel="noopener noreferrer" class="social-pill" aria-label="GitHub profile">
-                    <i class="fab fa-github" aria-hidden="true"></i> GitHub
-                </a>
-            </div>
+            <figure class="hero-portrait">
+                <div class="mondrian">
+                    <div class="m-photo"><img src="assets/profile/portrait.webp" alt="Portrait of David Mendoza" class="hero-avatar" width="420" height="520" fetchpriority="high"></div>
+                    <div class="m-cell m-red"></div>
+                    <div class="m-cell"></div>
+                    <div class="m-cell m-yellow"></div>
+                    <div class="m-cell m-blue"></div>
+                    <div class="m-cell"></div>
+                    <div class="m-cell m-ink"></div>
+                </div>
+                <figcaption>fig. 01 &mdash; D. Mendoza, Houston TX</figcaption>
+            </figure>
         </div>
+
+        <dl class="hero-stats">
+            <div class="hero-stat">
+                <dt><span class="stat-num">11</span></dt>
+                <dd>Hardware &amp; software builds</dd>
+            </div>
+            <div class="hero-stat">
+                <dt><span class="stat-num">03</span></dt>
+                <dd>Playable demos on this page</dd>
+            </div>
+            <div class="hero-stat">
+                <dt><span class="stat-num">2026</span></dt>
+                <dd>FIFA World Cup broadcast ops</dd>
+            </div>
+        </dl>
     </header>
 
-    <main>
-        <!-- About Section -->
-        <section id="about" class="content-section">
+    <main id="main">
+
+        <!-- DRIFTS Spotlight -->
+        <section id="drifts" class="content-section spotlight-section">
             <div class="container">
-                <div class="section-header">
+                <div class="spotlight-grid">
+                    <div class="spotlight-copy reveal">
+                        <span class="section-kicker"><span class="live-dot"></span> Currently building</span>
+                        <div class="spotlight-brand">
+                            <img src="projects/drifts/logo.webp" alt="DRIFTS logo" width="64" height="64" class="spotlight-logo">
+                            <h2 class="section-title">DRIFTS</h2>
+                        </div>
+                        <p class="spotlight-lead">
+                            A <strong>sensor-gated driver drowsiness monitor</strong> that keeps the camera asleep until the car tells it something is wrong.
+                        </p>
+                        <p>
+                            Always-on face tracking drains batteries and feels invasive. DRIFTS flips the order: cheap phone sensors watch how the vehicle moves, and only when driving turns irregular does the vision stage wake up to check the driver's face. A Bluetooth module then handles the alarm with a buzzer and vibration motors.
+                        </p>
+
+                        <ol class="pipeline">
+                            <li class="pipeline-step">
+                                <span class="pipeline-num">01</span>
+                                <div>
+                                    <strong>Sensor sentinel</strong>
+                                    <span>Accelerometer, gyro &amp; GPS speed flag irregular driving</span>
+                                </div>
+                            </li>
+                            <li class="pipeline-step">
+                                <span class="pipeline-num">02</span>
+                                <div>
+                                    <strong>Gated vision check</strong>
+                                    <span>Camera wakes, MediaPipe FaceMesh tracks 468 landmarks</span>
+                                </div>
+                            </li>
+                            <li class="pipeline-step">
+                                <span class="pipeline-num">03</span>
+                                <div>
+                                    <strong>Fused alert</strong>
+                                    <span>Unified alertness score drives a BLE buzzer + ERM motor module</span>
+                                </div>
+                            </li>
+                        </ol>
+
+                        <div class="tags">
+                            <span>Sensor Fusion</span>
+                            <span>MediaPipe</span>
+                            <span>Web Bluetooth</span>
+                            <span>MobileNetV2</span>
+                            <span>Logitech G29 + ATS test rig</span>
+                        </div>
+
+                        <div class="spotlight-actions">
+                            <a href="projects/drifts/" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Open Full Prototype <i class="fas fa-arrow-up-right-from-square"></i></a>
+                            <button class="btn btn-ghost open-modal-btn" data-modal-target="#modal-dms">Vision Model Simulation <i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="spotlight-device reveal">
+                        <div class="device-bezel">
+                            <div class="device-island" aria-hidden="true"></div>
+                            <div class="device-screen">
+                                <iframe data-src="projects/drifts/" title="DRIFTS live app prototype" allow="camera; geolocation; accelerometer; gyroscope" id="driftsFrame"></iframe>
+                                <button type="button" class="device-boot" id="driftsBoot">
+                                    <img src="projects/drifts/logo.webp" alt="" width="88" height="88">
+                                    <span>Tap to boot the live prototype</span>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="device-caption"><i class="fas fa-hand-pointer"></i> It's interactive. Go ahead, poke it.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About -->
+        <section id="about" class="content-section alt-bg">
+            <div class="container">
+                <div class="section-header reveal">
                     <span class="section-kicker">Background</span>
                     <h2 class="section-title">About Me</h2>
                 </div>
 
-                <div class="about-card">
+                <div class="about-card reveal">
                     <div class="about-wrapper">
                         <div class="about-image-col">
                             <div class="about-avatar-container">
-                                <img src="WebsiteImages/Profile/ProfileMain.webp" alt="David Mendoza portrait" class="about-avatar" width="240" height="240" loading="lazy" decoding="async">
+                                <img src="assets/profile/portrait.webp" alt="Portrait of David Mendoza" class="about-avatar" width="240" height="240" loading="lazy" decoding="async">
                             </div>
                             <div class="about-socials">
-                                <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" class="about-social-icon" aria-label="LinkedIn profile">
-                                    <i class="fab fa-linkedin" aria-hidden="true"></i>
-                                </a>
-                                <a href="https://github.com/DAVIDMend0" target="_blank" rel="noopener noreferrer" class="about-social-icon" aria-label="GitHub profile">
-                                    <i class="fab fa-github" aria-hidden="true"></i>
-                                </a>
-                                <a href="mailto:9davemend@gmail.com" class="about-social-icon" aria-label="Send email">
-                                    <i class="fas fa-envelope" aria-hidden="true"></i>
-                                </a>
+                                <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" class="about-social-icon" aria-label="LinkedIn profile"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+                                <a href="https://github.com/DAVIDMend0" target="_blank" rel="noopener noreferrer" class="about-social-icon" aria-label="GitHub profile"><i class="fab fa-github" aria-hidden="true"></i></a>
+                                <a href="mailto:9davemend@gmail.com" class="about-social-icon" aria-label="Send email"><i class="fas fa-envelope" aria-hidden="true"></i></a>
                             </div>
                         </div>
 
@@ -147,14 +237,13 @@
                             <div class="about-badge">University of Houston</div>
                             <h3>David Mendoza</h3>
                             <p class="role-title">Computer Engineering Student</p>
-                            
+
                             <p class="lead-text">
-                                I am a Computer Engineering student driven by a passion for embedded systems, digital logic, and low-level software development. 
-                                I am actively seeking internship and cooperative opportunities to apply my skills to real-world engineering challenges.
+                                I like the moment a circuit, a few hundred lines of firmware and a sensor start agreeing with each other. That's where I spend most of my time: embedded systems, digital logic and the low-level software that makes hardware useful.
                             </p>
-                            
+
                             <p>
-                                My experience spans hands-on hardware sensor integration, microcontroller firmware in Embedded C/C++, digital system modeling in Verilog HDL, and sustainable engineering research. I excel at bridging physical hardware and responsive software to construct reliable, high-performance systems.
+                                I've written PID loops for an ARM Cortex-M4, described timing circuits in Verilog, pulled weather imagery out of a satellite downlink with an SDR, trained imitation-learning policies for a robot arm, and spent the summer of 2026 keeping World Cup broadcast feeds alive. I'm now looking for full-time engineering roles where I can do more of that on real products.
                             </p>
 
                             <div class="about-highlights">
@@ -162,21 +251,21 @@
                                     <i class="fas fa-microchip"></i>
                                     <div>
                                         <strong>Hardware &amp; Firmware</strong>
-                                        <span>FPGA, ARM Cortex-M4, Sensors</span>
+                                        <span>FPGA, ARM Cortex-M4, sensors, RF</span>
                                     </div>
                                 </div>
                                 <div class="highlight-item">
                                     <i class="fas fa-code"></i>
                                     <div>
-                                        <strong>Software Systems</strong>
-                                        <span>C/C++, Python, Digital Logic</span>
+                                        <strong>Software &amp; AI</strong>
+                                        <span>C/C++, Python, PyTorch, web apps</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="about-actions">
                                 <a href="#contact" class="btn btn-primary">Contact Me &rarr;</a>
-                                <a href="WebsiteImages/Profile/DM_Res.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">View Resume &nearr;</a>
+                                <a href="assets/docs/David_Mendoza_Resume.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">View Resume &nearr;</a>
                             </div>
                         </div>
                     </div>
@@ -184,19 +273,18 @@
             </div>
         </section>
 
-        <!-- Professional Experience Section -->
-        <section id="experience" class="content-section alt-bg">
+        <!-- Experience -->
+        <section id="experience" class="content-section">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header reveal">
                     <span class="section-kicker">Career &amp; Operations</span>
                     <h2 class="section-title">Professional Experience</h2>
                 </div>
 
-                <!-- Main Experience Card -->
-                <div class="experience-card">
+                <div class="experience-card reveal">
                     <div class="experience-media-col">
                         <div class="experience-img-wrapper">
-                            <img src="WebsiteImages/WorldCup/WC_Logo.webp" alt="FIFA World Cup 2026 Official Logo" class="experience-img" width="550" height="320" loading="lazy" decoding="async">
+                            <img src="assets/projects/fifa-world-cup/WC_Logo.webp" alt="FIFA World Cup 2026 official logo" class="experience-img" width="550" height="320" loading="lazy" decoding="async">
                             <div class="experience-status-tag">
                                 <i class="fas fa-satellite-dish"></i> Live Broadcast Infrastructure
                             </div>
@@ -207,7 +295,7 @@
                             <div>
                                 <h3 class="experience-role">TOC/CIR Assistant</h3>
                                 <div class="experience-org">
-                                    <i class="fas fa-building"></i> <strong>FIFA - Host Broadcast Services (hbs)</strong>
+                                    <i class="fas fa-building"></i> <strong>FIFA – Host Broadcast Services (HBS)</strong>
                                 </div>
                             </div>
                             <div class="experience-time-loc">
@@ -217,27 +305,21 @@
                         </div>
 
                         <p class="experience-summary">
-                            Technical broadcast and network infrastructure support ensuring zero-downtime feed distribution for international media rights holders during the 2026 World Cup. Served as an operations specialist inside the Center Interconnection Room (CIR) and Technical Operations Centre (TOC), managing physical fiber plant, signal handoffs, and uplink verification to keep live stadium feeds continuously operational for global broadcast partners.
+                            Broadcast and network infrastructure support for zero-downtime feed distribution to international media rights holders during the 2026 World Cup. Worked inside the Center Interconnection Room (CIR) and Technical Operations Centre (TOC), managing the physical fiber plant, signal handoffs and uplink verification to keep live stadium feeds on air for global broadcast partners.
                         </p>
 
                         <div class="experience-bullets">
                             <div class="exp-bullet-item">
                                 <i class="fas fa-network-wired exp-icon"></i>
-                                <div>
-                                    <strong>Fiber Optic Loom Routing:</strong> Routed, labeled, and monitored complex multi-strand fiber optic looms through the CIR to bridge stadium broadcast lines with the TOC and Technical Interconnection Room (TIR).
-                                </div>
+                                <div><strong>Fiber Optic Loom Routing:</strong> Routed, labeled and monitored multi-strand fiber looms through the CIR to bridge stadium broadcast lines with the TOC and Technical Interconnection Room (TIR).</div>
                             </div>
                             <div class="exp-bullet-item">
                                 <i class="fas fa-broadcast-tower exp-icon"></i>
-                                <div>
-                                    <strong>Outside Broadcast (OB) Coordination:</strong> Collaborated with outside broadcast contractors (NEP, ARCTEK) to validate Outside Broadcast truck signal processing chains and calibrate satellite uplink feeds.
-                                </div>
+                                <div><strong>Outside Broadcast (OB) Coordination:</strong> Worked with OB contractors (NEP, ARCTEK) to validate truck signal processing chains and calibrate satellite uplink feeds.</div>
                             </div>
                             <div class="exp-bullet-item">
                                 <i class="fas fa-shield-alt exp-icon"></i>
-                                <div>
-                                    <strong>End-to-End Signal Integrity:</strong> Verified end-to-end signal integrity (audio/video channels, synchronization, stability) delivered to global Media Partners (MPs) under high-pressure live production conditions.
-                                </div>
+                                <div><strong>End-to-End Signal Integrity:</strong> Verified audio/video channels, synchronization and stability delivered to global Media Partners under live production pressure.</div>
                             </div>
                         </div>
 
@@ -246,7 +328,6 @@
                             <span class="exp-tag">TOC / CIR Operations</span>
                             <span class="exp-tag">Satellite Uplink</span>
                             <span class="exp-tag">Broadcast Engineering</span>
-                            <span class="exp-tag">Outside Broadcast (NEP / ARCTEK)</span>
                             <span class="exp-tag">Signal Integrity</span>
                         </div>
 
@@ -257,380 +338,369 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
 
-        <!-- Projects Section -->
-        <section id="projects" class="content-section">
+        <!-- Projects -->
+        <section id="projects" class="content-section alt-bg">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header reveal">
                     <span class="section-kicker">Portfolio</span>
-                    <h2 class="section-title">Featured Projects</h2>
+                    <h2 class="section-title">Things I've Built</h2>
+                    <p class="section-subtitle">Pick any project from the reel to see it up close.</p>
                 </div>
 
-                <div class="project-grid">
-                    <!-- 1. METEOR-M2 Satellite Ground Station -->
-                    <div class="project-card">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/MeteorM2/Met_Sat.webp" alt="Decoded METEOR-M2 satellite composite scanline imagery" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge">RF &amp; Satellite DSP</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>METEOR-M2 Ground Station</h3>
-                            <p>Low-cost ground station and digital signal processing pipeline built to track polar-orbiting weather satellites and decode live Earth telemetry.</p>
-                            <div class="tags">
-                                <span>RTL-SDR</span>
-                                <span>QPSK Demod</span>
-                                <span>Gpredict</span>
-                                <span>Viterbi FEC</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-meteor">
-                                <span>Interactive Simulation &amp; Details</span> <i class="fas fa-satellite"></i>
-                            </button>
-                        </div>
+                <!-- Selected tray -->
+                <article class="project-tray reveal" id="projectTray" aria-live="polite">
+                    <div class="tray-media">
+                        <img id="trayImg" src="assets/projects/meteor-m2/Met_Sat.webp" alt="Composite Earth image decoded from a METEOR-M2 satellite pass" width="640" height="400">
+                        <span class="card-badge" id="trayBadge">RF &amp; Satellite DSP</span>
                     </div>
-
-                    <!-- 2. AI Robotic Arm with LeRobot-->
-                    <div class="project-card">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/LeRobot/LR_ArmsClosed.webp" alt="AI Robotic Arm assembly" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge">Edge AI &amp; Robotics</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>AI Robotic Arm with LeRobot</h3>
-                            <p>Autonomous vision-guided robotic manipulator combining edge-AI compute, imitation learning frameworks, and closed-loop motor control.</p>
-                            <div class="tags">
-                                <span>LeRobot</span>
-                                <span>PyTorch / CUDA</span>
-                                <span>PID Control</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-lerobot">
-                                <span>Watch Demo &amp; Details</span> <i class="fas fa-robot"></i>
-                            </button>
-                        </div>
+                    <div class="tray-body">
+                        <span class="tray-count" id="trayCount">01 / 10</span>
+                        <h3 id="trayTitle">METEOR-M2 Ground Station</h3>
+                        <div id="trayDetail"></div>
+                        <button class="btn btn-primary tray-cta" id="trayOpen" data-case-open="meteor"><span id="trayCta">Details + Doppler simulator</span> <i class="fas fa-arrow-right"></i></button>
                     </div>
+                <div class="tray-timer" aria-hidden="true"><span id="trayTimer"></span></div>
+                </article>
 
-                    
-                    <!-- 1. Aircraft Tracker -->
-                    <div class="project-card">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/AircraftTracker/AT_WorldFR.webp" alt="Aircraft Tracker map preview" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge">Communications</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>Aircraft Tracker</h3>
-                            <p>Radio signal interception system detecting live aircraft type and callsigns using USB RTL-SDR hardware.</p>
-                            <div class="tags">
-                                <span>RF Signals</span>
-                                <span>ADS-B</span>
-                                <span>Signal Processing</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-aircraft">
-                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
+                <!-- Reel controls -->
+                <div class="reel-head">
+                    <div class="filter-bar" role="toolbar" aria-label="Filter projects by discipline">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="embedded">Embedded &amp; IoT</button>
+                        <button class="filter-btn" data-filter="rf">RF &amp; Comms</button>
+                        <button class="filter-btn" data-filter="robotics">Robotics</button>
+                        <button class="filter-btn" data-filter="ai">AI / ML</button>
+                        <button class="filter-btn" data-filter="circuits">Digital &amp; Analog</button>
+                        <button class="filter-btn skill-pill" id="skillPill" hidden aria-label="Clear skill filter"><span id="skillPillName"></span> <i class="fas fa-xmark"></i></button>
                     </div>
-
-                    <!-- 2. Self Balancing Robot -->
-                    <div class="project-card">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/SelfBalancingRobot/SBR_V1.webp" alt="Self Balancing Robot chassis" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge">Robotics</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>Self Balancing Robot</h3>
-                            <p>Inverted-pendulum autonomous vehicle utilizing a TI TIVA LaunchPad and PID control loop for stability.</p>
-                            <div class="tags">
-                                <span>Embedded C</span>
-                                <span>PID Control</span>
-                                <span>ARM Cortex-M4</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-balance">
-                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
+                    <div class="reel-controls">
+                        <button class="reel-btn" id="reelPrev" aria-label="Previous projects"><i class="fas fa-chevron-left"></i></button>
+                        <button class="reel-btn" id="reelPause" aria-label="Pause auto-play" aria-pressed="false"><i class="fas fa-pause"></i></button>
+                        <button class="reel-btn" id="reelNext" aria-label="Next projects"><i class="fas fa-chevron-right"></i></button>
                     </div>
-
-                    <!-- 3. Water Monitoring -->
-                    <div class="project-card">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/WaterMonitoring/WM_LVF.webp" alt="Water Monitoring system interface" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge">IoT</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>Water Monitoring System</h3>
-                            <p>IoT turbidity and temperature telemetry solution pairing Arduino ADC processing with LabVIEW and cloud sync.</p>
-                            <div class="tags">
-                                <span>IoT</span>
-                                <span>LabVIEW</span>
-                                <span>Sensors</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-water">
-                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 4. FPGA Reaction Timer -->
-                    <div class="project-card featured-project">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/ReactionTimer/RT_BFront.webp" alt="FPGA Reaction Timer board" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge highlight-badge">Interactive Demo</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>FPGA Reaction Timer</h3>
-                            <p>Digital timing circuit designed in Verilog HDL for an Intel FPGA with millisecond 7-segment display logic.</p>
-                            <div class="tags">
-                                <span>Verilog HDL</span>
-                                <span>Intel FPGA</span>
-                                <span>Digital Logic</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-timer">
-                                <span>Play Simulation &amp; Details</span> <i class="fas fa-gamepad"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 5. Smart Parking -->
-                    <div class="project-card">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/SmartParking/SP_Top.webp" alt="Smart Parking system top view" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge">Automation</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>Smart Parking System</h3>
-                            <p>Automated facility occupancy tracker featuring IR obstruction sensors and real-time I2C LCD driver feedback.</p>
-                            <div class="tags">
-                                <span>Arduino</span>
-                                <span>IR Sensors</span>
-                                <span>I2C Display</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-parking">
-                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 6. Line Following Robot -->
-                    <div class="project-card">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/LineRobot/LF_CompleteA.webp" alt="Line Following Robot complete build" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge">Robotics</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>Line Following Robot</h3>
-                            <p>Autonomous mobile platform implementing differential steering with IR reflectance comparators and an L298N driver.</p>
-                            <div class="tags">
-                                <span>Embedded C</span>
-                                <span>Motor Control</span>
-                                <span>Optoelectronics</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-line">
-                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 7. Laser Security -->
-                    <div class="project-card">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/LaserSecurity/SL_House.webp" alt="Laser Security system enclosure" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge">Analog</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>Laser Security System</h3>
-                            <p>Discrete analog tripwire system built using LDR voltage dividers, BJT switching stages, and acoustic alarm transducers.</p>
-                            <div class="tags">
-                                <span>Discrete Circuits</span>
-                                <span>BJT Transistors</span>
-                                <span>LDR Sensors</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-laser">
-                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 8. Tiny-VGG Classifier -->
-                    <div class="project-card">
-                        <div class="card-media-wrap">
-                            <img src="WebsiteImages/SmallVGG/TVGG_Results.webp" alt="Tiny-VGG Classifier performance results" class="project-img" width="400" height="220" loading="lazy" decoding="async">
-                            <span class="card-badge">Machine Learning</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>Tiny-VGG Classifier</h3>
-                            <p>PyTorch deep learning implementation scaling down the VGG architecture for accelerated computer vision training.</p>
-                            <div class="tags">
-                                <span>Python</span>
-                                <span>PyTorch</span>
-                                <span>Computer Vision</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-vgg">
-                                <span>Learn More</span> <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 9. MobileNetV2 DMS Tester -->
-                    <div class="project-card featured-project">
-                        <div class="card-media-wrap">
-                            <div class="project-placeholder-media">
-                                <i class="fas fa-microchip"></i>
-                                <span>Project in development. Image, desciprtion, or video coming soon</span>
-                            </div>
-                            <span class="card-badge highlight-badge">Interactive Simulation</span>
-                        </div>
-                        <div class="card-content">
-                            <h3>MobileNetV2 DMS Tester</h3>
-                            <p>Project in development. Image, desciprtion, or video coming soon</p>
-                            <div class="tags">
-                                <span>MobileNetV2</span>
-                                <span>Edge AI</span>
-                                <span>Tencent NCNN</span>
-                                <span>Computer Vision</span>
-                            </div>
-                            <button class="card-action-btn open-modal-btn" data-modal-target="#modal-dms">
-                                <span>Play Simulation &amp; Details</span> <i class="fas fa-gamepad"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 10. Coming Soon Placeholder -->
-                    <div class="project-card project-card-placeholder">
-                        <div class="card-placeholder-content">
-                            <div class="placeholder-icon-ring">
-                                <i class="fas fa-layer-group placeholder-icon"></i>
-                            </div>
-                            <h3>More Projects Coming Soon</h3>
-                            <div class="placeholder-badge">
-                                <span class="placeholder-dot"></span>
-                                <span>In Development</span>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
+
+                <div class="reel" id="reel">
+                    <div class="reel-track" id="reelTrack">
+                        <button type="button" class="reel-card" data-project="meteor" data-cat="rf" data-stack="sdr rf dsp" data-cta="Details + Doppler simulator">
+                            <span class="reel-media"><img src="assets/projects/meteor-m2/Met_Sat.webp" alt="Composite Earth image decoded from a METEOR-M2 satellite pass" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">RF &amp; Satellite DSP</span>
+                                <span class="reel-title">METEOR-M2 Ground Station</span>
+                                <span class="reel-sub">Live weather imagery from orbit</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Receive digital weather imagery from a polar-orbiting satellite with a low-cost USB radio.</dd></div>
+                                    <div><dt>Build</dt><dd>RTL-SDR on 137 MHz, Gpredict pass and Doppler tracking, QPSK demodulation and Viterbi FEC.</dd></div>
+                                    <div><dt>Result</dt><dd>Decoded multispectral composite imagery from a live satellite pass.</dd></div>
+                                </dl>
+                                <div class="tags"><span>RTL-SDR</span><span>QPSK</span><span>Viterbi FEC</span><span>Gpredict</span></div>
+                            </template>
+                        </button>
+                        <button type="button" class="reel-card" data-project="lerobot" data-cat="ai robotics" data-stack="lerobot pytorch cuda python pid" data-cta="Watch demo &amp; details">
+                            <span class="reel-media"><img src="assets/projects/lerobot-arm/LR_ArmsClosed.webp" alt="AI robotic arm built with the LeRobot framework" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">Edge AI &amp; Robotics</span>
+                                <span class="reel-title">AI Robotic Arm with LeRobot</span>
+                                <span class="reel-sub">Imitation learning on real hardware</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Teach a low-cost arm to manipulate objects by demonstration instead of hand-coded paths.</dd></div>
+                                    <div><dt>Build</dt><dd>Hugging Face LeRobot imitation-learning policies on CUDA, Feetech smart servos and PID joint control.</dd></div>
+                                    <div><dt>Result</dt><dd>A trained policy running on the physical arm, with a demo video.</dd></div>
+                                </dl>
+                                <div class="tags"><span>LeRobot</span><span>PyTorch / CUDA</span><span>PID Control</span></div>
+                            </template>
+                        </button>
+                        <button type="button" class="reel-card" data-project="fpga" data-cat="circuits embedded" data-stack="verilog fpga digital" data-cta="Details &amp; photos">
+                            <span class="reel-media"><img src="assets/projects/fpga-reaction-timer/RT_BFront.webp" alt="Intel FPGA board running the reaction timer" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">Digital Logic</span>
+                                <span class="reel-title">FPGA Reaction Timer</span>
+                                <span class="reel-sub">Race start-lights in Verilog</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Measure human reaction time to the millisecond, entirely in hardware.</dd></div>
+                                    <div><dt>Build</dt><dd>Verilog state machine on an Intel FPGA: LFSR random delay, 50 MHz clock divided to a 1 ms counter, BCD 7-segment output.</dd></div>
+                                    <div><dt>Result</dt><dd>A working start-light timer. Try the browser version in the Playground below.</dd></div>
+                                </dl>
+                                <div class="tags"><span>Verilog HDL</span><span>Intel FPGA</span><span>State Machines</span></div>
+                            </template>
+                        </button>
+                        <button type="button" class="reel-card" data-project="balance" data-cat="embedded robotics" data-stack="c tiva pid sensors" data-cta="Details &amp; videos">
+                            <span class="reel-media"><img src="assets/projects/self-balancing-robot/SBR_V1.webp" alt="Two-wheel self-balancing robot chassis" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">Embedded &amp; Control</span>
+                                <span class="reel-title">Self-Balancing Robot</span>
+                                <span class="reel-sub">PID control on an ARM Cortex-M4</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Keep a two-wheeled robot upright: an inverted pendulum that falls without constant correction.</dd></div>
+                                    <div><dt>Build</dt><dd>TI TIVA LaunchPad (ARM Cortex-M4) reading an IMU over I2C, with a PID loop driving the DC motors via PWM.</dd></div>
+                                    <div><dt>Result</dt><dd>Four chassis iterations, documented with demo videos.</dd></div>
+                                </dl>
+                                <div class="tags"><span>Embedded C</span><span>PID Control</span><span>ARM Cortex-M4</span></div>
+                            </template>
+                        </button>
+                        <button type="button" class="reel-card" data-project="aircraft" data-cat="rf" data-stack="sdr rf dsp" data-cta="Details &amp; video">
+                            <span class="reel-media"><img src="assets/projects/aircraft-tracker/AT_WorldFR.webp" alt="Live aircraft positions plotted on a world map" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">Communications</span>
+                                <span class="reel-title">Aircraft Tracker</span>
+                                <span class="reel-sub">Decoding ADS-B at 1090 MHz</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Identify nearby aircraft from their own radio broadcasts.</dd></div>
+                                    <div><dt>Build</dt><dd>RTL-SDR and antenna capturing 1090 MHz ADS-B, decoding ICAO address, callsign, altitude and velocity from raw IQ samples.</dd></div>
+                                    <div><dt>Result</dt><dd>Live identification of aircraft overhead.</dd></div>
+                                </dl>
+                                <div class="tags"><span>ADS-B</span><span>RTL-SDR</span><span>Signal Processing</span></div>
+                            </template>
+                        </button>
+                        <button type="button" class="reel-card" data-project="water" data-cat="embedded" data-stack="c arduino sensors labview" data-cta="Details &amp; photos">
+                            <span class="reel-media"><img src="assets/projects/water-monitoring/WM_LVF.webp" alt="LabVIEW dashboard for the water monitoring system" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">IoT</span>
+                                <span class="reel-title">Water Monitoring System</span>
+                                <span class="reel-sub">Sensor telemetry to the cloud</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Monitor water quality remotely instead of sampling by hand.</dd></div>
+                                    <div><dt>Build</dt><dd>Turbidity and temperature sensors, Arduino ADC over UART, and a LabVIEW dashboard posting to ThingSpeak.</dd></div>
+                                    <div><dt>Result</dt><dd>Live readings on a local dashboard and in the cloud.</dd></div>
+                                </dl>
+                                <div class="tags"><span>IoT</span><span>LabVIEW</span><span>Sensors</span></div>
+                            </template>
+                        </button>
+                        <button type="button" class="reel-card" data-project="parking" data-cat="embedded circuits" data-stack="c arduino sensors digital" data-cta="Details &amp; video">
+                            <span class="reel-media"><img src="assets/projects/smart-parking/SP_Top.webp" alt="Top view of the smart parking model" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">Automation</span>
+                                <span class="reel-title">Smart Parking System</span>
+                                <span class="reel-sub">Interrupt-driven occupancy tracking</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Stop drivers from entering a lot that is already full.</dd></div>
+                                    <div><dt>Build</dt><dd>IR sensors at every bay and at the gates, an interrupt-driven Arduino counter and a 16x2 I2C LCD.</dd></div>
+                                    <div><dt>Result</dt><dd>A live free-space count shown at the entrance.</dd></div>
+                                </dl>
+                                <div class="tags"><span>Arduino</span><span>IR Sensors</span><span>I2C</span></div>
+                            </template>
+                        </button>
+                        <button type="button" class="reel-card" data-project="line" data-cat="robotics embedded" data-stack="c arduino sensors circuits" data-cta="Details &amp; videos">
+                            <span class="reel-media"><img src="assets/projects/line-follower/LF_CompleteA.webp" alt="Completed line-following robot" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">Robotics</span>
+                                <span class="reel-title">Line-Following Robot</span>
+                                <span class="reel-sub">Differential steering with IR sensing</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Follow a track autonomously with minimal sensing.</dd></div>
+                                    <div><dt>Build</dt><dd>Two IR reflectance comparators, Arduino bang-bang control and an L298N differential drive.</dd></div>
+                                    <div><dt>Result</dt><dd>A robot that tracks a black line on its own.</dd></div>
+                                </dl>
+                                <div class="tags"><span>Embedded C</span><span>Motor Control</span><span>Optoelectronics</span></div>
+                            </template>
+                        </button>
+                        <button type="button" class="reel-card" data-project="vgg" data-cat="ai" data-stack="python pytorch" data-cta="Details &amp; charts">
+                            <span class="reel-media"><img src="assets/projects/tiny-vgg/TVGG_Results.webp" alt="Tiny-VGG classifier predictions on sample images" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">Machine Learning</span>
+                                <span class="reel-title">Tiny-VGG Classifier</span>
+                                <span class="reel-sub">A compact CNN in PyTorch</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Train an image classifier small enough to iterate on quickly.</dd></div>
+                                    <div><dt>Build</dt><dd>Scaled-down VGG in PyTorch: Conv/ReLU/MaxPool blocks, a custom data loader and training-curve logging.</dd></div>
+                                    <div><dt>Result</dt><dd>A trained model with loss/accuracy tracking and evaluation scripts.</dd></div>
+                                </dl>
+                                <div class="tags"><span>Python</span><span>PyTorch</span><span>Computer Vision</span></div>
+                            </template>
+                        </button>
+                        <button type="button" class="reel-card" data-project="laser" data-cat="circuits" data-stack="circuits sensors" data-cta="Details &amp; videos">
+                            <span class="reel-media"><img src="assets/projects/laser-security/SL_House.webp" alt="Laser tripwire security system in its enclosure" width="280" height="160" loading="lazy" decoding="async"></span>
+                            <span class="reel-text">
+                                <span class="reel-badge">Analog</span>
+                                <span class="reel-title">Laser Security System</span>
+                                <span class="reel-sub">My first build: pure analog</span>
+                            </span>
+                            <template class="reel-detail">
+                                <dl class="pbr">
+                                    <div><dt>Problem</dt><dd>Detect a broken beam using only analog parts, no microcontroller.</dd></div>
+                                    <div><dt>Build</dt><dd>LDR voltage divider biasing a BJT switch that drives a 5 V buzzer.</dd></div>
+                                    <div><dt>Result</dt><dd>A working analog tripwire, my first university project.</dd></div>
+                                </dl>
+                                <div class="tags"><span>Discrete Circuits</span><span>BJT</span><span>LDR</span></div>
+                            </template>
+                        </button>
+                    </div>
+                    <p class="reel-empty" id="reelEmpty" hidden>Nothing in this category yet. That's a hint about what I'm building next.</p>
+                </div>
+                <div class="reel-progress" aria-hidden="true"><span id="reelProgress"></span></div>
             </div>
         </section>
 
-        <!-- Technical Skills Section -->
+        <!-- Playground -->
+        <section id="playground" class="content-section playground-section">
+            <div class="container narrow">
+                <div class="section-header reveal">
+                    <span class="section-kicker">Playground</span>
+                    <h2 class="section-title">How Fast Are Your Reflexes?</h2>
+                    <p class="section-subtitle">A browser version of the race start-light timer I designed in Verilog for an Intel FPGA.</p>
+                </div>
+
+                <ol class="reflex-steps reveal">
+                    <li><span>1</span> Click the panel to start</li>
+                    <li><span>2</span> Four red lights come on</li>
+                    <li><span>3</span> Click the instant they turn green</li>
+                </ol>
+
+                <div class="reflex-pad reveal" id="reflexPad" role="button" tabindex="0" aria-describedby="reflexStatus reflexSub" data-state="idle">
+                    <div class="game-lights-row" aria-hidden="true">
+                        <div class="react-light"></div>
+                        <div class="react-light"></div>
+                        <div class="react-light"></div>
+                        <div class="react-light"></div>
+                    </div>
+                    <div class="seven-segment-display" id="reflexDisplay" aria-hidden="true">000</div>
+                    <p class="reflex-status" id="reflexStatus">Click to start</p>
+                    <p class="reflex-sub" id="reflexSub">or press Space</p>
+                </div>
+
+                <div class="reflex-stats reveal">
+                    <div><span class="score-label">Last</span><span class="score-value" id="statLast">&mdash;</span></div>
+                    <div><span class="score-label">Your best</span><span class="score-value" id="statBest">&mdash;</span></div>
+                    <div><span class="score-label">Tries</span><span class="score-value" id="statTries">0</span></div>
+                    <div><span class="score-label">Typical human</span><span class="score-value">~250 ms</span></div>
+                </div>
+
+                <p class="reflex-hw reveal">
+                    <i class="fas fa-microchip"></i>
+                    On the FPGA, an <code>LFSR</code> picks the random hold, the 50 MHz clock is divided into a 1 ms counter, and a BCD converter drives the 7-segment displays.
+                    <button class="text-link" data-case-open="fpga">See the hardware</button>
+                </p>
+            </div>
+        </section>
+
+        <!-- Skills -->
         <section id="skills" class="content-section alt-bg">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header reveal">
                     <span class="section-kicker">Capabilities</span>
                     <h2 class="section-title">Technical Skills</h2>
+                    <p class="section-subtitle">Click a highlighted skill to jump to the work that uses it.</p>
                 </div>
 
                 <div class="skills-grid">
-                    
-                    <!-- Programming -->
-                    <div class="skill-category-card">
+                    <div class="skill-category-card reveal">
                         <div class="category-header">
-                            <div class="category-icon-box">
-                                <i class="fas fa-code" aria-hidden="true"></i>
-                            </div>
+                            <div class="category-icon-box"><i class="fas fa-code" aria-hidden="true"></i></div>
                             <h3>Programming</h3>
                         </div>
                         <div class="skill-chips">
-                            <span class="skill-chip">C / C++</span>
-                            <span class="skill-chip">Python</span>
-                            <span class="skill-chip">PyTorch</span>
-                            <span class="skill-chip">Hugging Face LeRobot</span>
+                            <button class="skill-chip linked" data-match="c">C / C++</button>
+                            <button class="skill-chip linked" data-match="python">Python</button>
+                            <button class="skill-chip linked" data-match="pytorch">PyTorch</button>
+                            <button class="skill-chip linked" data-match="lerobot">Hugging Face LeRobot</button>
                             <span class="skill-chip">OpenCV</span>
-                            <span class="skill-chip">Verilog HDL</span>
+                            <button class="skill-chip linked" data-match="verilog">Verilog HDL</button>
                             <span class="skill-chip">MATLAB</span>
-                            <span class="skill-chip">HTML / CSS / JS</span>
+                            <button class="skill-chip linked" data-jump="#drifts">HTML / CSS / JS</button>
                         </div>
                     </div>
 
-                    <!-- Hardware -->
-                    <div class="skill-category-card">
+                    <div class="skill-category-card reveal">
                         <div class="category-header">
-                            <div class="category-icon-box">
-                                <i class="fas fa-microchip" aria-hidden="true"></i>
-                            </div>
+                            <div class="category-icon-box"><i class="fas fa-microchip" aria-hidden="true"></i></div>
                             <h3>Hardware &amp; Embedded</h3>
                         </div>
                         <div class="skill-chips">
-                            <span class="skill-chip">CUDA</span>
-                            <span class="skill-chip">TI TIVA C Series (ARM Cortex-M4)</span>
-                            <span class="skill-chip">Intel / Altera FPGA</span>
-                            <span class="skill-chip">Arduino &amp; Microcontrollers</span>
-                            <span class="skill-chip">Circuit Design &amp; Soldering</span>
-                            <span class="skill-chip">Sensors (IR, LDR, Ultrasonic)</span>
-                            <span class="skill-chip">Digital Logic Design</span>
+                            <button class="skill-chip linked" data-match="tiva">TI TIVA C (ARM Cortex-M4)</button>
+                            <button class="skill-chip linked" data-match="fpga">Intel / Altera FPGA</button>
+                            <button class="skill-chip linked" data-match="arduino">Arduino &amp; MCUs</button>
+                            <button class="skill-chip linked" data-match="cuda">CUDA</button>
+                            <button class="skill-chip linked" data-match="circuits">Circuit Design &amp; Soldering</button>
+                            <button class="skill-chip linked" data-match="sensors">Sensors (IR, LDR, IMU)</button>
+                            <button class="skill-chip linked" data-match="digital">Digital Logic Design</button>
                         </div>
                     </div>
 
-                    <!-- Tools -->
-                    <div class="skill-category-card">
+                    <div class="skill-category-card reveal">
                         <div class="category-header">
-                            <div class="category-icon-box">
-                                <i class="fas fa-toolbox" aria-hidden="true"></i>
-                            </div>
+                            <div class="category-icon-box"><i class="fas fa-toolbox" aria-hidden="true"></i></div>
                             <h3>Tools &amp; Instrumentation</h3>
                         </div>
                         <div class="skill-chips">
                             <span class="skill-chip">Git &amp; GitHub</span>
                             <span class="skill-chip">Oscilloscopes &amp; Logic Analyzers</span>
-                            <span class="skill-chip">NI LabVIEW</span>
+                            <button class="skill-chip linked" data-match="labview">NI LabVIEW</button>
                             <span class="skill-chip">NI Multisim</span>
-                            <span class="skill-chip">Keil uVision</span>
-                            <span class="skill-chip">Quartus Prime</span>
-                            <span class="skill-chip">RTL-SDR &amp; Gpredict</span>
-                            <span class="skill-chip">Fiber Optics &amp; Patch Bays</span>
+                            <button class="skill-chip linked" data-match="tiva">Keil uVision</button>
+                            <button class="skill-chip linked" data-match="fpga">Quartus Prime</button>
+                            <button class="skill-chip linked" data-match="sdr">RTL-SDR &amp; Gpredict</button>
+                            <button class="skill-chip linked" data-jump="#experience">Fiber Optics &amp; Patch Bays</button>
                         </div>
                     </div>
-
                 </div>
             </div>
         </section>
 
-        <!-- Contact Section -->
-        <section id="contact" class="content-section">
+        <!-- Contact -->
+        <section id="contact" class="content-section contact-section">
             <div class="container narrow">
-                <div class="section-header">
+                <div class="section-header reveal">
                     <span class="section-kicker">Get In Touch</span>
-                    <h2 class="section-title">Contact Me</h2>
-                    <p class="section-subtitle">Interested in collaborating or discussing engineering opportunities? Feel free to reach out directly.</p>
+                    <h2 class="section-title">Let's Build Something</h2>
+                    <p class="section-subtitle">I'm looking for full-time roles in embedded, hardware or edge-AI engineering. The fastest way to reach me is email.</p>
                 </div>
 
-                <div class="contact-cards-grid">
-                    
-                    <a href="mailto:9davemend@gmail.com" class="contact-card">
-                        <div class="contact-card-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="contact-card-text">
-                            <strong>Personal Email</strong>
+                <div class="contact-cards-grid reveal">
+                    <div class="contact-card contact-card--primary">
+                        <div class="contact-card-icon"><i class="fas fa-envelope"></i></div>
+                        <a href="mailto:9davemend@gmail.com" class="contact-card-text contact-stretch">
+                            <strong>Email</strong>
                             <span>9davemend@gmail.com</span>
-                        </div>
-                        <i class="fas fa-arrow-right contact-card-arrow"></i>
-                    </a>
+                        </a>
+                        <button type="button" class="copy-btn" data-copy="9davemend@gmail.com" aria-label="Copy email address"><i class="far fa-copy"></i> Copy</button>
+                    </div>
 
-                    <a href="mailto:dfmendo2@CougarNet.UH.EDU" class="contact-card">
-                        <div class="contact-card-icon">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <div class="contact-card-text">
-                            <strong>University Email</strong>
-                            <span>dfmendo2@CougarNet.UH.EDU</span>
-                        </div>
-                        <i class="fas fa-arrow-right contact-card-arrow"></i>
-                    </a>
+                    <div class="contact-row">
+                        <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" class="contact-card">
+                            <div class="contact-card-icon"><i class="fab fa-linkedin"></i></div>
+                            <div class="contact-card-text"><strong>LinkedIn</strong><span>in/davidmendo</span></div>
+                            <i class="fas fa-arrow-up-right-from-square contact-card-arrow"></i>
+                        </a>
+                        <a href="https://github.com/DAVIDMend0" target="_blank" rel="noopener noreferrer" class="contact-card">
+                            <div class="contact-card-icon"><i class="fab fa-github"></i></div>
+                            <div class="contact-card-text"><strong>GitHub</strong><span>DAVIDMend0</span></div>
+                            <i class="fas fa-arrow-up-right-from-square contact-card-arrow"></i>
+                        </a>
+                    </div>
 
-                    <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" class="contact-card">
-                        <div class="contact-card-icon">
-                            <i class="fab fa-linkedin"></i>
-                        </div>
-                        <div class="contact-card-text">
-                            <strong>LinkedIn Network</strong>
-                            <span>linkedin.com/in/davidmendo</span>
-                        </div>
-                        <i class="fas fa-arrow-up-right-from-square contact-card-arrow"></i>
-                    </a>
-
+                    <div class="contact-row">
+                        <a href="mailto:dfmendo2@CougarNet.UH.EDU" class="contact-card">
+                            <div class="contact-card-icon"><i class="fas fa-graduation-cap"></i></div>
+                            <div class="contact-card-text"><strong>University Email</strong><span>dfmendo2@CougarNet.UH.EDU</span></div>
+                            <i class="fas fa-arrow-right contact-card-arrow"></i>
+                        </a>
+                        <a href="assets/docs/David_Mendoza_Resume.pdf" download class="contact-card">
+                            <div class="contact-card-icon"><i class="fas fa-file-arrow-down"></i></div>
+                            <div class="contact-card-text"><strong>Resume</strong><span>Download PDF</span></div>
+                            <i class="fas fa-download contact-card-arrow"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -638,18 +708,49 @@
 
     <!-- Footer -->
     <footer>
-        <div class="container footer-content">
-            <div class="footer-center">
-                <strong>DAVID MENDOZA</strong> &bull; Computer Engineering Portfolio
+        <div class="m-strip" aria-hidden="true"><span></span><span class="r"></span><span></span><span class="y"></span><span></span><span class="b"></span><span></span></div>
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <span class="logo-accent">DM</span>
+                <div>
+                    <strong>David Mendoza</strong>
+                    <span>Computer Engineering · University of Houston</span>
+                </div>
             </div>
+            <div class="footer-socials">
+                <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="https://github.com/DAVIDMend0" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="mailto:9davemend@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+            <p class="footer-meta">
+                <span>© <span id="year">2026</span> David Mendoza. Hand-built, no templates.</span> <button type="button" class="footer-term-btn" id="footerTerminalBtn">Open the terminal <kbd>~</kbd></button>
+            </p>
         </div>
     </footer>
 
+    <!-- Terminal Easter Egg -->
+    <div class="terminal" id="terminal" role="dialog" aria-modal="true" aria-label="Interactive terminal" hidden>
+        <div class="terminal-window">
+            <div class="terminal-bar">
+                <span class="tdot tdot-r"></span><span class="tdot tdot-y"></span><span class="tdot tdot-g"></span>
+                <span class="terminal-title">david@portfolio: ~</span>
+                <button type="button" class="terminal-close" id="terminalClose" aria-label="Close terminal">&times;</button>
+            </div>
+            <div class="terminal-body" id="terminalBody"></div>
+            <form class="terminal-input-row" id="terminalForm" autocomplete="off">
+                <label for="terminalInput" class="terminal-prompt">david@portfolio:~$</label>
+                <input type="text" id="terminalInput" spellcheck="false" autocapitalize="off">
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <div class="modal-overlay" id="modal-overlay"></div>
 
-    <!-- MODALS -->
+    <!-- ===================== MODALS ===================== -->
 
-    <!-- MODAL: FIFA World Cup 2026 -->
+    <!-- FIFA World Cup 2026 -->
     <div class="modal" id="modal-worldcup" role="dialog" aria-modal="true" aria-labelledby="modal-title-worldcup" tabindex="-1">
         <button class="modal-close-btn" aria-label="Close modal">&times;</button>
         <div class="modal-header"><h3 id="modal-title-worldcup">FIFA World Cup 2026 – TOC/CIR Technical Operations</h3></div>
@@ -657,448 +758,119 @@
             <div class="carousel">
                 <div class="carousel-track-container">
                     <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/WorldCup/WC_P1.webp" alt="David Mendoza at FIFA World Cup 2026 Technical Operations"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WorldCup/WC_P2.webp" alt="Technical Operations Centre and Broadcast Patch Bays"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WorldCup/WC_P3.webp" alt="Stadium Field Technical Infrastructure Operations"></li>
+                        <li class="carousel-slide current-slide"><img src="assets/projects/fifa-world-cup/WC_P1.webp" alt="David Mendoza at FIFA World Cup 2026 Technical Operations" loading="lazy"></li>
+                        <li class="carousel-slide"><img src="assets/projects/fifa-world-cup/WC_P2.webp" alt="Technical Operations Centre and broadcast patch bays" loading="lazy"></li>
+                        <li class="carousel-slide"><img src="assets/projects/fifa-world-cup/WC_P3.webp" alt="Stadium technical infrastructure" loading="lazy"></li>
                     </ul>
                 </div>
                 <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
                 <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
             </div>
 
-            <p><strong>Role:</strong> TOC/CIR Assistant | <strong>Organization:</strong> FIFA - Host Broadcast Services (hbs)</p>
+            <p><strong>Role:</strong> TOC/CIR Assistant | <strong>Organization:</strong> FIFA – Host Broadcast Services (HBS)</p>
             <p><strong>Timeline:</strong> June 2026 – July 2026 &bull; Houston, Texas</p>
-            <p><strong>Overview:</strong> Served as an operations specialist inside the Center Interconnection Room (CIR) and Technical Operations Centre (TOC). Managed fiber optic infrastructure, signal handoffs, and uplink verification to keep live stadium feeds continuously operational for global broadcast partners.</p>
+            <p><strong>Overview:</strong> Worked as an operations specialist inside the Center Interconnection Room (CIR) and Technical Operations Centre (TOC), managing fiber optic infrastructure, signal handoffs and uplink verification to keep live stadium feeds on air for global broadcast partners.</p>
             <p><strong>Technical Responsibilities &amp; Operations:</strong></p>
             <ul>
-                <li>Routed, labeled, and monitored complex multi-strand <strong>fiber optic looms</strong> through the CIR to bridge stadium broadcast lines with the TOC and Technical Interconnection Room (TIR).</li>
-                <li>Collaborated with outside broadcast contractors (<strong>NEP</strong>, <strong>ARCTEK</strong>) to validate Outside Broadcast (OB) truck signal processing chains and calibrate satellite uplink feeds.</li>
-                <li>Verified end-to-end signal integrity (audio/video channels, synchronization, stability) delivered to global Media Partners (MPs).</li>
-                <li>Maintained critical infrastructure integrity under high-pressure live production conditions.</li>
+                <li>Routed, labeled and monitored multi-strand <strong>fiber optic looms</strong> through the CIR to bridge stadium broadcast lines with the TOC and Technical Interconnection Room (TIR).</li>
+                <li>Worked with outside broadcast contractors (<strong>NEP</strong>, <strong>ARCTEK</strong>) to validate OB truck signal processing chains and calibrate satellite uplink feeds.</li>
+                <li>Verified end-to-end signal integrity (audio/video channels, synchronization, stability) delivered to global Media Partners.</li>
+                <li>Maintained critical infrastructure under high-pressure live production conditions.</li>
             </ul>
         </div>
     </div>
 
-    <!-- MODAL: Aircraft Tracker -->
-    <div class="modal" id="modal-aircraft" role="dialog" aria-modal="true" aria-labelledby="modal-title-aircraft" tabindex="-1">
+    <!-- DRIFTS vision simulation -->
+    <div class="modal modal-sim-wide" id="modal-dms" role="dialog" aria-modal="true" aria-labelledby="modal-title-dms" tabindex="-1">
         <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-aircraft">Aircraft Tracker</h3></div>
+        <div class="modal-header"><h3 id="modal-title-dms">DRIFTS — Vision Stage Simulation</h3></div>
         <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/AircraftTracker/AT_WorldFR.webp" alt="Flight Map"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/AircraftTracker/AT_IniSetUp.webp" alt="Setup"></li>
-                    </ul>
-                </div>
-                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-            </div>
-
-            <p><strong>Overview:</strong> Developed for the Circuit Communications class, this project utilizes a USB RTL-SDR dongle connected to an antenna to capture live radio frequency signals from nearby aircraft.</p>
-            <p><strong>Technical Description:</strong> The system intercepts Automatic Dependent Surveillance–Broadcast (ADS-B) signals at 1090 MHz. By processing these raw IQ signals, the system extracts critical data frames containing the aircraft's ICAO address, callsign, altitude, and velocity. This project focused purely on hardware configuration and signal processing theory.</p>
-            <p><em>Note: World Map image courtesy of <a href="https://www.flightradar24.com/blog/inside-flightradar24/pull-down-menu/" target="_blank" rel="noopener noreferrer" style="color:var(--accent-color);">FlightRadar24</a>.</em></p>
+            <p><strong>What this is:</strong> A simulation of the DRIFTS vision stage, the part that only runs after the phone's motion sensors flag irregular driving. It visualizes driver drowsiness and attention telemetry from a lightweight MobileNetV2-based model, the kind of network small enough to run on a phone or an edge board.</p>
+            <p><strong>Why it matters:</strong> Keeping the camera and the neural network gated behind cheap sensor checks is what makes all-day driver monitoring practical on battery power.</p>
 
             <div class="modal-media-section">
-                <h4>Project Demos</h4>
-                <div class="carousel">
-                    <div class="carousel-track-container">
-                        <ul class="carousel-track">
-                            <li class="carousel-slide current-slide">
-                                <video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/AircraftTracker/AT_Vid.mp4" type="video/mp4"></video>
-                            </li>
-                        </ul>
+                <div class="sim-toolbar-top">
+                    <div class="sim-toolbar-info">
+                        <h4>Interactive Simulation</h4>
+                    </div>
+                    <div class="sim-fullscreen-action">
+                        <a href="projects/drifts/" target="_blank" rel="noopener noreferrer" class="sim-external-btn sim-prototype-btn">
+                            <i class="fas fa-mobile-screen-button"></i> Full App Prototype
+                        </a>
+                        <a href="projects/drifts/dms-simulation.html" target="_blank" rel="noopener noreferrer" class="sim-external-btn">
+                            <i class="fas fa-arrow-up-right-from-square"></i> Open in New Tab
+                        </a>
+                    </div>
+                </div>
+                <div class="simulation-embed-container mobile-warning-active" id="dmsSimEmbedContainer">
+                    <iframe id="dms-simulation-iframe" src="projects/drifts/dms-simulation.html" title="DRIFTS vision stage simulation" allow="camera; microphone" loading="lazy"></iframe>
+                    <div class="sim-mobile-advisory-overlay" id="simMobileAdvisory">
+                        <div class="sim-mobile-advisory-card">
+                            <div class="sim-advisory-icon"><i class="fas fa-desktop"></i></div>
+                            <p class="sim-advisory-text">This simulation works best on a computer. Continue anyway?</p>
+                            <button type="button" class="sim-advisory-btn" id="simAdvisoryBtn">Continue</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: Self Balancing Robot -->
-    <div class="modal" id="modal-balance" role="dialog" aria-modal="true" aria-labelledby="modal-title-balance" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-balance">Self Balancing Robot</h3></div>
-        <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V1.webp" alt="V1"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V2.webp" alt="V2"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V3.webp" alt="V3"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V4.webp" alt="V4"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SelfBalancingRobot/SBR_V4Neck.webp" alt="V4 Neck"></li>
-                    </ul>
+    <!-- ===================== PROJECT CASE STUDY (rendered by js/case-study.js) ===================== -->
+    <div class="cs" id="caseStudy" role="dialog" aria-modal="true" aria-labelledby="csTitle" hidden>
+        <div class="cs-backdrop" data-cs-close></div>
+        <article class="cs-panel" tabindex="-1">
+            <header class="cs-bar">
+                <button type="button" class="cs-bar-btn" data-cs-prev aria-label="Previous project"><i class="fas fa-arrow-left"></i><span>Prev</span></button>
+                <span class="cs-pos" id="csPos"></span>
+                <div class="cs-bar-right">
+                    <button type="button" class="cs-bar-btn" data-cs-next aria-label="Next project"><span>Next</span><i class="fas fa-arrow-right"></i></button>
+                    <button type="button" class="cs-bar-btn cs-close" data-cs-close aria-label="Close project">&times;</button>
                 </div>
-                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-            </div>
-
-            <p><strong>Overview:</strong> Created for the Embedded Systems class, this robot repurposes a 3-wheel chassis into a 2-wheel self-balancing vehicle.</p>
-            <p><strong>Technical Description:</strong> Controlled by a Texas Instruments TIVA LaunchPad, the system implements a PID controller loop. It reads orientation data from an IMU (Inertial Measurement Unit) via I2C and calculates the necessary motor torque to maintain specific angles. PWM signals drive the DC motors to correct tilt in real-time.</p>
-
-            <div class="modal-media-section">
-                <h4>Project Demos</h4>
-                <div class="carousel">
-                    <div class="carousel-track-container">
-                        <ul class="carousel-track">
-                            <li class="carousel-slide current-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/SelfBalancingRobot/SBR_Vid1.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/SelfBalancingRobot/SBR_Vid2.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/SelfBalancingRobot/SBR_Vid3.mp4" type="video/mp4"></video></li>
-                        </ul>
-                    </div>
-                    <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                    <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-                </div>
-            </div>
-        </div>
+            </header>
+            <div class="cs-scroll" id="csScroll"></div>
+        </article>
     </div>
 
-    <!-- MODAL: Water Monitoring -->
-    <div class="modal" id="modal-water" role="dialog" aria-modal="true" aria-labelledby="modal-title-water" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-water">Water Monitoring System</h3></div>
-        <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/WaterMonitoring/WM_LVF.webp" alt="LabView"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_Circ.webp" alt="Circuit"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_Disp.webp" alt="Display"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_DispV2.webp" alt="Display V2"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_LVnA.webp" alt="Block Diagram"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/WaterMonitoring/WM_WebDisp.webp" alt="Web"></li>
-                    </ul>
-                </div>
-                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-            </div>
+    <figure class="cs-lightbox" id="csLightbox" hidden>
+        <img src="" alt="">
+        <figcaption></figcaption>
+        <button type="button" class="cs-lb-btn prev" data-lb-step="-1" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
+        <button type="button" class="cs-lb-btn next" data-lb-step="1" aria-label="Next image"><i class="fas fa-chevron-right"></i></button>
+    </figure>
 
-            <p><strong>Overview:</strong> A Sensor Applications class project designed to read and visualize water quality data remotely.</p>
-            <p><strong>Technical Description:</strong> Analog sensors measure turbidity and temperature. An Arduino microcontroller performs ADC conversion and transmits raw data strings over UART to a host PC. A custom LabVIEW application parses this data, displays it on a local dashboard, and makes HTTP POST requests to the ThingSpeak API for cloud logging.</p>
-        </div>
-    </div>
-
-    <!-- MODAL: Reaction Timer -->
-    <div class="modal" id="modal-timer" role="dialog" aria-modal="true" aria-labelledby="modal-title-timer" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-timer">FPGA Reaction Timer</h3></div>
-        <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/ReactionTimer/RT_BFront.webp" alt="Board"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/ReactionTimer/RT_Assignments.webp" alt="Pins"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/ReactionTimer/RT_ExampleF1.webp" alt="F1"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/ReactionTimer/RT_NetV.webp" alt="Netlist"></li>
-                    </ul>
-                </div>
-                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-            </div>
-
-            <p><strong>Overview:</strong> A Microprocessor Architecture project built on an Intel FPGA using Verilog, simulating the "start lights" found in racing.</p>
-            <p><strong>Technical Description:</strong> Implemented using Verilog HDL. The logic includes a Linear Feedback Shift Register (LFSR) for random wait times, a millisecond counter driven by the board's 50MHz clock, and a Binary-to-BCD converter to drive the 7-segment displays. State machines manage the IDLE, COUNTDOWN, and TIMING states.</p>
-            <p><em>Note: Starting Light reference image from <a href="https://pixelcom.io/motorsport/circuits/starting-lights" target="_blank" rel="noopener noreferrer" style="color:var(--accent-color);">PixelCom</a>.</em></p>
-
-            <div class="modal-media-section">
-                <h4>Interactive Hardware Simulation</h4>
-                <p>Experience how the race start-light logic executed on the physical FPGA:</p>
-                <p>Press <strong>"Start Sequence"</strong>. Watch the 4 lights illuminate. As soon as they flash GREEN, hit <strong>"STOP!"</strong> as fast as you can to measure your reaction time!</p>
-                
-                <div class="reaction-game-container">
-                    <div class="game-lights-row">
-                        <div class="react-light" id="light-1"></div>
-                        <div class="react-light" id="light-2"></div>
-                        <div class="react-light" id="light-3"></div>
-                        <div class="react-light" id="light-4"></div>
-                    </div>
-                    <div class="seven-segment-display">
-                        <span id="seg-1">0</span><span id="seg-2">0</span><span id="seg-3">0</span>
-                    </div>
-                    <div class="game-controls">
-                        <button id="game-start-btn" class="btn-submit">Start Sequence</button>
-                        <button id="game-stop-btn" class="btn-submit game-stop-btn" disabled>STOP!</button>
-                    </div>
-                    <p id="game-message"></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Smart Parking -->
-    <div class="modal" id="modal-parking" role="dialog" aria-modal="true" aria-labelledby="modal-title-parking" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-parking">Smart Parking System</h3></div>
-        <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/SmartParking/SP_Top.webp" alt="Top"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SmartParking/SP_BottomV1.webp" alt="Bottom"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SmartParking/SP_Circ.webp" alt="Circuit"></li>
-                    </ul>
-                </div>
-                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-            </div>
-
-            <p><strong>Overview:</strong> Developed for the Digital Systems class, this system automates the tracking of parking availability using an Arduino and infrared sensors.</p>
-            <p><strong>Technical Description:</strong> IR obstruction sensors are installed at each bay and the entrance/exit. The Arduino manages an interrupt-based counter to track total occupancy. It updates a 16x2 I2C LCD to display free slots dynamically, preventing drivers from entering a full lot.</p>
-
-            <div class="modal-media-section">
-                <h4>Project Demos</h4>
-                <div class="carousel">
-                    <div class="carousel-track-container">
-                        <ul class="carousel-track">
-                            <li class="carousel-slide current-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/SmartParking/SP_Vid.mp4" type="video/mp4"></video></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Line Following Robot -->
-    <div class="modal" id="modal-line" role="dialog" aria-modal="true" aria-labelledby="modal-title-line" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-line">Line Following Robot</h3></div>
-        <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/LineRobot/LF_CompleteA.webp" alt="Top"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/LineRobot/LF_CompleteAF.webp" alt="Front"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/LineRobot/LF_PV1.webp" alt="P1"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/LineRobot/LF_PV2.webp" alt="P2"></li>
-                    </ul>
-                </div>
-                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-            </div>
-
-            <p><strong>Overview:</strong> Developed for Circuits 2, this autonomous robot navigates a track by detecting contrast between the floor and a line.</p>
-            <p><strong>Technical Description:</strong> Uses an L298N motor driver and an Arduino. Two IR proximity sensors (comparators) detect the black line against a white surface. A bang-bang control algorithm adjusts the differential steering: if the left sensor sees black, the robot steers left to center itself.</p>
-
-            <div class="modal-media-section">
-                <h4>Project Demos</h4>
-                <div class="carousel">
-                    <div class="carousel-track-container">
-                        <ul class="carousel-track">
-                            <li class="carousel-slide current-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/LineRobot/LF_Vid.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/LineRobot/LF_Func.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/LineRobot/LF_FuncDS.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/LineRobot/LF_HeightLim.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/LineRobot/LF_SensorFunc.mp4" type="video/mp4"></video></li>
-                        </ul>
-                    </div>
-                    <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                    <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Laser Security -->
-    <div class="modal" id="modal-laser" role="dialog" aria-modal="true" aria-labelledby="modal-title-laser" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-laser">Laser Security System</h3></div>
-        <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/LaserSecurity/SL_House.webp" alt="House"></li>
-                    </ul>
-                </div>
-            </div>
-
-            <p><strong>Overview:</strong> My first university project (Circuits 1), exploring analog circuit design for security applications.</p>
-            <p><strong>Technical Description:</strong> A purely analog circuit using a Light Dependent Resistor (LDR) in a voltage divider configuration. The voltage from the divider feeds into the base of a BJT transistor. When the laser beam is broken, the LDR resistance rises, increasing the base voltage and switching the transistor ON to drive a 5V buzzer.</p>
-
-            <div class="modal-media-section">
-                <h4>Project Demos</h4>
-                <div class="carousel">
-                    <div class="carousel-track-container">
-                        <ul class="carousel-track">
-                            <li class="carousel-slide current-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/LaserSecurity/SL_Assembly.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/LaserSecurity/SL_FA.mp4" type="video/mp4"></video></li>
-                            <li class="carousel-slide"><video controls playsinline webkit-playsinline preload="metadata"><source src="WebsiteImages/LaserSecurity/SL_Inside.mp4" type="video/mp4"></video></li>
-                        </ul>
-                    </div>
-                    <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                    <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Tiny-VGG Classifier -->
-    <div class="modal" id="modal-vgg" role="dialog" aria-modal="true" aria-labelledby="modal-title-vgg" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-vgg">Tiny-VGG Classifier</h3></div>
-        <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/SmallVGG/TVGG_Results.webp" alt="Results"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SmallVGG/TVGG_Chart.webp" alt="Training Chart"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/SmallVGG/VGG_Arch.webp" alt="Architecture"></li>
-                    </ul>
-                </div>
-                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-            </div>
-
-            <p><strong>Overview:</strong> A lightweight Computer Vision model implementation using PyTorch to classify images with high accuracy.</p>
-            <p><strong>Technical Description:</strong> This project replicates the famous VGG (Visual Geometry Group) architecture, scaled down to a "Tiny" version for efficient training. Built with PyTorch, it features sequential convolutional blocks (Conv2d, ReLU, MaxPool) followed by a classifier head. The project includes a custom dataset loader, training loop visualization (Loss/Accuracy), and model evaluation scripts.</p>
-        </div>
-    </div>
-
-    <!-- MODAL: METEOR-M2 Satellite Ground Station -->
-    <div class="modal" id="modal-meteor" role="dialog" aria-modal="true" aria-labelledby="modal-title-meteor" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-meteor">METEOR-M2 Satellite Ground Station &amp; Signal Processing</h3></div>
-        <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/MeteorM2/Met_Sat.webp" alt="Decoded Meteor-M2 Multispectral Earth Scanline Image"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/MeteorM2/Met_Setup_PreRecording.webp" alt="SDR Receiver and Pre-Recording Pipeline Configuration"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/MeteorM2/Met_ExampleFrequency.webp" alt="RF Spectrum and 137 MHz Carrier Signal Capture"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/MeteorM2/Met_NoiseCapture_Harmonics.webp" alt="Waterfall Spectrogram showing RF Harmonics and Noise Floor"></li>
-                    </ul>
-                </div>
-                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-            </div>
-
-            <p><strong>Context:</strong> Data Communication Systems Coursework</p>
-            <p><strong>Overview:</strong> Designed and configured a software-defined radio (SDR) receiving station to intercept, demodulate, and reconstruct direct visual transmissions from the Russian Meteor-M2 satellite. The project investigated radio frequency (RF) propagation, Doppler compensation, packet framing, and comparative modulation schemes against legacy analog weather systems (NOAA APT).</p>
-            <p><strong>Technical Description:</strong></p>
-            <ul>
-                <li>Configured <strong>Gpredict</strong> using orbital Two-Line Element (TLE) datasets to compute satellite passes, pass trajectories, and real-time Doppler shift adjustments.</li>
-                <li>Implemented an RTL-SDR receiver pipeline targeting the 137 MHz VHF frequency band to capture High-Rate/Low-Rate Picture Transmission (LRPT) signals encoded via QPSK modulation.</li>
-                <li>Conducted digital demodulation, Viterbi error correction, and packet parsing to assemble multispectral scanlines into composite satellite imagery.</li>
-                <li>Researched protocol differences between Meteor digital LRPT feeds and analog NOAA Automatic Picture Transmission (APT) systems.</li>
-            </ul>
-
-            <div class="modal-media-section">
-                <h4>Interactive Signal Simulation: Doppler Shift Compensation</h4>
-                <p>A primary challenge when receiving telemetry from a Low Earth Orbit (LEO) satellite like Meteor-M2 is compensating for frequency drift caused by relative orbital velocity (Doppler shift). As the satellite approaches the ground station, the received RF carrier is shifted upward; as it recedes, the carrier drops below the nominal 137.900 MHz downlink frequency.</p>
-                <p>Drag the satellite position slider below to observe real-time RF wavelength compression/expansion and the characteristic S-curve frequency discriminator response:</p>
-                
-                <div class="doppler-sim-container">
-                    <!-- Visual Simulation Canvas -->
+    <!-- Interactive blocks moved into case studies on demand (bindings live in js/main.js) -->
+    <div id="csExtras" hidden>
+        <section class="cs-sec cs-doppler" data-cs-extra="doppler">
+            <h3><span>&#9656;</span>Interactive: Doppler shift compensation</h3>
+            <p>A satellite in low Earth orbit moves fast enough that the frequency you receive drifts: higher as it approaches, lower as it recedes from the nominal 137.900 MHz downlink. Drag the slider to move the satellite and watch the wavefronts compress and stretch, along with the S-curve frequency response.</p>
+            <div class="doppler-sim-container">
                     <div class="canvas-wrapper">
                         <canvas id="dopplerSimCanvas" width="660" height="280"></canvas>
                     </div>
-
-                    <!-- Slider Controls -->
                     <div class="doppler-controls">
                         <div class="doppler-labels">
                             <span><i class="fas fa-arrow-left"></i> Approaching Horizon</span>
                             <span>Directly Overhead (Zenith)</span>
                             <span>Receding Horizon <i class="fas fa-arrow-right"></i></span>
                         </div>
-                        <input type="range" id="dopplerSatSlider" min="-10" max="10" value="-10" step="0.1" aria-label="Satellite Orbital Position">
+                        <input type="range" id="dopplerSatSlider" min="-10" max="10" value="-10" step="0.1" aria-label="Satellite orbital position">
                         <div class="doppler-readout">
                             <span class="readout-label">Received RF Carrier:</span>
                             <span id="dopplerFreqOutput" class="readout-value">137.90350</span>
                             <span class="readout-unit">MHz</span>
                         </div>
                     </div>
-
-                    <!-- Graph Canvas -->
                     <div class="canvas-wrapper">
                         <canvas id="dopplerGraphCanvas" width="660" height="180"></canvas>
                     </div>
                 </div>
-            </div>
-        </div>
+        </section>
     </div>
 
-    <!-- MODAL: AI Robotic Arm with LeRobot-->
-    <div class="modal" id="modal-lerobot" role="dialog" aria-modal="true" aria-labelledby="modal-title-lerobot" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-lerobot">AI Robotic Arm with LeRobot</h3></div>
-        <div class="modal-body">
-            <div class="carousel">
-                <div class="carousel-track-container">
-                    <ul class="carousel-track">
-                        <li class="carousel-slide current-slide"><img src="WebsiteImages/LeRobot/LR_ArmsClosed.webp" alt="Articulated AI Robotic Arm on Lab Bench"></li>
-                        <li class="carousel-slide"><img src="WebsiteImages/LeRobot/LR_ArmDisA.webp" alt="Robotic Arm Disassembly, Actuator Mounts and Structural Components"></li>
-                    </ul>
-                </div>
-                <button class="carousel-button carousel-button--left" aria-label="Previous slide">&lt;</button>
-                <button class="carousel-button carousel-button--right" aria-label="Next slide">&gt;</button>
-            </div>
-
-            <p><strong>Context:</strong> AI in Robotics Coursework</p>
-            <p><strong>Overview:</strong> Built an intelligent robotic arm driven by an edge computing unit to execute precise physical manipulation tasks. The system incorporates imitation learning via Hugging Face’s LeRobot framework, training custom policy models to map visual and positional inputs directly to physical joint actuations.</p>
-            <p><strong>Technical Description:</strong></p>
-            <ul>
-                <li>Deployed the <strong>Hugging Face LeRobot</strong> framework, leveraging <strong>CUDA</strong>-accelerated PyTorch to train and execute real-time neural network policies.</li>
-                <li>Interfaced low-level actuator arrays including <strong>Feetech smart servos</strong> and <strong>L298N motor drivers</strong> for multi-axis movement.</li>
-                <li>Implemented closed-loop <strong>PID control algorithms</strong> to manage motor response, minimize overshoot, and ensure smooth joint positioning.</li>
-                <li>Managed sensor telemetry to synchronize policy inference latencies with physical joint dynamics.</li>
-            </ul>
-
-            <div class="modal-media-section">
-                <h4>Project Demo Video</h4>
-                <div class="video-embed-container">
-                    <iframe src="https://www.youtube.com/embed/Q0pi9PrmghY" title="AI Robotic Arm Project Demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
-                </div>
-                <div class="video-link-wrap">
-                    <a href="https://youtu.be/Q0pi9PrmghY" target="_blank" rel="noopener noreferrer" class="video-external-btn">
-                        <i class="fab fa-youtube"></i> Watch on YouTube <i class="fas fa-arrow-up-right-from-square"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: MobileNetV2 DMS Tester -->
-    <div class="modal modal-sim-wide" id="modal-dms" role="dialog" aria-modal="true" aria-labelledby="modal-title-dms" tabindex="-1">
-        <button class="modal-close-btn" aria-label="Close modal">&times;</button>
-        <div class="modal-header"><h3 id="modal-title-dms">MobileNetV2 DMS Tester</h3></div>
-        <div class="modal-body">
-            <div class="modal-placeholder-box">
-                <p>Project in development. Image, desciprtion, or video coming soon</p>
-            </div>
-
-            <div class="modal-media-section">
-                <div class="sim-toolbar-top">
-                    <div class="sim-toolbar-info">
-                        <h4>Interactive Hardware Simulation</h4>
-                        <p>Experience the interactive Driver Monitoring System (DMS) &amp; MobileNetV2 telemetry simulation directly below:</p>
-                    </div>
-                    <div class="sim-fullscreen-action">
-                        <a href="DRIFTS_WebApp.html" target="_blank" rel="noopener noreferrer" class="sim-external-btn sim-prototype-btn">
-                            <i class="fas fa-mobile-screen-button"></i> Try Out the App Prototype
-                        </a>
-                        <a href="driver_monitoring_simulation.html" target="_blank" rel="noopener noreferrer" class="sim-external-btn">
-                            <i class="fas fa-arrow-up-right-from-square"></i> Open in New Tab
-                        </a>
-                    </div>
-                </div>
-                <div class="simulation-embed-container mobile-warning-active" id="dmsSimEmbedContainer">
-                    <iframe id="dms-simulation-iframe" src="driver_monitoring_simulation.html" title="MobileNetV2 DMS Interactive Simulation" allow="camera; microphone" loading="lazy"></iframe>
-                    <div class="sim-mobile-advisory-overlay" id="simMobileAdvisory">
-                        <div class="sim-mobile-advisory-card">
-                            <div class="sim-advisory-icon">
-                                <i class="fas fa-desktop"></i>
-                            </div>
-                            <p class="sim-advisory-text">This simulation is better experienced on a computer. Do you wish to continue?</p>
-                            <button type="button" class="sim-advisory-btn" id="simAdvisoryBtn">
-                                Continue
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <p class="sim-footer-note">Simulation made with Google Gemini</p>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
+    <script src="js/main.js?v=20261106f"></script>
+    <script src="js/projects-data.js?v=20261106f"></script>
+    <script src="js/case-study.js?v=20261106f"></script>
+    <script src="js/features.js?v=20261106f"></script>
 </body>
 </html>

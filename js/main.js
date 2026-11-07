@@ -367,144 +367,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // --- 5. Reaction Timer Game ---
-    const gameStartBtn = document.getElementById('game-start-btn');
-    if (gameStartBtn) {
-        const gameStopBtn = document.getElementById('game-stop-btn');
-        const gameLights = document.querySelectorAll('.react-light');
-        const displayContainer = document.querySelector('.seven-segment-display');
-        const seg1 = document.getElementById('seg-1');
-        const seg2 = document.getElementById('seg-2');
-        const seg3 = document.getElementById('seg-3');
-        const gameMessage = document.getElementById('game-message');
-
-        let gameState = 'idle'; 
-        let startTime = 0;
-        let timerInterval = null;
-        let sequenceTimeouts = [];
-
-        function updateDisplay(ms) {
-            let clampedMs = Math.min(ms, 999);
-            let formatted = clampedMs.toString().padStart(3, '0');
-            if (seg1) seg1.textContent = formatted[0];
-            if (seg2) seg2.textContent = formatted[1];
-            if (seg3) seg3.textContent = formatted[2];
-            return clampedMs;
-        }
-
-        function clearSequence() {
-            sequenceTimeouts.forEach(timeout => clearTimeout(timeout));
-            sequenceTimeouts = [];
-            clearInterval(timerInterval);
-        }
-
-        function resetGameUI() {
-            gameLights.forEach(light => {
-                light.classList.remove('red', 'green', 'blinking');
-            });
-            updateDisplay(0);
-            if (displayContainer) displayContainer.classList.remove('dimmed');
-            gameStartBtn.textContent = "Start Sequence";
-            gameStartBtn.disabled = false;
-            if (gameStopBtn) gameStopBtn.disabled = true;
-            if (gameMessage) {
-                gameMessage.textContent = "";
-                gameMessage.style.color = "";
-            }
-            gameState = 'idle';
-        }
-
-        function triggerTimeout() {
-            clearInterval(timerInterval);
-            gameState = 'finished';
-            if (gameMessage) {
-                gameMessage.textContent = "Too Slow! Try Again?";
-                gameMessage.style.color = "#ef4444";
-            }
-            if (displayContainer) displayContainer.classList.add('dimmed');
-            gameLights.forEach(light => {
-                light.classList.remove('green');
-                light.classList.add('red', 'blinking');
-            });
-            gameStartBtn.textContent = "Try Again";
-            gameStartBtn.disabled = false;
-            if (gameStopBtn) gameStopBtn.disabled = true;
-        }
-
-        function goGreen() {
-            gameState = 'waiting';
-            if (gameMessage) gameMessage.textContent = "GO!";
-            gameLights.forEach(light => {
-                light.classList.remove('red');
-                light.classList.add('green');
-            });
-            startTime = Date.now();
-            timerInterval = setInterval(() => {
-                const elapsed = Date.now() - startTime;
-                if (elapsed >= 999) {
-                    updateDisplay(999);
-                    triggerTimeout();
-                } else {
-                    updateDisplay(elapsed);
-                }
-            }, 10);
-        }
-
-        gameStartBtn.addEventListener('click', () => {
-            if (gameState !== 'idle') { resetGameUI(); }
-            gameState = 'sequence';
-            if (gameMessage) gameMessage.textContent = "Watch the lights...";
-            gameStartBtn.disabled = true;
-            if (gameStopBtn) gameStopBtn.disabled = false; 
-            clearSequence();
-
-            let delay = 1000; 
-            gameLights.forEach((light) => {
-                let t = setTimeout(() => {
-                    light.classList.add('red');
-                }, delay);
-                sequenceTimeouts.push(t);
-                delay += 1000; 
-            });
-
-            const randomWait = Math.random() * 2500 + 1000; 
-            let finalT = setTimeout(() => {
-                if (gameState !== 'falseStart') { goGreen(); }
-            }, delay + randomWait);
-            sequenceTimeouts.push(finalT);
-        });
-
-        if (gameStopBtn) {
-            gameStopBtn.addEventListener('click', () => {
-                if (gameState === 'sequence') {
-                    gameState = 'falseStart';
-                    clearSequence();
-                    if (gameMessage) {
-                        gameMessage.textContent = "FALSE START!";
-                        gameMessage.style.color = "#ef4444";
-                    }
-                    if (seg1) seg1.textContent = "F";
-                    if (seg2) seg2.textContent = "A";
-                    if (seg3) seg3.textContent = "L";
-                    gameStartBtn.textContent = "Try Again";
-                    gameStartBtn.disabled = false;
-                    gameStopBtn.disabled = true;
-                } else if (gameState === 'waiting') {
-                    clearInterval(timerInterval);
-                    gameState = 'finished';
-                    const finalTime = Date.now() - startTime;
-                    updateDisplay(finalTime);
-                    if (gameMessage) {
-                        gameMessage.textContent = `Reaction Time: ${finalTime}ms`;
-                        gameMessage.style.color = "#10b981";
-                    }
-                    gameStartBtn.textContent = "Play Again";
-                    gameStartBtn.disabled = false;
-                    gameStopBtn.disabled = true;
-                }
-            });
-        }
-    }
+    // (Reaction timer lives in features.js)
 
     // --- 6. METEOR-M2 DOPPLER SHIFT SIMULATION ---
     const dopplerSimCanvas = document.getElementById('dopplerSimCanvas');
@@ -532,190 +395,179 @@ document.addEventListener("DOMContentLoaded", function() {
             return BASE_FREQ + (MAX_SHIFT * radialVelocityFactor);
         }
 
+        // Palette follows the site theme: monochrome ink + Mondrian primaries for the key objects.
+        function dopplerPalette(isLight) {
+            return isLight ? {
+                bg: '#fafaf9', grid: 'rgba(9, 9, 11, 0.07)', ink: '#09090b', muted: '#71717a',
+                faint: 'rgba(9, 9, 11, 0.28)', wave: 'rgba(9, 9, 11, 0.55)',
+                red: '#d62718', blue: '#1f4fa3', yellow: '#f2c200'
+            } : {
+                bg: '#0d0d0f', grid: 'rgba(250, 250, 250, 0.05)', ink: '#fafafa', muted: '#a1a1aa',
+                faint: 'rgba(250, 250, 250, 0.3)', wave: 'rgba(250, 250, 250, 0.6)',
+                red: '#e5372a', blue: '#3a6fd8', yellow: '#f5c518'
+            };
+        }
+        const MONO = '"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace';
+
+        function drawGrid(ctx, w, h, color, step) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let x = step; x < w; x += step) { ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, h); }
+            for (let y = step; y < h; y += step) { ctx.moveTo(0, y + 0.5); ctx.lineTo(w, y + 0.5); }
+            ctx.stroke();
+        }
+
         function drawSimulation(xPos, isLight) {
+            const c = dopplerPalette(isLight);
             ctxSim.clearRect(0, 0, simW, simH);
-
-            // Palette
-            const skyBg = isLight ? '#f1f5f9' : '#060b19';
-            const groundColor = isLight ? '#86efac' : '#064e3b';
-            const stationColor = isLight ? '#1e293b' : '#38bdf8';
-            const orbitColor = isLight ? '#94a3b8' : '#334155';
-            const satBodyColor = '#f97316';
-            const solarColor = isLight ? '#0284c7' : '#38bdf8';
-            const waveColor = isLight ? 'rgba(37, 99, 235, 0.55)' : 'rgba(56, 189, 248, 0.65)';
-
-            // Background
-            ctxSim.fillStyle = skyBg;
+            ctxSim.fillStyle = c.bg;
             ctxSim.fillRect(0, 0, simW, simH);
+            drawGrid(ctxSim, simW, simH, c.grid, 40);
 
-            // Ground
-            ctxSim.fillStyle = groundColor;
-            ctxSim.fillRect(0, simH - 35, simW, 35);
+            // Ground: one heavy rule, Mondrian-style
+            const groundY = simH - 35;
+            ctxSim.fillStyle = c.ink;
+            ctxSim.fillRect(0, groundY, simW, 3);
 
-            // Ground Station Base & Mast
+            // Ground station: mast + dish in ink, a small red block as the receiver
             const stationX = simW / 2;
-            const stationY = simH - 35;
-            ctxSim.fillStyle = stationColor;
+            ctxSim.strokeStyle = c.ink;
+            ctxSim.lineWidth = 2;
             ctxSim.beginPath();
-            ctxSim.moveTo(stationX - 12, stationY);
-            ctxSim.lineTo(stationX + 12, stationY);
-            ctxSim.lineTo(stationX, stationY - 26);
-            ctxSim.fill();
-
-            // Antenna Dish / Reflector
-            ctxSim.beginPath();
-            ctxSim.arc(stationX, stationY - 26, 14, Math.PI, 2 * Math.PI);
-            ctxSim.strokeStyle = stationColor;
-            ctxSim.lineWidth = 3;
+            ctxSim.moveTo(stationX, groundY);
+            ctxSim.lineTo(stationX, groundY - 24);
             ctxSim.stroke();
+            ctxSim.beginPath();
+            ctxSim.arc(stationX, groundY - 24, 13, Math.PI, 2 * Math.PI);
+            ctxSim.stroke();
+            ctxSim.fillStyle = c.red;
+            ctxSim.fillRect(stationX - 4, groundY - 28, 8, 8);
 
-            // Ground station label
-            ctxSim.fillStyle = isLight ? '#475569' : '#94a3b8';
-            ctxSim.font = '600 11px Plus Jakarta Sans, sans-serif';
+            ctxSim.fillStyle = c.muted;
+            ctxSim.font = '500 10px ' + MONO;
             ctxSim.textAlign = 'center';
-            ctxSim.fillText('RTL-SDR Ground Station', stationX, simH - 12);
+            ctxSim.fillText('RTL-SDR GROUND STATION', stationX, simH - 12);
 
-            // Calculate Satellite Position
+            // Orbit path
             const satScreenX = stationX + (xPos * (simW / 22));
             const orbitH = 165;
-            const satScreenY = (simH - 35) - Math.sqrt(Math.max(0, 1 - Math.pow(xPos / 12, 2))) * orbitH;
+            const satScreenY = groundY - Math.sqrt(Math.max(0, 1 - Math.pow(xPos / 12, 2))) * orbitH;
 
-            // Draw Orbit Path (Dotted Arc)
             ctxSim.beginPath();
-            ctxSim.setLineDash([5, 5]);
+            ctxSim.setLineDash([3, 5]);
             for (let i = -11; i <= 11; i += 0.2) {
-                let px = stationX + (i * (simW / 22));
-                let py = (simH - 35) - Math.sqrt(Math.max(0, 1 - Math.pow(i / 12, 2))) * orbitH;
-                if (i === -11) ctxSim.moveTo(px, py);
-                else ctxSim.lineTo(px, py);
+                const px = stationX + (i * (simW / 22));
+                const py = groundY - Math.sqrt(Math.max(0, 1 - Math.pow(i / 12, 2))) * orbitH;
+                if (i === -11) ctxSim.moveTo(px, py); else ctxSim.lineTo(px, py);
             }
-            ctxSim.strokeStyle = orbitColor;
-            ctxSim.lineWidth = 1.5;
+            ctxSim.strokeStyle = c.faint;
+            ctxSim.lineWidth = 1;
             ctxSim.stroke();
             ctxSim.setLineDash([]);
 
-            // Calculate Frequency and Shift for Wave Compression
+            // RF wavefronts: compressed while approaching, stretched while receding
             const currentFreq = calculateFrequency(xPos);
-            const shiftRatio = (currentFreq - BASE_FREQ) / MAX_SHIFT; // 1 (approaching) to -1 (receding)
-
-            // Draw RF Waves radiating towards ground station
+            const shiftRatio = (currentFreq - BASE_FREQ) / MAX_SHIFT;
             const dx = stationX - satScreenX;
-            const dy = stationY - satScreenY;
+            const dy = (groundY - 24) - satScreenY;
             const distToStation = Math.sqrt(dx * dx + dy * dy);
             const angle = Math.atan2(dy, dx);
+            const wavelength = Math.max(12, 28 - (shiftRatio * 13));
 
             ctxSim.save();
             ctxSim.translate(satScreenX, satScreenY);
             ctxSim.rotate(angle);
-
-            // Wave spacing adjusts: compressed when approaching, expanded when receding
-            const baseWavelength = 28;
-            const wavelength = Math.max(12, baseWavelength - (shiftRatio * 13));
-
-            ctxSim.strokeStyle = waveColor;
-            ctxSim.lineWidth = 2.5;
-            for (let r = wavelength; r < distToStation; r += wavelength) {
+            ctxSim.strokeStyle = c.wave;
+            ctxSim.lineWidth = 1.5;
+            for (let r = wavelength; r < distToStation - 8; r += wavelength) {
                 ctxSim.beginPath();
-                ctxSim.arc(0, 0, r, -0.35, 0.35);
+                ctxSim.arc(0, 0, r, -0.32, 0.32);
                 ctxSim.stroke();
             }
             ctxSim.restore();
 
-            // Draw Satellite Body & Solar Arrays
-            ctxSim.fillStyle = satBodyColor;
-            ctxSim.fillRect(satScreenX - 14, satScreenY - 9, 28, 18);
-            ctxSim.strokeStyle = '#ffffff';
-            ctxSim.lineWidth = 1.5;
-            ctxSim.strokeRect(satScreenX - 14, satScreenY - 9, 28, 18);
+            // Satellite: yellow body, blue panels, ink outlines
+            ctxSim.lineWidth = 2;
+            ctxSim.strokeStyle = c.ink;
+            ctxSim.fillStyle = c.yellow;
+            ctxSim.fillRect(satScreenX - 12, satScreenY - 8, 24, 16);
+            ctxSim.strokeRect(satScreenX - 12, satScreenY - 8, 24, 16);
+            ctxSim.fillStyle = c.blue;
+            ctxSim.fillRect(satScreenX - 30, satScreenY - 5, 14, 10);
+            ctxSim.strokeRect(satScreenX - 30, satScreenY - 5, 14, 10);
+            ctxSim.fillRect(satScreenX + 16, satScreenY - 5, 14, 10);
+            ctxSim.strokeRect(satScreenX + 16, satScreenY - 5, 14, 10);
 
-            // Left Solar Panel
-            ctxSim.fillStyle = solarColor;
-            ctxSim.fillRect(satScreenX - 25, satScreenY - 5, 9, 10);
-            // Right Solar Panel
-            ctxSim.fillRect(satScreenX + 16, satScreenY - 5, 9, 10);
-
-            // Satellite label
-            ctxSim.fillStyle = isLight ? '#1e293b' : '#f8fafc';
-            ctxSim.font = '700 11px Plus Jakarta Sans, sans-serif';
+            ctxSim.fillStyle = c.ink;
+            ctxSim.font = '500 10px ' + MONO;
             ctxSim.textAlign = 'center';
-            ctxSim.fillText('Meteor-M2 (LEO)', satScreenX, satScreenY - 14);
+            ctxSim.fillText('METEOR-M2 (LEO)', satScreenX, satScreenY - 16);
         }
 
         function drawGraph(currentX, isLight) {
+            const c = dopplerPalette(isLight);
             ctxGraph.clearRect(0, 0, graphW, graphH);
-
-            const graphBg = isLight ? '#f1f5f9' : '#060b19';
-            const gridColor = isLight ? '#cbd5e1' : '#1e293b';
-            const textColor = isLight ? '#475569' : '#94a3b8';
-            const curveColor = isLight ? '#2563eb' : '#38bdf8';
-            const pointColor = '#f97316';
-
-            // Background
-            ctxGraph.fillStyle = graphBg;
+            ctxGraph.fillStyle = c.bg;
             ctxGraph.fillRect(0, 0, graphW, graphH);
+            drawGrid(ctxGraph, graphW, graphH, c.grid, 30);
 
-            // Center Reference Grid Line (Nominal 137.900 MHz)
-            ctxGraph.strokeStyle = gridColor;
+            // Nominal carrier (solid) and +/- limits (dashed)
+            ctxGraph.strokeStyle = c.faint;
             ctxGraph.lineWidth = 1;
             ctxGraph.beginPath();
-            ctxGraph.moveTo(0, graphH / 2);
-            ctxGraph.lineTo(graphW, graphH / 2);
+            ctxGraph.moveTo(0, graphH / 2 + 0.5);
+            ctxGraph.lineTo(graphW, graphH / 2 + 0.5);
             ctxGraph.stroke();
-
-            // Boundary Grid Lines
-            ctxGraph.setLineDash([3, 3]);
+            ctxGraph.setLineDash([3, 4]);
             ctxGraph.beginPath();
-            ctxGraph.moveTo(0, 20);
-            ctxGraph.lineTo(graphW, 20);
-            ctxGraph.moveTo(0, graphH - 20);
-            ctxGraph.lineTo(graphW, graphH - 20);
+            ctxGraph.moveTo(0, 20.5); ctxGraph.lineTo(graphW, 20.5);
+            ctxGraph.moveTo(0, graphH - 19.5); ctxGraph.lineTo(graphW, graphH - 19.5);
             ctxGraph.stroke();
             ctxGraph.setLineDash([]);
 
-            // Frequency Axis Labels
-            ctxGraph.fillStyle = textColor;
-            ctxGraph.font = '600 11px Courier New, monospace';
-            ctxGraph.textAlign = 'left';
-            ctxGraph.fillText('+3.5 kHz (137.9035 MHz)', 12, 16);
-            ctxGraph.fillText('Nominal 137.9000 MHz (Zenith)', 12, graphH / 2 - 6);
-            ctxGraph.fillText('-3.5 kHz (137.8965 MHz)', 12, graphH - 8);
+            // Axis labels, right-aligned so they never sit under the start of the curve
+            ctxGraph.fillStyle = c.muted;
+            ctxGraph.font = '400 10px ' + MONO;
+            ctxGraph.textAlign = 'right';
+            ctxGraph.fillText('+3.5 kHz  137.9035 MHz', graphW - 12, 15);
+            ctxGraph.fillText('NOMINAL  137.9000 MHz', graphW - 12, graphH / 2 - 6);
+            ctxGraph.fillText('-3.5 kHz  137.8965 MHz', graphW - 12, graphH - 6);
 
-            // S-Curve (Doppler Frequency Response)
+            // S-curve
+            const yFor = freq => graphH - (((freq - (BASE_FREQ - MAX_SHIFT)) / (2 * MAX_SHIFT)) * (graphH - 40) + 20);
             ctxGraph.beginPath();
-            ctxGraph.strokeStyle = curveColor;
-            ctxGraph.lineWidth = 3;
-
-            for (let screenX = 0; screenX <= graphW; screenX++) {
-                let logicX = (screenX / graphW) * 20 - 10;
-                let freq = calculateFrequency(logicX);
-                let yNorm = (freq - (BASE_FREQ - MAX_SHIFT)) / (2 * MAX_SHIFT);
-                let screenY = graphH - (yNorm * (graphH - 40) + 20);
-
-                if (screenX === 0) ctxGraph.moveTo(screenX, screenY);
-                else ctxGraph.lineTo(screenX, screenY);
+            ctxGraph.strokeStyle = c.ink;
+            ctxGraph.lineWidth = 2;
+            for (let sx = 0; sx <= graphW; sx++) {
+                const sy = yFor(calculateFrequency((sx / graphW) * 20 - 10));
+                if (sx === 0) ctxGraph.moveTo(sx, sy); else ctxGraph.lineTo(sx, sy);
             }
             ctxGraph.stroke();
 
-            // Current Operating Point Marker
+            // Operating point: a red square with a vertical cursor
             const currentFreq = calculateFrequency(currentX);
             const pX = ((currentX + 10) / 20) * graphW;
-            const yNorm = (currentFreq - (BASE_FREQ - MAX_SHIFT)) / (2 * MAX_SHIFT);
-            const pY = graphH - (yNorm * (graphH - 40) + 20);
-
+            const pY = yFor(currentFreq);
+            ctxGraph.strokeStyle = c.red;
+            ctxGraph.lineWidth = 1;
             ctxGraph.beginPath();
-            ctxGraph.arc(pX, pY, 7, 0, Math.PI * 2);
-            ctxGraph.fillStyle = pointColor;
-            ctxGraph.fill();
-            ctxGraph.strokeStyle = '#ffffff';
-            ctxGraph.lineWidth = 2.5;
+            ctxGraph.moveTo(pX + 0.5, 0);
+            ctxGraph.lineTo(pX + 0.5, graphH);
             ctxGraph.stroke();
+            ctxGraph.fillStyle = c.red;
+            ctxGraph.fillRect(pX - 5, pY - 5, 10, 10);
+            ctxGraph.strokeStyle = c.ink;
+            ctxGraph.lineWidth = 1.5;
+            ctxGraph.strokeRect(pX - 5, pY - 5, 10, 10);
 
-            // Point readout overlay
-            ctxGraph.fillStyle = isLight ? '#0f172a' : '#ffffff';
-            ctxGraph.font = '700 11px Courier New, monospace';
-            ctxGraph.textAlign = pX > graphW - 100 ? 'right' : 'left';
-            const offset = pX > graphW - 100 ? -12 : 12;
-            ctxGraph.fillText(`${currentFreq.toFixed(5)} MHz`, pX + offset, pY - 8);
+            // Readout next to the point; flips side near the right edge, drops below near the top
+            ctxGraph.fillStyle = c.ink;
+            ctxGraph.font = '500 11px ' + MONO;
+            const right = pX > graphW - 140;
+            ctxGraph.textAlign = right ? 'right' : 'left';
+            const ty = pY < 40 ? pY + 20 : pY - 10;
+            ctxGraph.fillText(`${currentFreq.toFixed(5)} MHz`, pX + (right ? -12 : 12), ty);
         }
 
         updateDopplerSim = function() {

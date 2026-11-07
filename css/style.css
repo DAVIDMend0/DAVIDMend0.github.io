@@ -355,7 +355,7 @@ input:checked + .slider:before {
     text-align: center;
     color: #fff;
     padding: 130px 20px 80px 20px;
-    background: #070b14 url('WebsiteImages/Profile/hero-bg.webp') no-repeat center center/cover;
+    background: #070b14 url('../assets/profile/hero-bg.webp') no-repeat center center/cover;
     background-attachment: fixed;
     overflow: hidden;
 }
@@ -373,14 +373,6 @@ input:checked + .slider:before {
     z-index: 1;
 }
 
-.hero-mesh {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 50% -20%, var(--accent-glow), transparent 60%);
-    pointer-events: none;
-    z-index: 1;
-}
-
 .hero-content {
     position: relative;
     z-index: 2;
@@ -390,57 +382,11 @@ input:checked + .slider:before {
     align-items: center;
 }
 
-/* Status Badge */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    padding: 7px 18px;
-    border-radius: var(--border-radius-full);
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    color: #7dd3fc;
-    font-size: 0.82rem;
-    font-weight: 600;
-    margin-bottom: 25px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #10b981;
-    box-shadow: 0 0 10px #10b981;
-    animation: statusPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes statusPulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
-}
-
 /* Hero Avatar with Glowing Ring */
 .hero-avatar-wrapper {
     position: relative;
     display: inline-block;
     margin-bottom: 25px;
-}
-
-.hero-avatar-glow {
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    background-color: var(--accent-color);
-    filter: blur(14px);
-    opacity: 0.5;
-    animation: avatarGlow 4s ease-in-out infinite alternate;
-}
-
-@keyframes avatarGlow {
-    0% { transform: scale(0.96); opacity: 0.5; }
-    100% { transform: scale(1.04); opacity: 0.8; }
 }
 
 .hero-avatar {
@@ -1123,48 +1069,6 @@ html.light-mode .hero-name {
 }
 
 /* --- 9. PROJECTS GRID --- */
-.project-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 30px;
-}
-
-.project-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    overflow: hidden;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    display: flex;
-    flex-direction: column;
-    transition: transform var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-}
-
-.project-card:hover {
-    transform: translateY(-6px);
-    border-color: var(--border-hover);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-}
-
-.card-media-wrap {
-    position: relative;
-    width: 100%;
-    height: 215px;
-    overflow: hidden;
-    background: #000;
-}
-
-.project-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.project-card:hover .project-img {
-    transform: scale(1.05);
-}
 
 .card-badge {
     position: absolute;
@@ -1181,32 +1085,6 @@ html.light-mode .hero-name {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
-
-.highlight-badge {
-    background-color: var(--accent-color);
-    color: #fff;
-    border: none;
-}
-
-.card-content {
-    padding: 26px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.project-card h3 {
-    font-size: 1.35rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-
-.project-card p {
-    font-size: 0.92rem;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    flex-grow: 1;
 }
 
 .tags {
@@ -1287,167 +1165,6 @@ html.light-mode .hero-name {
 
 .card-action-btn:hover i {
     transform: translateX(6px);
-}
-
-/* --- 9b. COMING SOON PLACEHOLDER CARD --- */
-.project-card-placeholder {
-    border: 2px dashed rgba(56, 189, 248, 0.35);
-    background: linear-gradient(135deg, rgba(14, 165, 233, 0.04) 0%, rgba(15, 23, 42, 0.4) 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 35px 24px;
-    min-height: 420px;
-    position: relative;
-    overflow: hidden;
-}
-
-.project-card-placeholder:hover {
-    border-color: var(--accent-color);
-    transform: translateY(-6px);
-    box-shadow: 0 15px 35px var(--accent-glow);
-}
-
-.card-placeholder-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-}
-
-.placeholder-icon-ring {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 22px;
-    color: var(--accent-color);
-    font-size: 1.75rem;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease;
-}
-
-.project-card-placeholder:hover .placeholder-icon-ring {
-    transform: scale(1.12) rotate(8deg);
-    background: rgba(56, 189, 248, 0.2);
-    border-color: var(--accent-color);
-}
-
-.project-card-placeholder h3 {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: var(--heading-color);
-    margin-bottom: 12px;
-}
-
-.project-card-placeholder p {
-    font-size: 0.92rem;
-    line-height: 1.6;
-    color: var(--text-color);
-    max-width: 290px;
-    margin-bottom: 24px;
-}
-
-.placeholder-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--accent-color);
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    padding: 6px 16px;
-    border-radius: var(--border-radius-full);
-}
-
-.placeholder-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--accent-color);
-    box-shadow: 0 0 10px var(--accent-color);
-    animation: pulseBeacon 2s infinite ease-in-out;
-}
-
-/* Light mode overrides for placeholder card */
-body.light-mode .project-card-placeholder {
-    border-color: rgba(37, 99, 235, 0.35);
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, #ffffff 100%);
-}
-
-body.light-mode .project-card-placeholder:hover {
-    border-color: #2563eb;
-    box-shadow: 0 15px 35px rgba(37, 99, 235, 0.15);
-}
-
-body.light-mode .placeholder-icon-ring {
-    background: rgba(37, 99, 235, 0.08);
-    border-color: rgba(37, 99, 235, 0.25);
-    color: #2563eb;
-}
-
-body.light-mode .placeholder-badge {
-    background: rgba(37, 99, 235, 0.08);
-    border-color: rgba(37, 99, 235, 0.25);
-    color: #2563eb;
-}
-
-body.light-mode .placeholder-dot {
-    background-color: #2563eb;
-    box-shadow: 0 0 8px #2563eb;
-}
-
-/* --- 9c. PROJECT PLACEHOLDER MEDIA --- */
-.project-placeholder-media {
-    width: 100%;
-    height: 220px;
-    background: radial-gradient(circle at center, rgba(30, 41, 59, 0.7) 0%, rgba(10, 15, 29, 0.95) 100%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    text-align: center;
-    gap: 12px;
-    border-bottom: 1px solid var(--border-color);
-    transition: transform var(--transition-speed) ease;
-}
-
-.project-card:hover .project-placeholder-media {
-    transform: scale(1.02);
-}
-
-.project-placeholder-media i {
-    font-size: 2.2rem;
-    color: var(--accent-color);
-    filter: drop-shadow(0 0 10px var(--accent-glow));
-}
-
-.project-placeholder-media span {
-    font-size: 0.85rem;
-    color: var(--text-color);
-    font-weight: 500;
-    line-height: 1.4;
-    max-width: 250px;
-}
-
-body.light-mode .project-placeholder-media {
-    background: radial-gradient(circle at center, #f1f5f9 0%, #e2e8f0 100%);
-    border-color: rgba(0, 0, 0, 0.08);
-}
-
-body.light-mode .project-placeholder-media span {
-    color: #475569;
 }
 
 /* --- 10. CONTACT SECTION --- */
@@ -1830,15 +1547,6 @@ footer {
 }
 
 /* --- 14. REACTION TIMER GAME --- */
-.reaction-game-container {
-    background: #020617;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    padding: 25px;
-    text-align: center;
-    margin-top: 20px;
-    box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6);
-}
 
 .game-lights-row {
     display: flex;
@@ -1891,57 +1599,6 @@ footer {
     text-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
     letter-spacing: 8px;
     transition: color 0.3s;
-}
-
-.seven-segment-display.dimmed {
-    color: #334155;
-    text-shadow: none;
-    border-color: #1e293b;
-}
-
-.game-controls {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.btn-submit {
-    padding: 12px 30px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    border-radius: var(--border-radius-full);
-    cursor: pointer;
-    border: none;
-    background-color: var(--accent-color);
-    color: #fff;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.btn-submit:hover:not(:disabled) {
-    background-color: var(--accent-dark);
-    transform: translateY(-2px);
-}
-
-.game-stop-btn {
-    background: #ef4444;
-}
-
-.game-stop-btn:hover:not(:disabled) {
-    background: #dc2626;
-}
-
-.game-controls button:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    background: #334155;
-    box-shadow: none;
-}
-
-#game-message {
-    margin-top: 15px;
-    font-weight: 700;
-    color: var(--accent-color);
-    min-height: 1.6em;
 }
 
 /* --- 14b. DOPPLER SHIFT SIMULATOR --- */
@@ -2107,16 +1764,6 @@ body.light-mode .readout-unit {
     width: 95%;
 }
 
-.modal-placeholder-box {
-    background: rgba(15, 23, 42, 0.45);
-    border: 1px dashed var(--border-color);
-    border-radius: var(--border-radius-md);
-    padding: 16px 20px;
-    margin-bottom: 22px;
-    color: var(--text-color);
-    font-size: 0.92rem;
-}
-
 .simulation-embed-container {
     position: relative;
     width: 100%;
@@ -2187,25 +1834,6 @@ body.light-mode .readout-unit {
     border-color: var(--accent-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 14px var(--accent-glow);
-}
-
-.sim-footer-note {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 0.82rem;
-    margin-top: 10px;
-    font-style: italic;
-    letter-spacing: 0.02em;
-}
-
-body.light-mode .sim-footer-note {
-    color: #64748b;
-}
-
-body.light-mode .modal-placeholder-box {
-    background: rgba(241, 245, 249, 0.8);
-    border-color: rgba(0, 0, 0, 0.12);
-    color: #475569;
 }
 
 body.light-mode .sim-external-btn {
@@ -2473,23 +2101,11 @@ body.light-mode .sim-advisory-text {
     }
 
     /* Project Cards on Mobile */
-    .project-grid {
-        grid-template-columns: 1fr;
-        gap: 24px;
-    }
-    .card-media-wrap {
-        height: 190px;
-    }
-    .project-placeholder-media {
-        height: 190px;
-        padding: 16px;
-    }
-    .project-placeholder-media i {
-        font-size: 1.8rem;
-    }
-    .project-placeholder-media span {
-        font-size: 0.78rem;
-    }
+    
+    
+    
+    
+    
 
     /* Modal adjustments on Mobile */
     .modal {
@@ -2503,11 +2119,7 @@ body.light-mode .sim-advisory-text {
         padding: 20px 10px;
         max-height: 93vh;
     }
-    .modal-placeholder-box {
-        padding: 12px 14px;
-        font-size: 0.85rem;
-        margin-bottom: 16px;
-    }
+    
     .simulation-embed-container {
         height: 600px;
         min-height: 480px;
@@ -2549,13 +2161,8 @@ body.light-mode .sim-advisory-text {
         width: 30px;
         height: 30px;
     }
-    .game-controls {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .game-controls button {
-        width: 100%;
-    }
+    
+    
 
     /* Footer on Mobile */
     .footer-content {
@@ -2568,10 +2175,7 @@ body.light-mode .sim-advisory-text {
     .hero-title {
         font-size: 2.1rem;
     }
-    .status-badge {
-        font-size: 0.76rem;
-        padding: 5px 14px;
-    }
+    
     .social-pills {
         gap: 8px;
     }
