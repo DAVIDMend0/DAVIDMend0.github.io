@@ -54,10 +54,25 @@ document.addEventListener("DOMContentLoaded", function() {
     if (hamburger && navMenu) {
         function toggleHamburger(open) {
             const isActive = open !== undefined ? open : !hamburger.classList.contains("active");
+            // the sheet starts right under the bar, whatever height the bar currently is
+            document.documentElement.style.setProperty("--nav-h", navbar.offsetHeight + "px");
             hamburger.classList.toggle("active", isActive);
             navMenu.classList.toggle("active", isActive);
             hamburger.setAttribute("aria-expanded", String(isActive));
+            hamburger.setAttribute("aria-label", isActive ? "Close menu" : "Open menu");
+            document.body.classList.toggle("menu-open", isActive); // stops the page scrolling behind the sheet
         }
+
+        // Esc closes the menu; widening past phone size resets it
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && navMenu.classList.contains("active")) {
+                toggleHamburger(false);
+                hamburger.focus();
+            }
+        });
+        window.matchMedia("(min-width: 901px)").addEventListener("change", (mq) => {
+            if (mq.matches) toggleHamburger(false);
+        });
 
         hamburger.addEventListener("click", () => toggleHamburger());
 

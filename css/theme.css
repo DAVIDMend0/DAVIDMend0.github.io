@@ -1134,3 +1134,137 @@ main > section:nth-of-type(3n+3) { --block: var(--m-yellow); }
 
     .m-strip { margin: -44px -20px 36px; }
 }
+
+/* --------------------------------------------------------------------------
+   18. NAV ACTIONS + MOBILE MENU SHEET
+   The theme switch lives in the top bar (always reachable). On phones the
+   menu is a full-height sheet sized to the *visible* screen (dvh) that
+   scrolls if needed and clears the home-indicator area.
+   -------------------------------------------------------------------------- */
+.nav-container { gap: 24px; }
+.nav-links { margin-left: auto; }
+.nav-actions { display: flex; align-items: center; gap: 14px; }
+.nav-num,
+.nav-sheet-socials { display: none; }
+
+@media (max-width: 900px) {
+    nav,
+    nav.scrolled {
+        padding-top: calc(12px + env(safe-area-inset-top));
+        padding-bottom: 12px;
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+    }
+    /* No blur on phones: a backdrop-filter on the bar would become the
+       containing block for the fixed menu sheet and crop it to the bar's height. */
+    #navbar,
+    #navbar.scrolled {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+    #navbar.scrolled { background: var(--bg); }
+    body.menu-open { overflow: hidden; }
+    body.menu-open nav { background: var(--bg); border-bottom: 1px solid var(--line); }
+
+    .nav-actions { gap: 10px; }
+    .hamburger { padding: 8px; margin-right: -8px; }
+
+    #navbar .nav-links {
+        position: fixed;
+        top: var(--nav-h, 60px);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: auto;
+        max-height: calc(100dvh - var(--nav-h, 60px));
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 8px max(24px, env(safe-area-inset-left)) calc(28px + env(safe-area-inset-bottom));
+        text-align: left;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        background: var(--bg) !important;
+        border: 0;
+        border-top: 1px solid var(--line);
+        box-shadow: none !important;
+        transform: translateY(-10px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: transform 0.25s ease, opacity 0.2s ease, visibility 0s linear 0.25s;
+    }
+    #navbar .nav-links.active {
+        transform: none;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition: transform 0.25s ease, opacity 0.2s ease;
+    }
+    #navbar .nav-links li {
+        width: 100%;
+        margin: 0;
+        border-bottom: 1px solid var(--line);
+    }
+    #navbar .nav-links li a {
+        display: flex;
+        align-items: baseline;
+        gap: 18px;
+        padding: 15px 0;
+        font-family: var(--font-sans);
+        font-size: 1.3rem;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        text-transform: none;
+        color: var(--fg) !important;
+    }
+    #navbar .nav-links li a::after { display: none; }
+    .nav-num {
+        display: inline-block;
+        min-width: 22px;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        color: var(--fg-4);
+    }
+    #navbar .nav-links li a.active .nav-num { color: var(--m-red); }
+
+    #navbar .nav-links .nav-resume-item { border-bottom: 0; margin-top: 22px; }
+    #navbar .nav-links .nav-resume-item a.nav-resume-btn {
+        justify-content: center;
+        align-items: center;
+        padding: 14px !important;
+        font-family: var(--font-mono);
+        font-size: 0.8rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        border: 1px solid var(--fg);
+    }
+    #navbar .nav-links .nav-resume-item a.nav-resume-btn:hover { color: var(--on-fg) !important; }
+
+    #navbar .nav-links .nav-sheet-socials {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-top: 18px;
+        border-bottom: 0;
+    }
+    #navbar .nav-links .nav-sheet-socials a {
+        display: inline;
+        padding: 6px 0;
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        letter-spacing: 0;
+        color: var(--fg-3) !important;
+    }
+}
+
+/* Short screens (landscape phones): tighter rows so everything fits */
+@media (max-width: 900px) and (max-height: 560px) {
+    #navbar .nav-links li a { padding: 10px 0; font-size: 1.05rem; }
+    #navbar .nav-links .nav-resume-item { margin-top: 12px; }
+}

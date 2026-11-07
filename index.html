@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>David Mendoza | Computer Engineer — Embedded, RF &amp; Edge AI</title>
 
     <!-- SEO & Metadata -->
@@ -29,10 +29,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css?v=20261106f">
-    <link rel="stylesheet" href="css/features.css?v=20261106f">
-    <link rel="stylesheet" href="css/theme.css?v=20261106f">
-    <link rel="stylesheet" href="css/case-study.css?v=20261106f">
+    <link rel="stylesheet" href="css/style.css?v=20261107i">
+    <link rel="stylesheet" href="css/features.css?v=20261107i">
+    <link rel="stylesheet" href="css/theme.css?v=20261107i">
+    <link rel="stylesheet" href="css/case-study.css?v=20261107i">
+    <link rel="stylesheet" href="css/games.css?v=20261107i">
 
     <!-- Zero-flicker theme initializer: dark by default, light only if chosen -->
     <script>
@@ -56,28 +57,33 @@
                 <span class="logo-accent">DM</span> DAVID MENDOZA
             </a>
 
-            <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-navigation">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </button>
-
             <ul class="nav-links" id="primary-navigation">
-                <li><a href="#drifts">DRIFTS</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#experience">Experience</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#playground">Playground</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><a href="assets/docs/David_Mendoza_Resume.pdf" target="_blank" rel="noopener noreferrer" class="nav-resume-btn">Resume <i class="fas fa-arrow-up-right-from-square"></i></a></li>
-                <li class="toggle-container">
-                    <label class="theme-switch" for="checkbox" aria-label="Toggle dark and light mode">
-                        <input type="checkbox" id="checkbox" />
-                        <div class="slider round"></div>
-                    </label>
+                <li><a href="#drifts"><span class="nav-num">01</span>DRIFTS</a></li>
+                <li><a href="#about"><span class="nav-num">02</span>About</a></li>
+                <li><a href="#experience"><span class="nav-num">03</span>Experience</a></li>
+                <li><a href="#projects"><span class="nav-num">04</span>Projects</a></li>
+                <li><a href="#playground"><span class="nav-num">05</span>Playground</a></li>
+                <li><a href="#skills"><span class="nav-num">06</span>Skills</a></li>
+                <li><a href="#contact"><span class="nav-num">07</span>Contact</a></li>
+                <li class="nav-resume-item"><a href="assets/docs/David_Mendoza_Resume.pdf" target="_blank" rel="noopener noreferrer" class="nav-resume-btn">Resume <i class="fas fa-arrow-up-right-from-square"></i></a></li>
+                <li class="nav-sheet-socials" aria-label="Social links">
+                    <a href="https://www.linkedin.com/in/davidmendo/" target="_blank" rel="noopener noreferrer">LinkedIn &nearr;</a>
+                    <a href="https://github.com/DAVIDMend0" target="_blank" rel="noopener noreferrer">GitHub &nearr;</a>
+                    <a href="mailto:9davemend@gmail.com">Email &nearr;</a>
                 </li>
             </ul>
+
+            <div class="nav-actions">
+                <label class="theme-switch" for="checkbox" aria-label="Toggle dark and light mode">
+                    <input type="checkbox" id="checkbox" />
+                    <div class="slider round"></div>
+                </label>
+                <button class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="primary-navigation">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -128,7 +134,7 @@
                 <dd>Hardware &amp; software builds</dd>
             </div>
             <div class="hero-stat">
-                <dt><span class="stat-num">03</span></dt>
+                <dt><span class="stat-num">06</span></dt>
                 <dd>Playable demos on this page</dd>
             </div>
             <div class="hero-stat">
@@ -557,40 +563,192 @@
             <div class="container narrow">
                 <div class="section-header reveal">
                     <span class="section-kicker">Playground</span>
-                    <h2 class="section-title">How Fast Are Your Reflexes?</h2>
-                    <p class="section-subtitle">A browser version of the race start-light timer I designed in Verilog for an Intel FPGA.</p>
+                    <h2 class="section-title">Play With My Projects</h2>
+                    <p class="section-subtitle">Four small games, each built on something I engineered for real.</p>
                 </div>
 
-                <ol class="reflex-steps reveal">
-                    <li><span>1</span> Click the panel to start</li>
-                    <li><span>2</span> Four red lights come on</li>
-                    <li><span>3</span> Click the instant they turn green</li>
-                </ol>
+                <div class="pg-tabs reveal" role="tablist" aria-label="Playground games">
+                    <button class="pg-tab active" role="tab" id="tab-reflex" aria-controls="pg-reflex" aria-selected="true"><span>01</span>Reflex</button>
+                    <button class="pg-tab" role="tab" id="tab-balance" aria-controls="pg-balance" aria-selected="false" tabindex="-1"><span>02</span>Balance</button>
+                    <button class="pg-tab" role="tab" id="tab-logic" aria-controls="pg-logic" aria-selected="false" tabindex="-1"><span>03</span>Logic</button>
+                    <button class="pg-tab" role="tab" id="tab-tune" aria-controls="pg-tune" aria-selected="false" tabindex="-1"><span>04</span>Tune</button>
+                </div>
 
-                <div class="reflex-pad reveal" id="reflexPad" role="button" tabindex="0" aria-describedby="reflexStatus reflexSub" data-state="idle">
-                    <div class="game-lights-row" aria-hidden="true">
-                        <div class="react-light"></div>
-                        <div class="react-light"></div>
-                        <div class="react-light"></div>
-                        <div class="react-light"></div>
+                <div class="pg-panels reveal">
+
+                    <!-- 01 · Reflex (FPGA reaction timer) -->
+                    <div class="pg-panel active" role="tabpanel" id="pg-reflex" aria-labelledby="tab-reflex">
+                        <ol class="reflex-steps">
+                            <li><span>1</span> Click the panel to start</li>
+                            <li><span>2</span> Four red lights come on</li>
+                            <li><span>3</span> Click the instant they turn green</li>
+                        </ol>
+
+                        <div class="reflex-pad" id="reflexPad" role="button" tabindex="0" aria-describedby="reflexStatus reflexSub" data-state="idle">
+                            <div class="game-lights-row" aria-hidden="true">
+                                <div class="react-light"></div>
+                                <div class="react-light"></div>
+                                <div class="react-light"></div>
+                                <div class="react-light"></div>
+                            </div>
+                            <div class="seven-segment-display" id="reflexDisplay" aria-hidden="true">000</div>
+                            <p class="reflex-status" id="reflexStatus">Click to start</p>
+                            <p class="reflex-sub" id="reflexSub">or press Space</p>
+                        </div>
+
+                        <div class="reflex-stats">
+                            <div><span class="score-label">Last</span><span class="score-value" id="statLast">&mdash;</span></div>
+                            <div><span class="score-label">Your best</span><span class="score-value" id="statBest">&mdash;</span></div>
+                            <div><span class="score-label">Tries</span><span class="score-value" id="statTries">0</span></div>
+                            <div><span class="score-label">Typical human</span><span class="score-value">~250 ms</span></div>
+                        </div>
+
+                        <p class="reflex-hw">
+                            <i class="fas fa-microchip"></i>
+                            On the FPGA, an <code>LFSR</code> picks the random hold, the 50 MHz clock is divided into a 1 ms counter, and a BCD converter drives the 7-segment displays.
+                            <button class="text-link" data-case-open="fpga">See the hardware</button>
+                        </p>
                     </div>
-                    <div class="seven-segment-display" id="reflexDisplay" aria-hidden="true">000</div>
-                    <p class="reflex-status" id="reflexStatus">Click to start</p>
-                    <p class="reflex-sub" id="reflexSub">or press Space</p>
-                </div>
 
-                <div class="reflex-stats reveal">
-                    <div><span class="score-label">Last</span><span class="score-value" id="statLast">&mdash;</span></div>
-                    <div><span class="score-label">Your best</span><span class="score-value" id="statBest">&mdash;</span></div>
-                    <div><span class="score-label">Tries</span><span class="score-value" id="statTries">0</span></div>
-                    <div><span class="score-label">Typical human</span><span class="score-value">~250 ms</span></div>
-                </div>
+                    <!-- 02 · Balance the robot (self-balancing robot / PID) -->
+                    <div class="pg-panel" role="tabpanel" id="pg-balance" aria-labelledby="tab-balance">
+                        <ol class="reflex-steps">
+                            <li><span>1</span> Keep it upright by hand with &#9664; &#9654;</li>
+                            <li><span>2</span> Switch to PID and let the controller try</li>
+                            <li><span>3</span> Tune P, I and D, then give it a push</li>
+                        </ol>
 
-                <p class="reflex-hw reveal">
-                    <i class="fas fa-microchip"></i>
-                    On the FPGA, an <code>LFSR</code> picks the random hold, the 50 MHz clock is divided into a 1 ms counter, and a BCD converter drives the 7-segment displays.
-                    <button class="text-link" data-case-open="fpga">See the hardware</button>
-                </p>
+                        <div class="game-pad">
+                            <canvas id="balanceCanvas" aria-label="Self-balancing robot simulation"></canvas>
+                        </div>
+
+                        <div class="game-controls">
+                            <div class="seg" role="group" aria-label="Control mode">
+                                <button class="seg-btn active" data-bal-mode="manual">Manual</button>
+                                <button class="seg-btn" data-bal-mode="pid">PID</button>
+                            </div>
+
+                            <div class="bal-manual">
+                                <button class="hold-btn" data-bal-push="-1" aria-label="Drive left">&#9664;</button>
+                                <button class="btn btn-primary" id="balStart">Start</button>
+                                <button class="hold-btn" data-bal-push="1" aria-label="Drive right">&#9654;</button>
+                            </div>
+
+                            <div class="bal-pid" hidden>
+                                <label class="gain"><span>P</span><input type="range" id="gainP" min="0" max="30" step="0.5" value="12"><output id="gainPOut">12.0</output></label>
+                                <label class="gain"><span>I</span><input type="range" id="gainI" min="0" max="10" step="0.5" value="0"><output id="gainIOut">0.0</output></label>
+                                <label class="gain"><span>D</span><input type="range" id="gainD" min="0" max="8" step="0.25" value="3"><output id="gainDOut">3.00</output></label>
+                                <div class="bal-pid-actions">
+                                    <button class="btn btn-secondary" id="balPush">Push it</button>
+                                    <button class="btn btn-secondary" id="balReset">Reset</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reflex-stats">
+                            <div><span class="score-label">Mode</span><span class="score-value" id="balMode">Manual</span></div>
+                            <div><span class="score-label">Upright</span><span class="score-value" id="balTime">0.0 s</span></div>
+                            <div><span class="score-label">Best by hand</span><span class="score-value" id="balBest">&mdash;</span></div>
+                            <div><span class="score-label">Falls</span><span class="score-value" id="balFalls">0</span></div>
+                        </div>
+
+                        <p class="reflex-hw">
+                            <i class="fas fa-microchip"></i>
+                            On the real robot, a TIVA LaunchPad reads an IMU over I&sup2;C and runs this same kind of PID loop, driving the motors with PWM.
+                            <button class="text-link" data-case-open="balance">See the robot</button>
+                        </p>
+                    </div>
+
+                    <!-- 03 · Logic gate puzzle (digital logic / FPGA) -->
+                    <div class="pg-panel" role="tabpanel" id="pg-logic" aria-labelledby="tab-logic">
+                        <ol class="reflex-steps">
+                            <li><span>1</span> Tap each <b>?</b> gate to pick its type</li>
+                            <li><span>2</span> Submit when you think it matches the target</li>
+                            <li><span>3</span> Fewer attempts = better score</li>
+                        </ol>
+
+                        <div class="game-pad logic-pad">
+                            <div class="logic-head">
+                                <div class="logic-title">
+                                    <span class="logic-level" id="logicLevelNum">Level 1</span>
+                                    <strong id="logicLevelName"></strong>
+                                </div>
+                                <div class="logic-head-right">
+                                    <div class="seg seg-dark" role="group" aria-label="Puzzle mode">
+                                        <button class="seg-btn active" data-logic-mode="classic">Classic</button>
+                                        <button class="seg-btn" data-logic-mode="daily">Daily</button>
+                                    </div>
+                                    <div class="logic-dots" id="logicDots" aria-label="Levels"></div>
+                                </div>
+                            </div>
+                            <div class="logic-body">
+                                <div class="logic-circuit" id="logicCircuit"></div>
+                                <div class="logic-table-wrap">
+                                    <table class="logic-table" id="logicTable" aria-label="Truth table"></table>
+                                </div>
+                            </div>
+                            <div class="logic-foot">
+                                <p id="logicStatus" aria-live="polite"></p>
+                                <div class="logic-actions">
+                                    <button class="btn btn-secondary" id="logicShare" hidden>Share result</button>
+                                    <button class="btn btn-primary" id="logicSubmit">Submit</button>
+                                    <button class="btn btn-primary" id="logicNext" hidden>Next &rarr;</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reflex-stats">
+                            <div><span class="score-label" id="logicStatLevelLabel">Level</span><span class="score-value" id="logicStatLevel">1 / 7</span></div>
+                            <div><span class="score-label">Attempts</span><span class="score-value" id="logicStatTries">0</span></div>
+                            <div><span class="score-label">Solved</span><span class="score-value" id="logicStatSolved">0 / 7</span></div>
+                            <div><span class="score-label">Daily streak</span><span class="score-value" id="logicStatStreak">0</span></div>
+                        </div>
+
+                        <p class="reflex-hw">
+                            <i class="fas fa-microchip"></i>
+                            These are the building blocks behind the FPGA reaction timer: on an FPGA, each gate becomes a lookup table (LUT) configured from Verilog.
+                            <button class="text-link" data-case-open="fpga">See the FPGA build</button>
+                        </p>
+                    </div>
+
+                    <!-- 04 · Tune the satellite (METEOR-M2 / Doppler) -->
+                    <div class="pg-panel" role="tabpanel" id="pg-tune" aria-labelledby="tab-tune">
+                        <ol class="reflex-steps">
+                            <li><span>1</span> Start the pass</li>
+                            <li><span>2</span> Keep the red tuner on the drifting peak</li>
+                            <li><span>3</span> Decode as clean an image as you can</li>
+                        </ol>
+
+                        <div class="game-pad">
+                            <canvas id="tuneCanvas" aria-label="Satellite tuning simulation"></canvas>
+                        </div>
+
+                        <div class="game-controls tune-controls">
+                            <label class="tune-knob">
+                                <span>Tune</span>
+                                <input type="range" id="tuneSlider" min="-4000" max="4000" step="10" value="0" aria-label="Receiver frequency offset">
+                                <output id="tuneOut">+0 Hz</output>
+                            </label>
+                            <div class="tune-actions">
+                                <button class="btn btn-secondary" id="tuneStop" disabled>Stop</button>
+                                <button class="btn btn-primary" id="tuneStart">Start pass</button>
+                            </div>
+                        </div>
+
+                        <div class="reflex-stats">
+                            <div><span class="score-label">Image quality</span><span class="score-value" id="tuneQuality">&mdash;</span></div>
+                            <div><span class="score-label">Locked</span><span class="score-value" id="tuneLock">&mdash;</span></div>
+                            <div><span class="score-label">Best</span><span class="score-value" id="tuneBest">&mdash;</span></div>
+                            <div><span class="score-label">Pass</span><span class="score-value" id="tuneTime">0:36</span></div>
+                        </div>
+
+                        <p class="reflex-hw">
+                            <i class="fas fa-microchip"></i>
+                            On the real ground station, Gpredict calculated this Doppler correction from orbital data (TLEs) and steered the RTL-SDR automatically.
+                            <button class="text-link" data-case-open="meteor">See the ground station</button>
+                        </p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -868,9 +1026,10 @@
         </section>
     </div>
 
-    <script src="js/main.js?v=20261106f"></script>
-    <script src="js/projects-data.js?v=20261106f"></script>
-    <script src="js/case-study.js?v=20261106f"></script>
-    <script src="js/features.js?v=20261106f"></script>
+    <script src="js/main.js?v=20261107i"></script>
+    <script src="js/projects-data.js?v=20261107i"></script>
+    <script src="js/case-study.js?v=20261107i"></script>
+    <script src="js/features.js?v=20261107i"></script>
+    <script src="js/games.js?v=20261107i"></script>
 </body>
 </html>

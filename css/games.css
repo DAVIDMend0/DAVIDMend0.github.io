@@ -1,0 +1,304 @@
+/* ==========================================================================
+   games.css — Playground tabs and the Balance / Logic / Tune games
+   Uses theme.css tokens. Game pads stay dark (instrument panels) in both themes.
+   ========================================================================== */
+
+/* ---- tabs ---- */
+.pg-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-bottom: 26px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.pg-tab {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 10px;
+    border: 0;
+    border-right: 1px solid var(--line);
+    background: transparent;
+    color: var(--fg-3);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+.pg-tab:last-child { border-right: 0; }
+.pg-tab span { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 400; color: var(--fg-4); }
+.pg-tab:hover { color: var(--fg); background: var(--surface); }
+.pg-tab.active { color: var(--fg); background: var(--surface); }
+.pg-tab.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--m-red);
+}
+.pg-tab:nth-child(2).active::after { background: var(--m-blue); }
+.pg-tab:nth-child(3).active::after { background: var(--m-yellow); }
+.pg-tab:nth-child(4).active::after { background: var(--m-red); }
+
+/* ---- stacked panels: all share one cell, the tallest sets the height ---- */
+.pg-panels { display: grid; }
+.pg-panel {
+    grid-area: 1 / 1;
+    min-width: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+.pg-panel.active {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.25s ease;
+}
+
+/* ---- shared game pad ---- */
+.game-pad {
+    position: relative;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    background: #0d0d0f;
+    overflow: hidden;
+    touch-action: manipulation;
+}
+.game-pad canvas { display: block; width: 100%; }
+
+.game-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 16px;
+    min-height: 46px;
+}
+
+/* segmented Manual / PID switch */
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 4px; overflow: hidden; }
+.seg-btn {
+    padding: 10px 16px;
+    border: 0;
+    background: transparent;
+    color: var(--fg-3);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    cursor: pointer;
+}
+.seg-btn + .seg-btn { border-left: 1px solid var(--line-strong); }
+.seg-btn.active { background: var(--fg); color: var(--on-fg); }
+
+.bal-manual { display: flex; align-items: center; gap: 10px; }
+.bal-manual[hidden], .bal-pid[hidden] { display: none; }
+.hold-btn {
+    width: 58px;
+    height: 46px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--fg);
+    font-size: 1rem;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    transition: background 0.1s ease;
+}
+.hold-btn:hover { border-color: var(--fg); }
+.hold-btn.held { background: var(--fg); color: var(--on-fg); }
+
+.bal-pid {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px 18px;
+}
+.gain { display: flex; align-items: center; gap: 8px; }
+.gain span { font-family: var(--font-mono); font-size: 0.78rem; color: var(--fg); width: 10px; }
+.gain input { width: 110px; accent-color: var(--fg); }
+.gain output { font-family: var(--font-mono); font-size: 0.74rem; color: var(--fg-3); width: 34px; }
+.bal-pid-actions { display: flex; gap: 8px; }
+.bal-pid-actions .btn,
+.bal-manual .btn,
+.logic-foot .btn { padding: 10px 16px; width: auto; white-space: nowrap; }
+
+/* ---- logic puzzle ---- */
+.logic-pad { padding: 18px; color: #fafafa; }
+.logic-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.logic-level {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #a1a1aa;
+}
+.logic-head strong { font-size: 1.02rem; font-weight: 600; letter-spacing: -0.01em; }
+.logic-dots { display: flex; gap: 6px; }
+.logic-dot {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #3f3f46;
+    border-radius: 3px;
+    background: transparent;
+    color: #a1a1aa;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+.logic-dot.solved { border-color: #f5c518; color: #f5c518; }
+.logic-dot.current { background: #fafafa; border-color: #fafafa; color: #0a0a0b; }
+
+.logic-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+}
+.logic-circuit { min-width: 0; }
+.logic-svg { display: block; width: 100%; height: auto; max-height: 300px; }
+.logic-svg text { font-family: var(--font-mono); font-size: 12px; pointer-events: none; }
+.logic-svg .gate-label { font-size: 13px; font-weight: 600; }
+.logic-node.gate,
+.logic-node.in { cursor: pointer; }
+.logic-node.gate:hover rect,
+.logic-node.in:hover rect { stroke: #f5c518; }
+.logic-node:focus { outline: none; }
+.logic-node:focus-visible rect { stroke: #f5c518; stroke-width: 2.5; }
+
+.logic-table-wrap { overflow-x: auto; }
+.logic-table {
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: #d4d4d8;
+}
+.logic-table th,
+.logic-table td { padding: 5px 9px; text-align: center; border-bottom: 1px solid #27272a; }
+.logic-table th { font-weight: 500; color: #a1a1aa; }
+.logic-table th.want,
+.logic-table td.want { color: #71717a; }
+.logic-table td.got { color: #fafafa; }
+.logic-table td.ok { color: #f5c518; }
+.logic-table tbody tr { cursor: pointer; }
+.logic-table tbody tr:hover { background: #17171a; }
+.logic-table tr.live { background: #1c1c1f; box-shadow: inset 3px 0 0 #e5372a; }
+
+.logic-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #27272a;
+}
+.logic-foot p { font-size: 0.86rem; color: #a1a1aa; }
+.logic-foot p b { color: #fafafa; font-weight: 600; }
+.logic-foot p b.win { color: #f5c518; }
+.logic-foot > div { display: flex; gap: 8px; }
+.logic-foot .btn { padding: 10px 16px; }
+.logic-foot .btn-secondary { color: #fafafa; border-color: rgba(255, 255, 255, 0.2); }
+.logic-foot .btn-primary { background: #fafafa; color: #0a0a0b; }
+.logic-foot .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.logic-foot .btn.pulse { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0.6) !important; animation: pulseNext 1.6s infinite; }
+@keyframes pulseNext {
+    0% { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0.55); }
+    70% { box-shadow: 0 0 0 10px rgba(245, 197, 24, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0); }
+}
+
+/* ---- tune the satellite ---- */
+.tune-controls { flex-wrap: nowrap; }
+.tune-knob { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; }
+.tune-knob span { font-family: var(--font-mono); font-size: 0.72rem; color: var(--fg-4); text-transform: uppercase; letter-spacing: 0.06em; }
+.tune-knob input { flex: 1; min-width: 0; accent-color: var(--m-red); height: 28px; }
+.tune-knob output { font-family: var(--font-mono); font-size: 0.78rem; color: var(--fg); width: 72px; text-align: right; }
+#tuneCanvas { cursor: ew-resize; touch-action: none; }
+
+/* ---- responsive ---- */
+@media (max-width: 760px) {
+    .logic-body { grid-template-columns: 1fr; }
+    .logic-table-wrap { justify-self: center; }
+}
+
+@media (max-width: 640px) {
+    .pg-tabs { grid-template-columns: repeat(2, 1fr); }
+    .pg-tab:nth-child(2) { border-right: 0; }
+    .pg-tab:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+    .game-controls { justify-content: center; }
+    .bal-pid { justify-content: center; }
+    .gain input { width: 150px; }
+    .tune-controls { flex-wrap: wrap; }
+    .tune-knob { flex-basis: 100%; }
+    .tune-controls .btn { width: 100%; justify-content: center; }
+    .logic-pad { padding: 14px; }
+    .logic-foot { justify-content: center; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pg-panel, .pg-panel.active { transition: none; }
+    .logic-foot .btn.pulse { animation: none; }
+}
+
+/* ---- logic: submit flow, modes, locked levels ---- */
+.logic-head-right { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.seg-dark { border-color: #3f3f46; }
+.seg-dark .seg-btn { color: #a1a1aa; padding: 7px 12px; font-size: 0.7rem; }
+.seg-dark .seg-btn + .seg-btn { border-left-color: #3f3f46; }
+.seg-dark .seg-btn.active { background: #fafafa; color: #0a0a0b; }
+.logic-dot.locked { opacity: 0.45; cursor: not-allowed; font-size: 0.6rem; }
+.logic-dot:disabled { pointer-events: none; }
+.logic-node.in { cursor: default; }
+.logic-node.in.live { cursor: pointer; }
+.logic-node.gate.locked { cursor: default; }
+.logic-node.gate.locked:hover rect { stroke: #fafafa; }
+.logic-table caption {
+    caption-side: top;
+    text-align: left;
+    padding: 0 9px 6px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #71717a;
+}
+.logic-table th.want, .logic-table td.want { color: #fafafa; }
+.logic-table td.got { color: #a1a1aa; }
+.logic-table td.bad { color: #e5372a; }
+.logic-table tbody tr { cursor: default; }
+.logic-table tbody tr.clickable { cursor: pointer; }
+.logic-table tbody tr:not(.clickable):hover { background: transparent; }
+.logic-actions { display: flex; gap: 8px; }
+.logic-actions [hidden] { display: none; }
+.logic-foot .btn-primary:disabled { opacity: 0.35; }
+
+/* ---- tune: stop / start ---- */
+.tune-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.tune-actions .btn { padding: 10px 16px; width: auto; white-space: nowrap; }
+.tune-actions .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+    .logic-head { flex-direction: column; align-items: flex-start; }
+    .tune-actions { width: 100%; }
+    .tune-actions .btn { flex: 1; justify-content: center; }
+}

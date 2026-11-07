@@ -8,7 +8,7 @@ Hosted on GitHub Pages. Built by hand with plain HTML, CSS and JavaScript: no fr
 
 - **DRIFTS spotlight.** A live, interactive prototype of the sensor-gated driver monitoring app I'm building, running inside a phone frame.
 - **Projects.** A large "selected" panel above an auto-scrolling reel of project cards. Picking a card or a filter updates the panel without moving the page. Clicking a skill chip shows the projects that use it.
-- **Playground.** A one-button browser version of my Verilog FPGA reaction timer, with a personal-best scoreboard.
+- **Playground.** Four games, each built on a real project: Reflex (FPGA reaction timer), Balance (self-balancing robot with a tunable PID controller), Logic (gate puzzles with a Submit step: 7 Classic levels unlocked in order, plus 5 new Daily puzzles every day with a streak and a shareable result) and Tune (track a satellite's Doppler drift to decode a METEOR-M2 image).
 - **Terminal easter egg.** Press <kbd>~</kbd> anywhere on the page. Try `scope` for the hero's lab mode, or `drifts --versions` for earlier DRIFTS builds.
 
 ## Project structure
@@ -21,12 +21,14 @@ Hosted on GitHub Pages. Built by hand with plain HTML, CSS and JavaScript: no fr
 │   ├── style.css              # Base design system, layout, modals, sims
 │   ├── features.css           # Hero scope, DRIFTS spotlight, projects reel, playground, terminal
 │   ├── theme.css              # Minimal monochrome theme + Mondrian accents (colours, type, lines)
-│   └── case-study.css         # The project write-up panel
+│   ├── case-study.css         # The project write-up panel
+│   └── games.css              # Playground tabs + Balance / Logic / Tune games
 ├── js/
 │   ├── main.js                # Nav, theme, carousels, modals, reaction timer, Doppler sim
 │   ├── features.js            # Hero scope, projects reel, reaction timer, terminal, etc.
 │   ├── projects-data.js       # CONTENT for every project write-up (edit this to update projects)
-│   └── case-study.js          # Renders a project write-up from projects-data.js
+│   ├── case-study.js          # Renders a project write-up from projects-data.js
+│   └── games.js               # Playground tabs + Balance / Logic / Tune games
 ├── assets/
 │   ├── profile/               # Portrait and hero background
 │   ├── docs/                  # David_Mendoza_Resume.pdf
@@ -76,6 +78,10 @@ Each project's write-up (the panel that opens from the "Things I've Built" secti
 2. Just before `</body>`, add:
    `<script src="../portfolio-wrapper.js" data-home="../../../"></script>`
 3. Add it to the `versions` list in the `drifts` command in `js/features.js`.
+
+## Daily logic puzzles
+
+The Daily set is generated in the browser, not stored anywhere: `makeDailySet()` in `js/games.js` seeds a random generator with the visitor's local date, picks circuit templates of rising difficulty (`TEMPLATES`, `DAILY_SLOTS`) and random gate types, and keeps only "interesting" puzzles (no constant outputs, every input matters). Everyone gets the same 5 puzzles on the same day. To add variety, add more circuit shapes to `TEMPLATES`. Daily #1 was 1 Nov 2026 (`DAILY_EPOCH`).
 
 ## Publishing changes
 

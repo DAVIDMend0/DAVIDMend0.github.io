@@ -724,7 +724,7 @@
                     ['drifts', 'boot the app I\'m building right now'],
                     ['drifts --versions', 'earlier builds of DRIFTS'],
                     ['skills', 'what I work with'],
-                    ['play', 'jump to the reaction timer'],
+                    ['play', 'jump to the playground games'],
                     ['scope', 'switch the hero into lab mode'],
                     ['resume', 'open my resume'],
                     ['contact', 'how to reach me'],
