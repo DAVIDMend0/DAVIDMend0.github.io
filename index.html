@@ -29,11 +29,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css?v=20261107q">
-    <link rel="stylesheet" href="css/features.css?v=20261107q">
-    <link rel="stylesheet" href="css/theme.css?v=20261107q">
-    <link rel="stylesheet" href="css/case-study.css?v=20261107q">
-    <link rel="stylesheet" href="css/games.css?v=20261107q">
+    <link rel="stylesheet" href="css/style.css?v=20261107t">
+    <link rel="stylesheet" href="css/features.css?v=20261107t">
+    <link rel="stylesheet" href="css/theme.css?v=20261107t">
+    <link rel="stylesheet" href="css/case-study.css?v=20261107t">
+    <link rel="stylesheet" href="css/games.css?v=20261107t">
 
     <!-- Zero-flicker theme initializer: dark by default, light only if chosen -->
     <script>
@@ -660,33 +660,50 @@
                         </p>
                     </div>
 
-                    <!-- 03 · Logic gate puzzle (digital logic / FPGA) -->
+                    <!-- 03 · Logic gates (js/logic-game.js): Classic tutorial + Daily / Hard / Verilog -->
                     <div class="pg-panel" role="tabpanel" id="pg-logic" aria-labelledby="tab-logic">
                         <ol class="reflex-steps">
-                            <li><span>1</span> Tap each <b>?</b> gate to pick its type</li>
-                            <li><span>2</span> Submit when you think it matches the target</li>
-                            <li><span>3</span> Fewer attempts = better score</li>
+                            <li><span>1</span> Learn in Classic, or play today&rsquo;s puzzles</li>
+                            <li><span>2</span> Tap each <b>?</b> gate to choose its type, then submit</li>
+                            <li><span>3</span> Tap a truth-table row to trace the signals</li>
                         </ol>
 
                         <div class="game-pad logic-pad">
                             <div class="logic-head">
                                 <div class="logic-title">
-                                    <span class="logic-level" id="logicLevelNum">Level 1</span>
+                                    <span class="logic-level" id="logicLevelNum">Lesson 1</span>
                                     <strong id="logicLevelName"></strong>
                                 </div>
-                                <div class="logic-head-right">
-                                    <div class="seg seg-dark" role="group" aria-label="Puzzle mode">
-                                        <button class="seg-btn active" data-logic-mode="classic">Classic</button>
-                                        <button class="seg-btn" data-logic-mode="daily">Daily</button>
-                                    </div>
-                                    <div class="logic-dots" id="logicDots" aria-label="Levels"></div>
+                                <div class="seg seg-dark logic-modes" role="group" aria-label="Puzzle mode">
+                                    <button class="seg-btn active" data-logic-mode="classic" aria-pressed="true">Classic</button>
+                                    <button class="seg-btn" data-logic-mode="daily" aria-pressed="false">Daily</button>
+                                    <button class="seg-btn" data-logic-mode="hard" aria-pressed="false">Hard</button>
+                                    <button class="seg-btn" data-logic-mode="verilog" aria-pressed="false">Verilog</button>
                                 </div>
                             </div>
+                            <div class="logic-dots" id="logicDots" aria-label="Levels"></div>
+                            <div class="logic-lesson" id="logicLesson" hidden></div>
                             <div class="logic-body">
                                 <div class="logic-circuit" id="logicCircuit"></div>
                                 <div class="logic-table-wrap">
                                     <table class="logic-table" id="logicTable" aria-label="Truth table"></table>
                                 </div>
+                            </div>
+                            <p class="logic-expr" id="logicExpr"></p>
+                            <div class="logic-code" id="logicCode" hidden>
+                                <div class="logic-code-head">
+                                    <span id="logicCodeLabel">Your Verilog</span>
+                                    <div class="logic-code-tools">
+                                        <button class="logic-copy" id="logicCopyGates" type="button">Copy from my gates</button>
+                                        <div class="seg seg-dark" role="group" aria-label="Solve with">
+                                            <button class="seg-btn active" data-logic-method="gates" aria-pressed="true">Gates</button>
+                                            <button class="seg-btn" data-logic-method="code" aria-pressed="false">Verilog</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <textarea id="logicCodeInput" class="logic-code-input" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Verilog code" rows="12" hidden></textarea>
+                                <pre class="logic-code-view" id="logicCodeView"></pre>
+                                <p class="logic-code-msg" id="logicCodeMsg" aria-live="polite"></p>
                             </div>
                             <div class="logic-foot">
                                 <p id="logicStatus" aria-live="polite"></p>
@@ -699,9 +716,9 @@
                         </div>
 
                         <div class="reflex-stats">
-                            <div><span class="score-label" id="logicStatLevelLabel">Level</span><span class="score-value" id="logicStatLevel">1 / 7</span></div>
+                            <div><span class="score-label" id="logicStatLevelLabel">Lesson</span><span class="score-value" id="logicStatLevel">1 / 16</span></div>
                             <div><span class="score-label">Attempts</span><span class="score-value" id="logicStatTries">0</span></div>
-                            <div><span class="score-label">Solved</span><span class="score-value" id="logicStatSolved">0 / 7</span></div>
+                            <div><span class="score-label">Solved</span><span class="score-value" id="logicStatSolved">0 / 16</span></div>
                             <div><span class="score-label">Daily streak</span><span class="score-value" id="logicStatStreak">0</span></div>
                         </div>
 
@@ -997,11 +1014,12 @@
         </section>
     </div>
 
-    <script src="js/main.js?v=20261107q"></script>
-    <script src="js/projects-data.js?v=20261107q"></script>
-    <script src="js/experience-data.js?v=20261107q"></script>
-    <script src="js/case-study.js?v=20261107q"></script>
-    <script src="js/features.js?v=20261107q"></script>
-    <script src="js/games.js?v=20261107q"></script>
+    <script src="js/main.js?v=20261107t"></script>
+    <script src="js/projects-data.js?v=20261107t"></script>
+    <script src="js/experience-data.js?v=20261107t"></script>
+    <script src="js/case-study.js?v=20261107t"></script>
+    <script src="js/features.js?v=20261107t"></script>
+    <script src="js/logic-game.js?v=20261107t"></script>
+    <script src="js/games.js?v=20261107t"></script>
 </body>
 </html>

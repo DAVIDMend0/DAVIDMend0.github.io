@@ -8,7 +8,7 @@ Hosted on GitHub Pages. Built by hand with plain HTML, CSS and JavaScript: no fr
 
 - **DRIFTS spotlight.** A live, interactive prototype of the sensor-gated driver monitoring app I'm building, running inside a phone frame.
 - **Projects.** A large "selected" panel above an auto-scrolling reel of project cards. Picking a card or a filter updates the panel without moving the page. Clicking a skill chip shows the projects that use it.
-- **Playground.** Four games, each built on a real project: Reflex (FPGA reaction timer), Balance (self-balancing robot with a tunable PID controller), Logic (gate puzzles with a Submit step: 7 Classic levels unlocked in order, plus 5 new Daily puzzles every day with a streak and a shareable result) and Tune (track a satellite's Doppler drift to decode a METEOR-M2 image).
+- **Playground.** Four games, each built on a real project: Reflex (FPGA reaction timer), Balance (self-balancing robot with a tunable PID controller), Logic (a 16-lesson Classic tutorial from single gates to flip-flops, plus Daily, Hard and Verilog puzzle sets every day, with signal tracing, a streak and a shareable result) and Tune (track a satellite's Doppler drift to decode a METEOR-M2 image).
 - **Terminal easter egg.** Press <kbd>~</kbd> anywhere on the page. Try `scope` for the hero's lab mode, or `drifts --versions` for earlier DRIFTS builds.
 
 ## Project structure
@@ -22,14 +22,15 @@ Hosted on GitHub Pages. Built by hand with plain HTML, CSS and JavaScript: no fr
 │   ├── features.css           # Hero scope, DRIFTS spotlight, projects reel, playground, terminal
 │   ├── theme.css              # Minimal monochrome theme + Mondrian accents (colours, type, lines)
 │   ├── case-study.css         # The project write-up panel
-│   └── games.css              # Playground tabs + Balance / Logic / Tune games
+│   └── games.css              # Playground tabs + Balance / Logic / Tune game styles
 ├── js/
 │   ├── main.js                # Nav, theme, carousels, modals, reaction timer, Doppler sim
 │   ├── features.js            # Hero scope, projects reel, reaction timer, terminal, etc.
 │   ├── projects-data.js       # CONTENT for every project write-up (edit this to update projects)
 │   ├── experience-data.js     # CONTENT for each Professional Experience brief
 │   ├── case-study.js          # Renders a project write-up or experience brief
-│   └── games.js               # Playground tabs + Balance / Logic / Tune games
+│   ├── logic-game.js          # Logic Gates: tutorial, daily modes, Verilog checker
+│   └── games.js               # Playground tabs + Balance / Tune games
 ├── assets/
 │   ├── profile/               # Portrait and hero background
 │   ├── docs/                  # David_Mendoza_Resume.pdf
@@ -88,9 +89,15 @@ To add a job: add an entry to `js/experience-data.js`, copy the `experience-card
    `<script src="../portfolio-wrapper.js" data-home="../../../"></script>`
 3. Add it to the `versions` list in the `drifts` command in `js/features.js`.
 
-## Daily logic puzzles
+## Logic Gates game
 
-The Daily set is generated in the browser, not stored anywhere: `makeDailySet()` in `js/games.js` seeds a random generator with the visitor's local date, picks circuit templates of rising difficulty (`TEMPLATES`, `DAILY_SLOTS`) and random gate types, and keeps only "interesting" puzzles (no constant outputs, every input matters). Everyone gets the same 5 puzzles on the same day. To add variety, add more circuit shapes to `TEMPLATES`. Daily #1 was 1 Nov 2026 (`DAILY_EPOCH`).
+Everything lives in `js/logic-game.js`.
+
+- **Classic** is a tutorial (`LESSONS`): each lesson introduces a gate or circuit with a short "how it works", its equation, and only the gates met so far (`palette`). To add a lesson, copy one and give it `inputs`, `gates` (`id`, `in`, `col`, `row`), `outputs` and a `target` function per output.
+- **Daily (5), Hard (3) and Verilog (5: 3 normal + 2 hard)** are generated in the browser from the visitor's local date (`makeDay()`), so everyone gets the same puzzles that day. All three sets are generated together and no truth table repeats within a day. Puzzles come from `TEMPLATES` (tiers 1–4 normal, h1–h3 hard with NOT and 3-input slots: MUX, MAJ, AND3, OR3, XOR3). Add more shapes there for variety. Daily #1 was 1 Nov 2026 (`DAILY_EPOCH`).
+- **Verilog** accepts a combinational subset: `assign` with `& | ^ ~ ?:`, and the primitives `and or xor nand nor xnor not buf` (`compileVerilog()`). Compile errors show the line and don't cost an attempt.
+- **Share marks:** 🟩 1 attempt · 🟧 2–5 · 🟥 6–10 · 🟪 11+ · ⬛ unsolved.
+- Progress is saved in the browser (`logicClassic2`, `logicDay2`, `logicStreak`).
 
 ## Publishing changes
 

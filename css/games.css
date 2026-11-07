@@ -47,8 +47,9 @@
 .pg-tab:nth-child(3).active::after { background: var(--m-yellow); }
 .pg-tab:nth-child(4).active::after { background: var(--m-red); }
 
-/* ---- stacked panels: all share one cell, the tallest sets the height ---- */
-.pg-panels { display: grid; }
+/* ---- panels: the active one sets the height; the others are lifted out
+   of the flow (absolute) so they can still cross-fade on top ---- */
+.pg-panels { display: grid; position: relative; }
 .pg-panel {
     grid-area: 1 / 1;
     min-width: 0;
@@ -56,6 +57,7 @@
     opacity: 0;
     transition: opacity 0.25s ease, visibility 0s linear 0.25s;
 }
+.pg-panel:not(.active) { position: absolute; top: 0; left: 0; right: 0; }
 .pg-panel.active {
     visibility: visible;
     opacity: 1;
@@ -130,18 +132,56 @@
 .gain output { font-family: var(--font-mono); font-size: 0.74rem; color: var(--fg-3); width: 34px; }
 .bal-pid-actions { display: flex; gap: 8px; }
 .bal-pid-actions .btn,
-.bal-manual .btn,
-.logic-foot .btn { padding: 10px 16px; width: auto; white-space: nowrap; }
+.bal-manual .btn { padding: 10px 16px; width: auto; white-space: nowrap; }
 
-/* ---- logic puzzle ---- */
+/* logic gates: see the block at the end of this file */
+
+/* ---- tune the satellite ---- */
+.tune-controls { flex-wrap: nowrap; }
+.tune-knob { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; }
+.tune-knob span { font-family: var(--font-mono); font-size: 0.72rem; color: var(--fg-4); text-transform: uppercase; letter-spacing: 0.06em; }
+.tune-knob input { flex: 1; min-width: 0; accent-color: var(--m-red); height: 28px; }
+.tune-knob output { font-family: var(--font-mono); font-size: 0.78rem; color: var(--fg); width: 72px; text-align: right; }
+#tuneCanvas { cursor: ew-resize; touch-action: none; }
+
+/* ---- responsive ---- */
+@media (max-width: 640px) {
+    .pg-tabs { grid-template-columns: repeat(2, 1fr); }
+    .pg-tab:nth-child(2) { border-right: 0; }
+    .pg-tab:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+    .game-controls { justify-content: center; }
+    .bal-pid { justify-content: center; }
+    .gain input { width: 150px; }
+    .tune-controls { flex-wrap: wrap; }
+    .tune-knob { flex-basis: 100%; }
+    .tune-controls .btn { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pg-panel, .pg-panel.active { transition: none; }
+}
+
+/* ---- tune: stop / start ---- */
+.tune-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.tune-actions .btn { padding: 10px 16px; width: auto; white-space: nowrap; }
+.tune-actions .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+    .tune-actions { width: 100%; }
+    .tune-actions .btn { flex: 1; justify-content: center; }
+}
+
+/* ==========================================================================
+   Logic gates (js/logic-game.js)
+   ========================================================================== */
 .logic-pad { padding: 18px; color: #fafafa; }
 .logic-head {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 14px;
+    gap: 10px 16px;
+    margin-bottom: 12px;
 }
 .logic-level {
     display: block;
@@ -152,7 +192,14 @@
     color: #a1a1aa;
 }
 .logic-head strong { font-size: 1.02rem; font-weight: 600; letter-spacing: -0.01em; }
-.logic-dots { display: flex; gap: 6px; }
+.seg-dark { border-color: #3f3f46; }
+.seg-dark .seg-btn { color: #a1a1aa; padding: 7px 12px; font-size: 0.7rem; }
+.seg-dark .seg-btn + .seg-btn { border-left-color: #3f3f46; }
+.seg-dark .seg-btn.active { background: #fafafa; color: #0a0a0b; }
+.seg-dark .seg-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* level dots */
+.logic-dots { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .logic-dot {
     width: 28px;
     height: 28px;
@@ -164,44 +211,214 @@
     font-size: 0.7rem;
     cursor: pointer;
 }
-.logic-dot.solved { border-color: #f5c518; color: #f5c518; }
+.logic-dots.many .logic-dot { width: 26px; height: 26px; font-size: 0.64rem; }
+.logic-dot.solved { border-color: #22c55e; color: #22c55e; }
 .logic-dot.current { background: #fafafa; border-color: #fafafa; color: #0a0a0b; }
+.logic-dot.locked { opacity: 0.45; cursor: not-allowed; font-size: 0.58rem; }
+.logic-dot:disabled { pointer-events: none; }
 
+/* tutorial card (Classic) */
+.logic-lesson {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border: 1px solid #27272a;
+    border-left: 3px solid #f5c518;
+    border-radius: 4px;
+    background: #121215;
+}
+.logic-lesson[hidden] { display: none; }
+.logic-lesson-kicker {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #f5c518;
+}
+.logic-lesson p { font-size: 0.88rem; line-height: 1.6; color: #d4d4d8; max-width: 760px; }
+.logic-eq { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-top: 10px; }
+.logic-eq span, .logic-expr span, .logic-code-msg span {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #71717a;
+}
+.logic-eq code { font-family: var(--font-mono); font-size: 0.95rem; color: #fafafa; white-space: pre-wrap; }
+
+/* circuit + truth table */
 .logic-body {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 18px;
     align-items: center;
 }
-.logic-circuit { min-width: 0; }
-.logic-svg { display: block; width: 100%; height: auto; max-height: 300px; }
-.logic-svg text { font-family: var(--font-mono); font-size: 12px; pointer-events: none; }
+.logic-circuit { min-width: 0; overflow-x: auto; scrollbar-width: thin; scrollbar-color: #3f3f46 transparent; }
+.logic-svg { display: block; width: 100%; height: auto; max-height: 320px; margin: 0 auto; overflow: visible; }
+.logic-svg text { font-family: var(--font-mono); font-size: 12px; pointer-events: none; fill: #fafafa; }
 .logic-svg .gate-label { font-size: 13px; font-weight: 600; }
-.logic-node.gate,
-.logic-node.in { cursor: pointer; }
-.logic-node.gate:hover rect,
-.logic-node.in:hover rect { stroke: #f5c518; }
+.logic-svg .gate-label.unset { fill: #f5c518; }
+.logic-svg .port-lbl { font-size: 9px; fill: #71717a; }
+.logic-svg .box { fill: #0d0d0f; stroke: #fafafa; stroke-width: 1.5; }
+.logic-svg .box.on { fill: #e5372a; stroke: #e5372a; }
+.logic-svg .box.ok-on { fill: #22c55e; stroke: #22c55e; }
+.logic-svg .box.part-on { fill: #f5c518; stroke: #f5c518; }
+.logic-node.in .box.part-on + .lbl { fill: #0a0a0b; }
+.logic-svg .gate-box.unset { stroke: #f5c518; stroke-dasharray: 4 3; }
+.logic-svg .out-box.idle { stroke: rgba(250, 250, 250, 0.28); }
+.logic-svg .out-box.good { stroke: #f5c518; }
+.logic-svg .out-box.bad { stroke: #e5372a; animation: outBad 0.5s ease 2 both; animation-delay: var(--d, 0s); }
+.logic-svg .out-box.ok, .logic-svg .gate-box.ok { stroke: #22c55e; animation: okGlow 0.6s ease both; animation-delay: var(--d, 0s); }
+.logic-node.gate, .logic-node.in.live { cursor: pointer; }
+.logic-node.in { cursor: default; }
+.logic-node.gate.locked { cursor: default; }
+.logic-node.gate:not(.locked):hover .box { stroke: #f5c518; }
 .logic-node:focus { outline: none; }
-.logic-node:focus-visible rect { stroke: #f5c518; stroke-width: 2.5; }
+.logic-node:focus-visible .box { stroke: #f5c518; stroke-width: 2.5; }
+.logic-node.suspect .gate-box { stroke: #e5372a; stroke-dasharray: 5 3; animation: suspect 0.4s ease both; animation-delay: 1.1s; }
 
-.logic-table-wrap { overflow-x: auto; }
+/* wires: a dim base, plus a signal that draws itself along the path */
+.logic-svg .w-base { fill: none; stroke: rgba(250, 250, 250, 0.3); stroke-width: 1.5; }
+.logic-svg .w-sig {
+    fill: none;
+    stroke-width: 1.8;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: sigDraw 0.34s ease-out forwards;
+    animation-delay: var(--d, 0s);
+}
+.logic-svg .w-sig.on { stroke: #e5372a; stroke-width: 2.6; }
+.logic-svg .w-sig.off { stroke: rgba(250, 250, 250, 0.55); }
+.logic-svg .w-sig.ok-on { stroke: #22c55e; stroke-width: 2.6; }
+.logic-svg .w-sig.ok-off { stroke: rgba(34, 197, 94, 0.45); }
+.logic-svg .w-sig.part-on { stroke: #f5c518; stroke-width: 2.6; }
+.logic-svg .w-sig.part-off { stroke: rgba(245, 197, 24, 0.45); }
+
+/* a gate's value for the traced row */
+.logic-svg .v-badge { opacity: 0; animation: badgeIn 0.2s ease forwards; animation-delay: var(--d, 0s); }
+.logic-svg .v-badge rect { fill: #0d0d0f; stroke: rgba(250, 250, 250, 0.5); }
+.logic-svg .v-badge text { font-size: 9.5px; fill: #fafafa; }
+.logic-svg .v-badge.on rect { fill: #e5372a; stroke: #e5372a; }
+.logic-svg .v-badge.ok rect { stroke: #22c55e; }
+.logic-svg .v-badge.on.ok rect { fill: #22c55e; }
+.logic-svg .v-badge.part rect { stroke: #f5c518; }
+.logic-svg .v-badge.on.part rect { fill: #f5c518; }
+.logic-svg .v-badge.on.part text { fill: #0a0a0b; }
+
+@keyframes sigDraw { to { stroke-dashoffset: 0; } }
+@keyframes badgeIn { to { opacity: 1; } }
+@keyframes outBad { 50% { stroke-width: 4; } }
+@keyframes okGlow { from { stroke: #fafafa; } 50% { stroke-width: 3.5; } to { stroke: #22c55e; } }
+@keyframes suspect { from { opacity: 0.4; } to { opacity: 1; } }
+
+.logic-table-wrap { overflow: auto; max-height: 330px; scrollbar-width: thin; scrollbar-color: #3f3f46 transparent; }
 .logic-table {
     border-collapse: collapse;
     font-family: var(--font-mono);
     font-size: 0.74rem;
     color: #d4d4d8;
 }
-.logic-table th,
-.logic-table td { padding: 5px 9px; text-align: center; border-bottom: 1px solid #27272a; }
-.logic-table th { font-weight: 500; color: #a1a1aa; }
-.logic-table th.want,
-.logic-table td.want { color: #71717a; }
-.logic-table td.got { color: #fafafa; }
-.logic-table td.ok { color: #f5c518; }
-.logic-table tbody tr { cursor: pointer; }
-.logic-table tbody tr:hover { background: #17171a; }
+.logic-table caption {
+    caption-side: top;
+    text-align: left;
+    padding: 0 9px 6px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #71717a;
+}
+.logic-table th, .logic-table td { padding: 4px 9px; text-align: center; border-bottom: 1px solid #27272a; }
+.logic-table th { font-weight: 500; color: #a1a1aa; position: sticky; top: 0; background: #0d0d0f; }
+.logic-table th.want, .logic-table td.want { color: #fafafa; }
+.logic-table td.got { color: #a1a1aa; }
+.logic-table td.ok { color: #22c55e; }
+.logic-table td.part { color: #f5c518; }
+.logic-table td.bad { color: #e5372a; }
+.logic-table tbody tr.clickable { cursor: pointer; }
+.logic-table tbody tr.clickable:hover { background: #17171a; }
+.logic-table tbody tr:focus { outline: none; }
+.logic-table tbody tr:focus-visible { box-shadow: inset 0 0 0 1px #f5c518; }
 .logic-table tr.live { background: #1c1c1f; box-shadow: inset 3px 0 0 #e5372a; }
+.logic-table tr.live.live-part { box-shadow: inset 3px 0 0 #f5c518; }
 
+/* "Your circuit" equation */
+.logic-expr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: #d4d4d8;
+}
+.logic-expr[hidden] { display: none; }
+.logic-expr code { font-family: inherit; color: #fafafa; }
+
+/* Verilog editor */
+.logic-code { margin-top: 14px; border: 1px solid #27272a; border-radius: 4px; background: #08080a; }
+.logic-code[hidden] { display: none; }
+.logic-code-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #27272a;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #a1a1aa;
+}
+.logic-code-tools { display: flex; align-items: center; gap: 10px; }
+.logic-copy {
+    border: 0;
+    background: none;
+    color: #f5c518;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.logic-copy[hidden] { display: none; }
+.logic-code-input, .logic-code-view {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    border: 0;
+    background: transparent;
+    color: #e4e4e7;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.55;
+    tab-size: 4;
+    white-space: pre;
+    overflow: auto;
+}
+.logic-code-input { min-height: 210px; resize: vertical; outline: none; }
+.logic-code-input:focus-visible { box-shadow: inset 0 0 0 1px #f5c518; }
+.logic-code-input[hidden], .logic-code-view[hidden] { display: none; }
+.logic-code-view { max-height: 260px; color: #a1a1aa; }
+.logic-code-msg {
+    padding: 8px 14px 10px;
+    border-top: 1px solid #27272a;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: #a1a1aa;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.logic-code-msg span { margin-right: 10px; }
+.logic-code-msg b { color: #fafafa; font-weight: 500; }
+.logic-code-msg.err { color: #ff8a80; }
+
+/* footer */
 .logic-foot {
     display: flex;
     flex-wrap: wrap;
@@ -214,91 +431,28 @@
 }
 .logic-foot p { font-size: 0.86rem; color: #a1a1aa; }
 .logic-foot p b { color: #fafafa; font-weight: 600; }
-.logic-foot p b.win { color: #f5c518; }
-.logic-foot > div { display: flex; gap: 8px; }
-.logic-foot .btn { padding: 10px 16px; }
+.logic-foot p b.win { color: #22c55e; }
+.logic-actions { display: flex; gap: 8px; }
+.logic-actions [hidden] { display: none; }
+.logic-foot .btn { padding: 10px 16px; width: auto; white-space: nowrap; }
 .logic-foot .btn-secondary { color: #fafafa; border-color: rgba(255, 255, 255, 0.2); }
 .logic-foot .btn-primary { background: #fafafa; color: #0a0a0b; }
 .logic-foot .btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.logic-foot .btn.pulse { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0.6) !important; animation: pulseNext 1.6s infinite; }
-@keyframes pulseNext {
-    0% { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0.55); }
-    70% { box-shadow: 0 0 0 10px rgba(245, 197, 24, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0); }
-}
 
-/* ---- tune the satellite ---- */
-.tune-controls { flex-wrap: nowrap; }
-.tune-knob { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; }
-.tune-knob span { font-family: var(--font-mono); font-size: 0.72rem; color: var(--fg-4); text-transform: uppercase; letter-spacing: 0.06em; }
-.tune-knob input { flex: 1; min-width: 0; accent-color: var(--m-red); height: 28px; }
-.tune-knob output { font-family: var(--font-mono); font-size: 0.78rem; color: var(--fg); width: 72px; text-align: right; }
-#tuneCanvas { cursor: ew-resize; touch-action: none; }
-
-/* ---- responsive ---- */
 @media (max-width: 760px) {
     .logic-body { grid-template-columns: 1fr; }
-    .logic-table-wrap { justify-self: center; }
+    .logic-table-wrap { justify-self: center; max-height: 280px; }
 }
-
 @media (max-width: 640px) {
-    .pg-tabs { grid-template-columns: repeat(2, 1fr); }
-    .pg-tab:nth-child(2) { border-right: 0; }
-    .pg-tab:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
-    .game-controls { justify-content: center; }
-    .bal-pid { justify-content: center; }
-    .gain input { width: 150px; }
-    .tune-controls { flex-wrap: wrap; }
-    .tune-knob { flex-basis: 100%; }
-    .tune-controls .btn { width: 100%; justify-content: center; }
     .logic-pad { padding: 14px; }
+    .logic-head { flex-direction: column; align-items: stretch; }
+    .logic-modes { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .logic-modes .seg-btn { padding: 8px 4px; }
     .logic-foot { justify-content: center; text-align: center; }
+    .logic-code-head { flex-direction: column; align-items: flex-start; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-    .pg-panel, .pg-panel.active { transition: none; }
-    .logic-foot .btn.pulse { animation: none; }
-}
-
-/* ---- logic: submit flow, modes, locked levels ---- */
-.logic-head-right { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-.seg-dark { border-color: #3f3f46; }
-.seg-dark .seg-btn { color: #a1a1aa; padding: 7px 12px; font-size: 0.7rem; }
-.seg-dark .seg-btn + .seg-btn { border-left-color: #3f3f46; }
-.seg-dark .seg-btn.active { background: #fafafa; color: #0a0a0b; }
-.logic-dot.locked { opacity: 0.45; cursor: not-allowed; font-size: 0.6rem; }
-.logic-dot:disabled { pointer-events: none; }
-.logic-node.in { cursor: default; }
-.logic-node.in.live { cursor: pointer; }
-.logic-node.gate.locked { cursor: default; }
-.logic-node.gate.locked:hover rect { stroke: #fafafa; }
-.logic-table caption {
-    caption-side: top;
-    text-align: left;
-    padding: 0 9px 6px;
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #71717a;
-}
-.logic-table th.want, .logic-table td.want { color: #fafafa; }
-.logic-table td.got { color: #a1a1aa; }
-.logic-table td.bad { color: #e5372a; }
-.logic-table tbody tr { cursor: default; }
-.logic-table tbody tr.clickable { cursor: pointer; }
-.logic-table tbody tr:not(.clickable):hover { background: transparent; }
-.logic-actions { display: flex; gap: 8px; }
-.logic-actions [hidden] { display: none; }
-.logic-foot .btn-primary:disabled { opacity: 0.35; }
-
-/* ---- tune: stop / start ---- */
-.tune-actions { display: flex; gap: 8px; flex-shrink: 0; }
-.tune-actions .btn { padding: 10px 16px; width: auto; white-space: nowrap; }
-.tune-actions .btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-@media (max-width: 640px) {
-    .logic-head { flex-direction: column; align-items: flex-start; }
-    .tune-actions { width: 100%; }
-    .tune-actions .btn { flex: 1; justify-content: center; }
+    .logic-svg .w-sig { animation: none; stroke-dashoffset: 0; }
+    .logic-svg .v-badge { animation: none; opacity: 1; }
+    .logic-svg .out-box.bad, .logic-svg .out-box.ok, .logic-svg .gate-box.ok, .logic-node.suspect .gate-box { animation: none; }
 }
