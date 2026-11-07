@@ -468,6 +468,65 @@
 .cs-lb-btn.prev { left: 2vw; }
 .cs-lb-btn.next { right: 2vw; }
 
+/* ---- experience briefs (js/experience-data.js) ---- */
+.cs-duties {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1px;
+    margin-top: 16px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.cs-duty {
+    position: relative;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    column-gap: 14px;
+    padding: 20px 22px 20px 20px;
+    background: var(--bg);
+}
+.cs-duty::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--duty-color, var(--m-red));
+}
+.cs-duty i {
+    grid-row: span 2;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: var(--fg);
+}
+.cs-duty h4 { font-size: 0.98rem; font-weight: 600; letter-spacing: -0.01em; color: var(--fg); margin: 2px 0 6px; }
+.cs-sec .cs-duty p { font-size: 0.9rem; line-height: 1.6; max-width: none; }
+.cs-duties + .cs-todo { margin-top: 16px; }
+
+/* key numbers */
+.cs-metrics { display: grid; gap: 14px; }
+.cs-metric { padding-left: 12px; border-left: 3px solid var(--metric-color, var(--m-red)); }
+.cs-metric strong { display: block; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; color: var(--fg); }
+.cs-metric span { font-size: 0.8rem; color: var(--fg-3); }
+
+/* full-width sections below the two columns (experience briefs) */
+.cs-wide { margin-top: 40px; border-top: 1px solid var(--line); }
+.cs-wide .cs-sec:last-child { border-bottom: 0; }
+.cs-wide .cs-sec p { max-width: 760px; }
+.cs-wide .cs-sec:last-child p:first-of-type { font-size: 1.12rem; line-height: 1.6; color: var(--fg); letter-spacing: -0.01em; }
+
+.cs-bar-btn[hidden] { display: none; }
+.cs[data-kind="experience"] .cs-side .tags { margin: 0; }
+.cs[data-kind="experience"] .cs-facts div { grid-template-columns: 92px 1fr; }
+
 /* ---- responsive ---- */
 @media (max-width: 960px) {
     .cs-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }

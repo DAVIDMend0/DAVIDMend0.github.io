@@ -21,6 +21,7 @@
         if (yearEl) yearEl.textContent = new Date().getFullYear();
 
         initScope();
+        initScrollbar();
         initReveal();
         initDrifts();
         initProjects();
@@ -35,6 +36,33 @@
             'color:#94a3b8'
         );
     });
+
+    /* ---------------------------------------------------------------
+       Mondrian scrollbar: html[data-sb] follows the section in view,
+       cycling red -> blue -> yellow like the section headers (theme.css 16, 19)
+       --------------------------------------------------------------- */
+    function initScrollbar() {
+        const colours = ['red', 'blue', 'yellow'];
+        const sections = $$('main > section');
+        const root = document.documentElement;
+        let ticking = false;
+
+        const update = () => {
+            ticking = false;
+            const line = window.innerHeight * 0.4;
+            let colour = 'red'; // hero
+            sections.forEach((sec, i) => {
+                if (sec.getBoundingClientRect().top <= line) colour = colours[i % 3];
+            });
+            if (root.dataset.sb !== colour) root.dataset.sb = colour;
+        };
+
+        window.addEventListener('scroll', () => {
+            if (!ticking) { ticking = true; requestAnimationFrame(update); }
+        }, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+    }
 
     /* ---------------------------------------------------------------
        Toast
@@ -697,7 +725,7 @@
             line:     { modal: null, name: 'Line-following robot' },
             laser:    { modal: null, name: 'Analog laser security system' },
             vgg:      { modal: null, name: 'Tiny-VGG image classifier' },
-            worldcup: { modal: 'modal-worldcup',name: 'FIFA World Cup 2026 broadcast ops' }
+            worldcup: { modal: null, name: 'FIFA World Cup 2026 broadcast ops' }
         };
 
         function print(html, cls) {

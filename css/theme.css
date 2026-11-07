@@ -1268,3 +1268,44 @@ main > section:nth-of-type(3n+3) { --block: var(--m-yellow); }
     #navbar .nav-links li a { padding: 10px 0; font-size: 1.05rem; }
     #navbar .nav-links .nav-resume-item { margin-top: 12px; }
 }
+
+/* --------------------------------------------------------------------------
+   19. MONDRIAN SCROLLBAR — the page scrollbar is a small Mondrian panel:
+   a primary-colour block and an off-white cell, split by an ink line.
+   Its colour follows the section in view (initScrollbar() in features.js
+   sets html[data-sb]). Page scrollbar only; inner panels keep thin ones.
+   Phones use overlay scrollbars, so this shows on desktop.
+   -------------------------------------------------------------------------- */
+html {
+    --sb-block: var(--m-red);
+    --sb-ink: var(--bg);
+    --sb-cell: var(--fg);
+}
+html.light-mode { --sb-ink: var(--fg); --sb-cell: var(--bg); }
+html[data-sb="blue"] { --sb-block: var(--m-blue); }
+html[data-sb="yellow"] { --sb-block: var(--m-yellow); }
+
+html::-webkit-scrollbar { width: 14px; height: 14px; }
+html::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-left: 1px solid var(--line);
+}
+html::-webkit-scrollbar-thumb {
+    min-height: 56px;
+    border: 3px solid var(--bg);
+    border-left-width: 4px;
+    border-radius: 0;
+    background:
+        linear-gradient(var(--sb-block), var(--sb-block)) top / 100% calc(100% - 14px) no-repeat,
+        linear-gradient(var(--sb-cell), var(--sb-cell)) bottom / 100% 11px no-repeat,
+        var(--sb-ink);
+    background-clip: padding-box;
+}
+html.light-mode::-webkit-scrollbar-thumb { box-shadow: inset 0 0 0 2px var(--sb-ink); }
+html::-webkit-scrollbar-thumb:hover { border-width: 2px 2px 2px 3px; }
+html::-webkit-scrollbar-corner { background: var(--bg); }
+
+/* Firefox: no custom shapes, so just the section colour on the page track */
+@supports not selector(::-webkit-scrollbar) {
+    html { scrollbar-color: var(--sb-block) var(--bg); }
+}

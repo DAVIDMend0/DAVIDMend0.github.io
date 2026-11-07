@@ -4,7 +4,8 @@
    - Renders a project from window.PROJECTS (js/projects-data.js)
    - Gallery: one viewer for photos + videos, thumbnails, captions, lightbox
    - Prev / Next buttons and ← → keys to move between projects
-   - Shareable links: yoursite/#project-<id> opens that project directly
+   - Shareable links: yoursite/#project-<id> (or #experience-<id>) opens it directly
+   - Experience briefs (js/experience-data.js) use the same panel with their own layout
    - ?draft in the URL shows dashed "TO ADD" boxes for missing content
    Public API: window.CaseStudy.open(id), window.CaseStudy.close()
    ========================================================================== */
@@ -12,9 +13,13 @@
     'use strict';
 
     const $ = (sel, root = document) => root.querySelector(sel);
-    const projects = window.PROJECTS || [];
+    // Projects and experience briefs share one panel; prev/next stays within a kind.
+    const projects = [
+        ...(window.PROJECTS || []).map(p => ({ kind: 'project', ...p })),
+        ...(window.EXPERIENCE || []).map(e => ({ kind: 'experience', ...e }))
+    ];
     const draft = new URLSearchParams(location.search).has('draft');
-    const HASH = '#project-';
+    const HASHES = { project: '#project-', experience: '#experience-' };
     const COLORS = ['var(--m-red)', 'var(--m-blue)', 'var(--m-yellow)'];
 
     let root, panel, scroller, current = -1, mediaIndex = 0, lastFocus = null;
@@ -22,6 +27,12 @@
     const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const pad = n => String(n).padStart(2, '0');
     const indexOf = id => projects.findIndex(p => p.id === id);
+    const groupOf = p => projects.filter(q => q.kind === p.kind);
+    const hashFor = p => HASHES[p.kind] + p.id;
+    const idFromHash = h => {
+        const k = Object.keys(HASHES).find(k => h.startsWith(HASHES[k]));
+        return k ? h.slice(HASHES[k].length) : null;
+    };
 
     /* ---------------- rendering helpers ---------------- */
 
@@ -99,8 +110,70 @@
             </aside>`;
     }
 
+    /* Experience briefs: overview, duty cards and takeaways; sidebar with facts,
+       key numbers and skills. Same gallery and chrome as the projects.
+       Kept deliberately light on operational detail (confidentiality). */
+    function renderExperience(p) {
+        let n = 0;
+        const secs = [];
+        secs.push(section(++n, 'Overview', richText(p.overview || [])));
+        secs.push(section(++n, 'What I did', `<div class="cs-duties">${(p.responsibilities || []).map((r, i) => `
+            <div class="cs-duty" style="--duty-color:${COLORS[i % COLORS.length]}">
+                <i class="fas ${esc(r.icon)}" aria-hidden="true"></i>
+                <h4>${esc(r.title)}</h4>
+                <p>${esc(r.text)}</p>
+            </div>`).join('')}</div>`));
+        const wide = [];
+        if (p.takeaways) wide.push(section(++n, 'What I took away', richText([].concat(p.takeaways))));
+        else if (draft) wide.push(section(++n, 'What I took away', todo('What the role taught you, in 2–3 sentences')));
+
+        const facts = Object.entries(p.facts || {}).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
+        const skills = (p.skills || []).map(t => `<span>${esc(t)}</span>`).join('');
+        const metrics = (p.metrics || []).map((m, i) =>
+            `<div class="cs-metric" style="--metric-color:${COLORS[i % COLORS.length]}"><strong>${esc(m.value)}</strong><span>${esc(m.label)}</span></div>`).join('');
+
+        const group = groupOf(p);
+        const gi = group.indexOf(p);
+        const foot = group.length > 1
+            ? `<button type="button" data-cs-go="-1"><span>&larr; Previous</span>${esc(group[(gi - 1 + group.length) % group.length].title)}</button>
+               <button type="button" data-cs-go="1"><span>Next &rarr;</span>${esc(group[(gi + 1) % group.length].title)}</button>`
+            : `<button type="button" data-cs-close><span>&larr; Close</span>Back to Experience</button>
+               <button type="button" data-cs-open="${esc((window.PROJECTS || [{}])[0].id || '')}"><span>Keep exploring &rarr;</span>Selected projects</button>`;
+
+        parkExtras();
+        scroller.innerHTML = `
+            <div class="cs-head" style="--cs-color:${p.color || COLORS[gi % COLORS.length]}">
+                <span class="cs-kicker">Professional experience &middot; ${esc(p.category)}</span>
+                <h2 id="csTitle">${esc(p.title)}</h2>
+                <p class="cs-sub">${esc(p.subtitle)}</p>
+            </div>
+            <div class="cs-grid">
+                <div class="cs-main">
+                    <div id="csGallery">${renderGallery(p)}</div>
+                    ${secs.join('')}
+                </div>
+                <aside class="cs-side">
+                    ${facts ? `<dl class="cs-facts">${facts}</dl>` : ''}
+                    ${metrics ? `<div class="cs-side-block"><h4>Key numbers</h4><div class="cs-metrics">${metrics}</div></div>`
+                              : (draft ? '<div class="cs-side-block">' + todo('Key numbers (e.g. matches, feeds or hours supported)') + '</div>' : '')}
+                    ${skills ? `<div class="cs-side-block"><h4>Skills</h4><div class="tags">${skills}</div></div>` : ''}
+                </aside>
+            </div>
+            ${wide.length ? `<div class="cs-wide">${wide.join('')}</div>` : ''}
+            <div class="cs-foot" role="navigation" aria-label="More">${foot}</div>`;
+
+        $('#csPos', root).textContent = group.length > 1
+            ? `Experience · ${pad(gi + 1)} / ${pad(group.length)}`
+            : `Professional experience · ${p.category}`;
+        scroller.scrollTop = 0;
+    }
+
     function render() {
         const p = projects[current];
+        const single = groupOf(p).length < 2;
+        root.querySelectorAll('[data-cs-prev], [data-cs-next]').forEach(b => { b.hidden = single; });
+        root.dataset.kind = p.kind;
+        if (p.kind === 'experience') return renderExperience(p);
         const flagship = p.tier !== 'early';
         let n = 0;
         const secs = [];
@@ -122,12 +195,14 @@
         if (p.next) secs.push(section(++n, 'Next steps', `<p>${esc(p.next)}</p>`));
         else if (flagship && draft) secs.push(section(++n, 'Next steps', todo('What you would improve or build next')));
 
-        const prev = projects[(current - 1 + projects.length) % projects.length];
-        const next = projects[(current + 1) % projects.length];
+        const group = groupOf(p);
+        const gi = group.indexOf(p);
+        const prev = group[(gi - 1 + group.length) % group.length];
+        const next = group[(gi + 1) % group.length];
 
         parkExtras();
         scroller.innerHTML = `
-            <div class="cs-head" style="--cs-color:${COLORS[current % COLORS.length]}">
+            <div class="cs-head" style="--cs-color:${COLORS[gi % COLORS.length]}">
                 <span class="cs-kicker">${p.tier === 'early' ? 'Early build &middot; ' : ''}${esc(p.category)}</span>
                 <h2 id="csTitle">${esc(p.title)}</h2>
                 <p class="cs-sub">${esc(p.subtitle)}</p>
@@ -146,7 +221,7 @@
                 <button type="button" data-cs-go="1"><span>Next &rarr;</span>${esc(next.title)}</button>
             </div>`;
 
-        $('#csPos', root).textContent = `${pad(current + 1)} / ${pad(projects.length)} · ${p.category}`;
+        $('#csPos', root).textContent = `${pad(gi + 1)} / ${pad(group.length)} · ${p.category}`;
         scroller.scrollTop = 0;
         mountExtras(p);
     }
@@ -191,7 +266,7 @@
             requestAnimationFrame(() => root.classList.add('open'));
             setTimeout(() => panel.focus(), 30);
         }
-        const hash = HASH + id;
+        const hash = hashFor(projects[i]);
         if (opts.history !== false && location.hash !== hash) {
             (wasOpen ? history.replaceState : history.pushState).call(history, { cs: id }, '', hash);
         }
@@ -205,15 +280,17 @@
         parkExtras();
         scroller.innerHTML = '';
         document.body.style.overflow = '';
-        if (opts.history !== false && location.hash.startsWith(HASH)) {
+        if (opts.history !== false && idFromHash(location.hash)) {
             history.replaceState(null, '', location.pathname + location.search);
         }
         if (lastFocus && lastFocus.focus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
     }
 
     function go(dir) {
-        const next = projects[(current + dir + projects.length) % projects.length];
-        open(next.id);
+        const group = groupOf(projects[current]);
+        if (group.length < 2) return;
+        const gi = group.indexOf(projects[current]);
+        open(group[(gi + dir + group.length) % group.length].id);
     }
 
     function stepMedia(dir) {
@@ -252,6 +329,7 @@
             if (t.matches('[data-cs-prev]')) return go(-1);
             if (t.matches('[data-cs-next]')) return go(1);
             if (t.dataset.csGo) return go(parseInt(t.dataset.csGo, 10));
+            if (t.dataset.csOpen) return open(t.dataset.csOpen);
             if (t.dataset.csStep) return stepMedia(parseInt(t.dataset.csStep, 10));
             if (t.dataset.csMedia) { mediaIndex = parseInt(t.dataset.csMedia, 10); return renderGalleryOnly(); }
             if (t.matches('[data-cs-zoom]')) return showLightbox();
@@ -307,12 +385,13 @@
 
         // Shareable links + browser back/forward
         const sync = () => {
-            if (location.hash.startsWith(HASH)) open(location.hash.slice(HASH.length), { history: false });
+            const id = idFromHash(location.hash);
+            if (id) open(id, { history: false });
             else close({ history: false });
         };
         window.addEventListener('popstate', sync);
         window.addEventListener('hashchange', sync);
-        if (location.hash.startsWith(HASH)) sync();
+        if (idFromHash(location.hash)) sync();
 
         if (draft) console.info('[case-study] Draft mode: missing content is shown as TO ADD boxes.');
     }

@@ -27,7 +27,8 @@ Hosted on GitHub Pages. Built by hand with plain HTML, CSS and JavaScript: no fr
 │   ├── main.js                # Nav, theme, carousels, modals, reaction timer, Doppler sim
 │   ├── features.js            # Hero scope, projects reel, reaction timer, terminal, etc.
 │   ├── projects-data.js       # CONTENT for every project write-up (edit this to update projects)
-│   ├── case-study.js          # Renders a project write-up from projects-data.js
+│   ├── experience-data.js     # CONTENT for each Professional Experience brief
+│   ├── case-study.js          # Renders a project write-up or experience brief
 │   └── games.js               # Playground tabs + Balance / Logic / Tune games
 ├── assets/
 │   ├── profile/               # Portrait and hero background
@@ -71,6 +72,14 @@ Each project's write-up (the panel that opens from the "Things I've Built" secti
    - `data-cta`: label on the panel's button, e.g. `Details & videos`.
    - The `<template class="reel-detail">` holds the short Problem / Build / Result shown in the big panel.
 4. Update the "builds" count in the hero stats.
+
+### Experience briefs
+
+The "Read the full brief" button on each Professional Experience card opens the same panel with an experience layout: overview, what I did and takeaways, plus role, dates, key numbers and skills on the side. Its content lives in **`js/experience-data.js`**. Link to a brief directly with `https://<your-site>/#experience-<id>` (e.g. `#experience-worldcup`).
+
+**Confidentiality:** signal maps, feed counts, match-day schedules, internal room names/acronyms and contractor names are kept off the site on purpose. Remember that everything in `js/` is publicly readable, so never park sensitive content there, even hidden.
+
+To add a job: add an entry to `js/experience-data.js`, copy the `experience-card` block in `index.html`, and set its button's `data-case-open` to the new `id`.
 
 ## Adding a DRIFTS version
 
