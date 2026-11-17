@@ -1,0 +1,56 @@
+/* Full-screen lockout alarm ("I am safe") */
+
+/* Full-Screen Lockout Alarm (iOS Emergency SOS Style) */
+.lockout {
+  position: absolute; inset: 0; z-index: 60;
+  background: rgba(0, 0, 0, 0.94);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  color: #fff;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+  padding: 96px 24px 54px; text-align: center; overflow: hidden;
+  animation: lockout-in 0.35s ease-out;
+  user-select: none; -webkit-user-select: none;
+}
+.lockout[hidden] { display: none; }
+.lockout.clearing { animation: lockout-out 0.5s ease-in forwards; }
+@keyframes lockout-in { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+@keyframes lockout-out { to { opacity: 0; } }
+.lockout-glow {
+  position: absolute; left: 50%; top: 38%; width: 520px; height: 520px; margin: -260px 0 0 -260px;
+  background: radial-gradient(circle, rgba(255, 59, 48, 0.36) 0%, rgba(255, 59, 48, 0) 62%);
+  animation: lockout-pulse 1.5s ease-in-out infinite; pointer-events: none;
+}
+@keyframes lockout-pulse { 0%, 100% { opacity: 0.35; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.04); } }
+.lockout-top, .lockout-bottom { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; }
+.lockout-label { display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 600; color: #AEAEB2; }
+.lockout-label svg { width: 22px; height: 22px; color: #FF453A; }
+.lockout-time {
+  font-size: 92px; font-weight: 700; line-height: 1; letter-spacing: -3px; margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.lockout-reason { margin-top: 18px; font-size: 16px; font-weight: 700; color: #FF453A; }
+.lockout-msg { margin-top: 6px; font-size: 13.5px; line-height: 1.45; color: #8E8E93; max-width: 280px; }
+.lockout-route {
+  width: 100%; max-width: 340px; padding: 16px; border: none; border-radius: 999px;
+  background: var(--ios-orange); color: #fff; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+}
+.safe-hold { position: relative; width: 190px; height: 190px; margin-top: 26px; display: grid; place-items: center; }
+.safe-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); pointer-events: none; }
+.safe-ring circle { fill: none; stroke-width: 9; }
+.safe-ring-track { stroke: rgba(255, 255, 255, 0.14); }
+.safe-ring-fill { stroke: #fff; stroke-linecap: round; transition: stroke-dashoffset 0.35s ease-out; }
+.safe-hold.holding .safe-ring-fill { transition: none; }
+.safe-hold.done .safe-ring-fill { stroke: #30D158; }
+.safe-btn {
+  width: 148px; height: 148px; border-radius: 50%; border: none; cursor: pointer;
+  background: radial-gradient(circle at 50% 35%, #FF453A 0%, #D70015 75%);
+  color: #fff; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  box-shadow: 0 0 0 6px rgba(255, 69, 58, 0.18), 0 12px 30px rgba(255, 69, 58, 0.35);
+  touch-action: none; transition: transform 0.15s ease, background 0.3s ease;
+}
+.safe-hold.holding .safe-btn { transform: scale(0.95); }
+.safe-hold.done .safe-btn { background: radial-gradient(circle at 50% 35%, #30D158 0%, #248A3D 75%); box-shadow: none; }
+.safe-btn-main { font-size: 20px; font-weight: 700; }
+.safe-btn-sub { font-size: 12px; font-weight: 600; opacity: 0.85; }
+.safe-hint { margin-top: 16px; font-size: 13px; font-weight: 500; color: #8E8E93; min-height: 18px; }

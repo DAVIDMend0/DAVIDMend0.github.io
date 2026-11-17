@@ -1,0 +1,62 @@
+/* Notification banner, bottom navigation bar, profile select */
+
+/* iOS Dynamic Island Drop-Down Notification Banner */
+.toast-banner {
+  position: absolute;
+  top: 66px;
+  left: 14px;
+  right: 14px;
+  background: rgba(28, 28, 30, 0.92);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  color: #FFFFFF;
+  padding: 13px 16px;
+  border-radius: 22px;
+  font-size: 12.5px;
+  font-weight: 600;
+  z-index: 55;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28), 0 0 0 0.5px rgba(255, 255, 255, 0.14) inset;
+}
+.toast-banner.show {
+  display: flex;
+  animation: iosToastIn 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+@keyframes iosToastIn {
+  from { opacity: 0; transform: translateY(-16px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Bottom Nav (Locked at Bottom - Original Dimensions & Positioning, Apple Colors) */
+.navbar {
+  width: 100%;
+  background: var(--ios-glass);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border-top: 1px solid var(--ios-sep);
+  display: flex;
+  padding: 10px 6px 24px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; color: var(--ios-subtext); padding: 4px 0; }
+.nav-item.active { color: var(--ios-blue); }
+.nav-item svg { width: 20px; height: 20px; min-width: 20px; min-height: 20px; flex-shrink: 0; display: block; }
+.nav-label { font-size: 10px; font-weight: 700; line-height: 1.1; }
+
+/* Profile Select */
+.setting-select {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: none;
+  background: var(--ios-card-secondary);
+  color: var(--ios-blue);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+.sound-owner { font-size: 11px; font-weight: 600; color: var(--ios-green); margin-top: 3px; }

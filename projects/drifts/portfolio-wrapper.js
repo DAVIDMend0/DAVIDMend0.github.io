@@ -51,6 +51,21 @@
         style.textContent = css;
         document.head.appendChild(style);
 
+        // Inside the portfolio's mock phone: newer builds hide their status bar on narrow
+        // screens (a real phone shows its own), which would put the title under the
+        // mock notch. Push the header down only when that status bar is hidden.
+        if (embedded) {
+            var fitNotch = function () {
+                var bar = document.querySelector('.statusbar');
+                var header = document.querySelector('.header');
+                if (!bar || !header) return;
+                header.style.paddingTop = getComputedStyle(bar).display === 'none' ? '44px' : '';
+            };
+            fitNotch();
+            window.addEventListener('load', fitNotch);
+            window.addEventListener('resize', fitNotch);
+        }
+
         // Discreet way back, only when opened on its own page on a computer.
         if (!embedded && !isPhone) {
             var back = document.createElement('a');

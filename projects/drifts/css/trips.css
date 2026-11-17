@@ -1,0 +1,75 @@
+/* UFAS trip log chart and list (Logs tab) */
+
+/* UFAS Trip Log (Apple Screen Time / Health Chart Style) */
+.trip-clear {
+  background: none; border: none; color: var(--ios-blue);
+  font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.trip-chart { display: flex; gap: 8px; align-items: flex-end; height: 132px; padding-top: 4px; }
+.trip-bar-slot {
+  flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  background: none; border: none; padding: 0; font: inherit; cursor: pointer; border-radius: 8px;
+}
+.trip-bar-slot.empty { cursor: default; }
+.trip-bar-val { font-size: 11px; font-weight: 700; height: 14px; }
+.trip-bar-track {
+  flex: 1; width: 100%; max-width: 28px;
+  background: var(--ios-card-secondary);
+  border-radius: 7px; position: relative; overflow: hidden;
+}
+.trip-bar-slot.empty .trip-bar-track { background: none; border: 1.5px dashed var(--ios-sep); }
+.trip-bar-fill { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 7px; }
+.trip-bar-slot.selected .trip-bar-track { box-shadow: 0 0 0 2px var(--ios-blue); }
+.trip-bar-slot.live .trip-bar-fill { animation: trip-live 1.6s ease-in-out infinite; }
+@keyframes trip-live { 50% { opacity: 0.55; } }
+.trip-bar-date { font-size: 10px; font-weight: 600; color: var(--ios-subtext); }
+.trip-bar-slot.live .trip-bar-date { color: var(--ios-blue); font-weight: 700; }
+.trip-chart-note { margin-top: 10px; font-size: 11px; color: var(--ios-subtext); }
+.trip-empty {
+  background: var(--ios-card); border-radius: 18px; padding: 20px 16px;
+  font-size: 12.5px; color: var(--ios-subtext); text-align: center; line-height: 1.5;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.02), 0 0 0 0.5px var(--ios-sep);
+}
+.trip-card { padding: 0; overflow: hidden; }
+.trip-head {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 13px 15px;
+  background: none; border: none; font: inherit; text-align: left; cursor: pointer; color: inherit;
+}
+.trip-score {
+  width: 44px; height: 44px; border-radius: 50%; border: 3px solid;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.trip-score span { font-size: 14px; font-weight: 800; }
+.trip-head-text { flex: 1; min-width: 0; }
+.trip-title { font-size: 14px; font-weight: 600; color: var(--ios-text); }
+.trip-meta { font-size: 11.5px; color: var(--ios-subtext); margin-top: 2px; }
+.trip-live {
+  font-size: 9.5px; font-weight: 700; color: #fff; background: var(--ios-blue);
+  padding: 2px 7px; border-radius: 999px; vertical-align: 1px; margin-left: 4px;
+}
+.trip-warn {
+  font-size: 9.5px; font-weight: 600; color: var(--ios-orange);
+  background: rgba(255, 149, 0, 0.14); padding: 2px 7px; border-radius: 999px; vertical-align: 1px;
+}
+.trip-chev { width: 18px; height: 18px; color: var(--ios-subtext); flex-shrink: 0; transition: transform 0.2s ease; }
+.trip-card.open .trip-chev { transform: rotate(180deg); }
+.trip-events { border-top: 0.5px solid var(--ios-sep); padding: 10px 15px 14px; }
+.trip-ev-title {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--ios-subtext); margin: 2px 0 8px;
+}
+.trip-events ul { list-style: none; }
+.trip-ev {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 0; border-bottom: 0.5px solid var(--ios-sep);
+}
+.trip-ev:last-child { border-bottom: none; }
+.trip-ev-icon {
+  width: 20px; height: 20px; border-radius: 50%; color: #fff;
+  font-size: 10px; font-weight: 800; display: grid; place-items: center; flex-shrink: 0; margin-top: 1px;
+}
+.trip-ev-body { flex: 1; min-width: 0; }
+.trip-ev-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--ios-text); }
+.trip-ev-head .mono { font-size: 10.5px; color: var(--ios-subtext); font-weight: 500; }
+.trip-ev-text { font-size: 11.5px; color: var(--ios-subtext); margin-top: 2px; line-height: 1.4; }
+.trip-ev-ufas { font-size: 11.5px; font-weight: 700; width: 26px; text-align: right; flex-shrink: 0; margin-top: 1px; }

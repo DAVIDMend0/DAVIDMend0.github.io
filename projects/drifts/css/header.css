@@ -1,0 +1,38 @@
+/* Header: title + live speed pill. Loaded after layout.css so these rules win. */
+
+.header-title-row { gap: 12px; }
+
+.speed-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 6px 14px 7px;
+  border-radius: 14px;
+  background: var(--ios-card);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 0.5px var(--ios-sep);
+  color: var(--ios-text);
+}
+.speed-val {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 2ch;
+  text-align: right;
+  letter-spacing: -0.04em;
+}
+.speed-unit {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ios-subtext);
+}
+.speed-pill.idle .speed-val { color: var(--ios-tertiary); }
+
+/* On a real phone: the phone already shows its own clock, so drop the mock status bar
+   and use the compact padding the design intended (layout.css's later .header rule
+   was overriding it, leaving a gap at the top). */
+@media (max-width: 460px) {
+  .header { padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px; }
+  .statusbar { display: none; }
+}

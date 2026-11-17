@@ -38,10 +38,15 @@ Hosted on GitHub Pages. Built by hand with plain HTML, CSS and JavaScript: no fr
 ├── projects/
 │   └── drifts/
 │       ├── index.html             # Current DRIFTS app (served at /projects/drifts/)
+│       ├── css/ js/ icons/        # The app's styles, one script per feature, PWA icons
+│       ├── manifest.webmanifest   # "Add to Home Screen" / install info
+│       ├── sw.js                  # Service worker: offline use (bump CACHE_VERSION on changes)
+│       ├── README.md              # How the app's files fit together
+│       ├── v3-bluetooth.html      # Old address, redirects to the app
 │       ├── dms-simulation.html    # Vision-stage simulation
 │       ├── portfolio-wrapper.js   # Phone safety notice + desktop "Back to portfolio" link
 │       ├── logo.webp
-│       └── versions/              # Earlier builds: v1-vision-tester, v2-sensor-gated, v3-bluetooth
+│       └── versions/              # Earlier builds: v1-vision-tester, v2-sensor-gated, v3-bluetooth, v4-single-file
 ```
 
 ## Project write-ups

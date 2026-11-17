@@ -1,0 +1,52 @@
+/* Color tokens (light + night mode), reset, page background, fonts */
+
+:root {
+  --ios-bg: #F2F2F7;
+  --ios-card: #FFFFFF;
+  --ios-card-secondary: #F2F2F7;
+  --ios-text: #000000;
+  --ios-subtext: #8E8E93;
+  --ios-tertiary: #C7C7CC;
+  --ios-sep: rgba(60, 60, 67, 0.12);
+  --ios-blue: #007AFF;
+  --ios-green: #34C759;
+  --ios-orange: #FF9500;
+  --ios-red: #FF3B30;
+  --ios-indigo: #5856D6;
+  --ios-glass: rgba(249, 249, 251, 0.78);
+}
+
+.phone.dark-mode {
+  --ios-bg: #000000;
+  --ios-card: #1C1C1E;
+  --ios-card-secondary: #2C2C2E;
+  --ios-text: #FFFFFF;
+  --ios-subtext: #8E8E93;
+  --ios-tertiary: #48484A;
+  --ios-sep: rgba(84, 84, 88, 0.36);
+  --ios-blue: #0A84FF;
+  --ios-green: #30D158;
+  --ios-orange: #FF9F0A;
+  --ios-red: #FF453A;
+  --ios-indigo: #5E5CE6;
+  --ios-glass: rgba(28, 28, 30, 0.78);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  background: radial-gradient(circle at 50% 0%, #f5f5f7 0%, #dcdfe6 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--ios-text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 28px 16px;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.015em;
+}
+.mono {
+  font-family: "SF Mono", ui-monospace, "JetBrains Mono", monospace;
+  letter-spacing: -0.02em;
+}

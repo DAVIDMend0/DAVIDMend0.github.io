@@ -1,0 +1,150 @@
+/* Garage tab: car maintenance tracker */
+
+/* Bottom-bar badge (count of items overdue or due soon) */
+.nav-item { position: relative; }
+.nav-badge {
+  position: absolute;
+  top: 0;
+  left: calc(50% + 6px);
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: var(--ios-red);
+  color: #FFFFFF;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+.nav-badge[hidden] { display: none; }
+
+/* Vehicle card */
+.maint-vehicle-name {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--ios-text);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  padding: 0 0 10px;
+  outline: none;
+}
+.maint-vehicle-name::placeholder { color: var(--ios-subtext); font-weight: 600; opacity: 1; }
+.maint-odo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0 12px;
+  border-top: 0.5px solid var(--ios-sep);
+}
+.maint-odo-val { font-size: 24px; font-weight: 700; color: var(--ios-text); margin: 2px 0 1px; }
+.maint-odo-btn { flex: 0 0 auto; padding: 9px 18px; }
+.maint-odo-edit {
+  display: flex;
+  gap: 8px;
+  padding: 10px 0 12px;
+  border-top: 0.5px solid var(--ios-sep);
+}
+.maint-odo-edit .maint-input { flex: 1; min-width: 0; }
+.maint-odo-edit .ble-btn { flex: 0 0 auto; padding: 10px 14px; }
+.maint-summary { margin-top: 2px; }
+.maint-auto-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 0 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ios-text);
+  cursor: pointer;
+}
+.maint-auto-row small { display: block; font-size: 11px; font-weight: 500; color: var(--ios-subtext); margin-top: 2px; }
+.maint-auto-row input { flex-shrink: 0; }
+
+/* Shared text inputs */
+.maint-input {
+  width: 100%;
+  background: var(--ios-card-secondary);
+  border: 0.5px solid var(--ios-sep);
+  border-radius: 10px;
+  padding: 9px 10px;
+  color: var(--ios-text);
+  font-size: 13px;
+  outline: none;
+}
+.maint-input:focus { border-color: var(--ios-blue); }
+.maint-input::placeholder { color: var(--ios-subtext); opacity: 1; }
+
+/* Service schedule list */
+.maint-item {
+  background: var(--ios-card);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03), 0 0 0 0.5px var(--ios-sep);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.maint-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ios-text);
+}
+.maint-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.maint-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.maint-name { font-size: 14.5px; font-weight: 600; letter-spacing: -0.2px; }
+.maint-status { font-size: 12px; font-weight: 600; }
+.maint-bar { display: block; height: 4px; border-radius: 99px; background: var(--ios-card-secondary); margin-top: 5px; overflow: hidden; }
+.maint-bar-fill { display: block; height: 100%; border-radius: 99px; transition: width 0.3s ease; }
+.maint-item .trip-chev { width: 16px; height: 16px; flex-shrink: 0; color: var(--ios-tertiary); transition: transform 0.2s ease; }
+.maint-item.open .trip-chev { transform: rotate(180deg); }
+
+.maint-body { padding: 0 16px 14px; }
+.maint-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0 12px;
+  border-top: 0.5px solid var(--ios-sep);
+  font-size: 12.5px;
+}
+.maint-facts div { display: flex; justify-content: space-between; gap: 10px; }
+.maint-facts span { color: var(--ios-subtext); }
+.maint-facts b { font-weight: 600; color: var(--ios-text); text-align: right; }
+.maint-actions { display: flex; gap: 8px; }
+.maint-delete { color: var(--ios-red); }
+
+/* Add / edit form */
+.maint-new-title { font-size: 14.5px; font-weight: 600; padding: 13px 16px 0; color: var(--ios-text); }
+.maint-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 12px 16px 14px;
+}
+.maint-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.maint-field > span { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ios-subtext); }
+.maint-field-wide { grid-column: 1 / -1; }
+.maint-form .maint-actions { margin-top: 2px; }
+
+/* History */
+.maint-history { padding: 4px 16px; }
+.maint-history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+}
+.maint-history-row + .maint-history-row { border-top: 0.5px solid var(--ios-sep); }
+.maint-history-name { font-size: 13.5px; font-weight: 600; color: var(--ios-text); }
+.maint-history-del { color: var(--ios-tertiary); font-size: 13px; padding: 4px 6px; cursor: pointer; }
+.maint-empty { font-size: 12.5px; color: var(--ios-subtext); text-align: center; }

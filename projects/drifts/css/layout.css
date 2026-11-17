@@ -1,0 +1,221 @@
+/* iPhone frame, translucent header, scrolling screen container */
+
+/* Natural Titanium iPhone 16 Pro Frame */
+.device-frame {
+  width: 424px;
+  height: 890px;
+  background: linear-gradient(145deg, #3c3b37 0%, #1d1d1f 45%, #2c2b29 100%);
+  border-radius: 62px;
+  padding: 12px;
+  position: relative;
+  box-shadow:
+    0 40px 90px rgba(0, 0, 0, 0.35),
+    0 10px 25px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.22) inset,
+    0 0 0 3px #141416 inset;
+  flex-shrink: 0;
+}
+.dynamic-island {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 122px;
+  height: 35px;
+  background: #000000;
+  border-radius: 999px;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 13px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  transition: width 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.dynamic-island::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #233354 0%, #0d1322 55%, #050507 100%);
+  box-shadow: 0 0 0 1.5px #151519;
+}
+.island-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #30D158;
+  box-shadow: 0 0 6px rgba(48, 209, 88, 0.65);
+  transition: all 0.3s ease;
+}
+.island-dot.cam-active {
+  background: #FF9F0A;
+  box-shadow: 0 0 10px #FF9F0A;
+  animation: blink 1.2s infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.side-btn { position: absolute; background: #2c2b29; border-radius: 3px; box-shadow: -1px 0 0 rgba(255,255,255,0.2) inset; }
+.side-btn.vol-up { left: -3px; top: 145px; width: 3px; height: 38px; }
+.side-btn.vol-down { left: -3px; top: 196px; width: 3px; height: 64px; }
+.side-btn.power { right: -3px; top: 175px; width: 3px; height: 84px; }
+.home-indicator {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 138px;
+  height: 5px;
+  background: var(--ios-text);
+  border-radius: 99px;
+  opacity: 0.25;
+  z-index: 30;
+  pointer-events: none;
+}
+.phone {
+  width: 100%;
+  height: 100%;
+  background: var(--ios-bg);
+  color: var(--ios-text);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 50px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media (max-width: 460px) {
+  html, body {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    inset: 0;
+    overscroll-behavior: none;
+    background: var(--ios-bg);
+  }
+  .device-frame {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    background: var(--ios-bg);
+  }
+  .dynamic-island, .side-btn, .home-indicator { display: none; }
+  .phone {
+    border-radius: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .header {
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 14px;
+    flex-shrink: 0;
+    z-index: 50;
+  }
+  .screen {
+    flex: 1;
+    min-height: 0;
+    padding: 16px 16px 240px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  .navbar {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 28px);
+    max-width: 390px;
+    border-radius: 22px;
+    border: 1px solid var(--ios-sep);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+    padding: 10px 6px;
+    margin: 0;
+    z-index: 9999;
+  }
+}
+
+/* Apple iOS Translucent Navigation Bar Header */
+.header {
+  background: var(--ios-glass);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  color: var(--ios-text);
+  padding: 48px 20px 14px;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 20;
+  border-bottom: 0.5px solid var(--ios-sep);
+}
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ios-text);
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+#clock-text { font-weight: 700; font-size: 14px; letter-spacing: -0.3px; min-width: 58px; }
+#ble-header-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ios-subtext);
+  opacity: 0;
+  pointer-events: none;
+}
+#gps-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(52, 199, 89, 0.14);
+  color: var(--ios-green);
+  letter-spacing: 0.2px;
+}
+.header-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--ios-text);
+  line-height: 1.05;
+}
+
+/* Scrollable Screen Container */
+.screen {
+  flex: 1;
+  padding: 14px 16px 120px;
+  display: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.screen.active { display: block; }
+
+.section-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ios-subtext);
+  font-weight: 600;
+  margin: 18px 4px 7px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.section-label:first-child { margin-top: 4px; }

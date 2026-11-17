@@ -1,0 +1,19 @@
+/* Driving mode: only the Monitor tab is shown in the bottom bar while a trip runs */
+.nav-driving-note { display: none; }
+
+.phone.driving .nav-item:not(#nav-home) { display: none; }
+.phone.driving .nav-item#nav-home { flex: 0 0 72px; }
+.phone.driving .nav-driving-note {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  order: 2;
+  padding: 0 12px 0 4px;
+  color: var(--ios-subtext);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.nav-driving-note svg { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-driving-note small { display: block; font-size: 11px; font-weight: 500; }

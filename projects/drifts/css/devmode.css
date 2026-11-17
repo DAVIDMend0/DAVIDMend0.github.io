@@ -1,0 +1,2 @@
+/* Developer mode: elements marked class="dev-only" stay hidden until it's turned on (Profile tab) */
+.phone:not(.dev-mode) .dev-only { display: none !important; }

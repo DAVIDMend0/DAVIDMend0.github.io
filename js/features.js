@@ -787,7 +787,8 @@
                     v1:     { url: 'projects/drifts/versions/v1-vision-tester.html', date: 'Oct 07 2026', desc: 'Vision tester: FaceMesh + MobileNetV2' },
                     v2:     { url: 'projects/drifts/versions/v2-sensor-gated.html',  date: 'Oct 14 2026', desc: 'Phone sensors decide when the camera wakes' },
                     v3:     { url: 'projects/drifts/versions/v3-bluetooth.html',     date: 'Oct 22 2026', desc: 'Adds Bluetooth alert module + G29 test rig' },
-                    latest: { url: 'projects/drifts/',                               date: 'current',     desc: 'Current build (live on this page)' }
+                    v4:     { url: 'projects/drifts/versions/v4-single-file.html',   date: 'Nov 04 2026', desc: 'Last single-file build (iOS-style redesign)' },
+                    latest: { url: 'projects/drifts/',                               date: 'current',     desc: 'Installable app: Garage tab, driving mode, GPS, SOS' }
                 };
                 const args = (arg || '').toLowerCase().split(/\s+/).filter(Boolean);
                 if (!args.length) {
